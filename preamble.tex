@@ -1,0 +1,107 @@
+% !TeX root = raytracing/slides/main.tex
+% raytracing_preamble.tex
+% Common styling for Ray Tracing presentation
+
+\documentclass[10pt]{beamer}
+\usetheme{metropolis}
+\usefonttheme{professionalfonts}
+
+% --- Color Definitions ---
+\definecolor{PrimaryColor}{RGB}{33,52,72}         % Deep navy
+\definecolor{SecondaryColor}{RGB}{84,119,146}     % Desaturated blue-gray
+\definecolor{AccentColor}{RGB}{100, 156, 165}       % Soft steel blue
+
+\definecolor{BackgroundColor}{RGB}{245,247,250}   % Very light cool gray/blue-tinted white
+\definecolor{TextColor}{RGB}{40,55,70}            % Darker, cool-toned charcoal (slightly less saturated)
+\definecolor{LightGray}{RGB}{220,225,230}         % Soft, cool light gray
+\definecolor{DarkGray}{RGB}{70,90,105}            % Cool-toned dark gray (coherent with Primary/Secondary)
+
+\definecolor{RayColor}{RGB}{230,150,80}           % Muted warm orange (less saturated than pure orange)
+\definecolor{ObjectColor}{RGB}{128,101,160}       % Muted violet (adjusted purple to match cool palette)
+\definecolor{LightColor}{RGB}{235,200,100}        % Soft golden yellow (to complement cool blues)
+
+
+
+% --- Theme Customization ---
+\setbeamercolor{background canvas}{bg=BackgroundColor}
+\setbeamercolor{normal text}{fg=TextColor}
+\setbeamercolor{frametitle}{bg=PrimaryColor, fg=white}
+\setbeamercolor{section in toc}{fg=PrimaryColor}
+\setbeamercolor{block title}{bg=PrimaryColor!80, fg=white}
+\setbeamercolor{block body}{bg=PrimaryColor!10}
+\setbeamercolor{alerted text}{fg=AccentColor}
+\setbeamercolor{itemize item}{fg=PrimaryColor}
+\setbeamercolor{itemize subitem}{fg=SecondaryColor}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{booktabs}
+\usepackage{amsmath, amssymb}
+\usepackage{fontawesome5}
+\usepackage{pifont}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usetikzlibrary{shapes.callouts, positioning, arrows.meta, shapes.geometric, shadows, calc, patterns, 3d, backgrounds}
+\usepackage{adjustbox}
+\usepackage{ragged2e}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% --- Custom Commands ---
+\newcommand{\cmark}{\textcolor{SecondaryColor}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{AccentColor}{\ding{55}}}
+\newcommand{\highlight}[1]{\textcolor{PrimaryColor}{\textbf{#1}}}
+\newcommand{\raycolor}[1]{\textcolor{RayColor}{\textbf{#1}}}
+\newcommand{\objectcolor}[1]{\textcolor{ObjectColor}{\textbf{#1}}}
+
+% --- TikZ styles for ray tracing visualizations ---
+\tikzstyle{process} = [rectangle, rounded corners=3mm, minimum width=2cm, minimum height=0.8cm, text centered, draw=PrimaryColor, thick, fill=PrimaryColor!15, drop shadow]
+\tikzstyle{arrow} = [thick, PrimaryColor, ->, >=stealth]
+\tikzstyle{ray} = [thick, RayColor, ->, >=stealth]
+\tikzstyle{lightray} = [thick, LightColor, ->, >=stealth]
+\tikzstyle{reflectray} = [thick, SecondaryColor, ->, >=stealth]
+\tikzstyle{refractray} = [thick, AccentColor, ->, >=stealth]
+\tikzstyle{shadowray} = [thick, DarkGray, ->, >=stealth, dashed]
+
+% --- 3D object styles ---
+\tikzstyle{sphere} = [circle, minimum size=1.5cm, draw=ObjectColor, thick, fill=ObjectColor!20, drop shadow]
+\tikzstyle{plane} = [rectangle, minimum width=3cm, minimum height=0.2cm, draw=ObjectColor, thick, fill=ObjectColor!20]
+\tikzstyle{triangle} = [regular polygon, regular polygon sides=3, minimum size=1.5cm, draw=ObjectColor, thick, fill=ObjectColor!20]
+
+% --- Eye/Camera styles ---
+\tikzstyle{eye} = [circle, minimum size=0.8cm, draw=PrimaryColor, thick, fill=PrimaryColor!30]
+\tikzstyle{pixel} = [rectangle, minimum size=0.2cm, draw=AccentColor, fill=AccentColor!30]
+
+% --- Text box styles ---
+\tikzstyle{conceptbox} = [rectangle, rounded corners, fill=PrimaryColor!10, draw=PrimaryColor, thick, text width=0.8\textwidth, inner sep=8pt]
+\tikzstyle{formulabox} = [rectangle, rounded corners, fill=SecondaryColor!10, draw=SecondaryColor, thick, inner sep=6pt]
+
+% --- Custom environments ---
+\newtcolorbox{raybox}[1]{
+    colback=RayColor!10,
+    colframe=RayColor,
+    title=#1,
+    fonttitle=\bfseries,
+    sharp corners
+}
+
+\newtcolorbox{conceptbox}[1]{
+    colback=PrimaryColor!10,
+    colframe=PrimaryColor,
+    title=#1,
+    fonttitle=\bfseries,
+    rounded corners
+}
+
+\newtcolorbox{mathbox}[1]{
+    colback=SecondaryColor!10,
+    colframe=SecondaryColor,
+    title=#1,
+    fonttitle=\bfseries,
+    rounded corners
+}
