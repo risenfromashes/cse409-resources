@@ -48,6 +48,7 @@
             \begin{tikzpicture}[scale=0.8]
                 % Sun
                 \node[circle, fill=LightColor, minimum size=1cm] (sun) at (0,3) {\faIcon{sun}};
+                \node[below] at (0,4.25) {\small \textcolor{LightColor}{Light Source}};
                 \draw[lightray] (sun) -- (2,1);
                 \draw[lightray] (sun) -- (3,2);
                 \draw[lightray] (sun) -- (4,1);
@@ -59,7 +60,6 @@
                 \node[eye] (eye) at (5,3) {\faIcon{eye}};
                 \draw[reflectray] (3.1,2) -- (eye);
                 
-                \node[below] at (0,4.25) {\small \textcolor{LightColor}{Light Source}};
                 \node[below] at (3,0) {\small \objectcolor{Object}};
                 \node[below] at (5,4.1) {\small \textcolor{PrimaryColor}{Observer}};
             \end{tikzpicture}
@@ -136,23 +136,28 @@
 \end{frame}
 
 % --- Section 2: Ray Casting ---
-\section{Ray Casting: The Foundation}
+\section{Ray Casting: Foundation}
 
-\begin{frame}{The Brilliant Insight}
+\begin{frame}{The Key Insight}
     \begin{columns}
         \begin{column}{0.5\textwidth}
-            \begin{raybox}{Reverse Engineering Vision}
-                Instead of following light from sources...\\
-                \vspace{0.3cm}
-                \highlight{Let's trace backwards from our eyes!}
+            \begin{raybox}{1. Reverse Engineering}
+                Instead of following light rays from light sources |
+
+                \vspace{0.1cm}
+                \textbf{Let's trace backwards!}
+
+                \textbf{Shoot rays from the eye}, find where it hits and find out how much light reaches there.
             \end{raybox}
             
-            \vspace{0.5cm}
+            \vspace{0.3cm}
+            This is the opposite of what happens in reality.
             \textbf{Why does this work?}
             \begin{itemize}
-                \item Most light never reaches our eyes
-                \item Only trace rays that matter
-                \item Much more efficient!
+                \small
+                \item<2-> Most light never reaches our eyes
+                \item<3-> Only trace rays that matter
+                \item<3-> Much more efficient!
             \end{itemize}
         \end{column}
         \begin{column}{0.5\textwidth}
@@ -169,16 +174,77 @@
                 
                 \node[eye] (eye) at (0,0,0) {\faIcon{eye}};
                 % Object in 3D space
-                \node[sphere, minimum size=1cm] (obj) at (8,0,3.8) {};
+                \node[sphere, minimum size=1cm] (obj) at (8,0,3.8) {};            
+                
+                % Labels
+                \node[below] at (0,-0.6,0) {\small Eye};
+                \node[below] at (8,-1,3.8) {\small \objectcolor{Object}};
 
-                % Screen plane in 3D (using canvas is plane)
-                \begin{scope}[canvas is zy plane at x=3.5]
-                    % Background screen
+                \node[circle, fill=LightColor, minimum size=1cm] (sun) at (5,3.5) {\faIcon{sun}};
+                \node[below] at (5,5) {\small \textcolor{LightColor}{Light Source}};
+
+                \draw[ray, very thick] (eye.center) -- (obj.west);
+                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,0,0)$);
+                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,-0.2,-1)$);
+                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,-0.3,-2)$);
+                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,0.5,1)$);
+                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,1.2,2)$);
+
+
+                \pause
+
+                \only<2> {
+                    \draw[ray, black!50, thick, opacity=0.8, dashed] (sun) -- (obj.north);
+                    \draw[ray, black!50, thick, opacity=0.8, dashed] (obj.north) -- (8,2) 
+                        node[above] {\small \textcolor{black!50}{Useless ray}};
+                }
+
+                \pause 
+                
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}{From Infinite Rays to Finite Pixels}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{raybox}{2. Cutting Costs}
+                Instead of tracing infinite rays |
+
+                \vspace{0.1cm}
+                \textbf{Trace one ray per pixel.}
+            \end{raybox}
+            \vspace{0.3cm}
+            This comes with little tradeoff, because:
+            \begin{itemize}
+                \small
+                \item<2-> An image is just a grid of pixels
+                \item<3-> Each pixel can only be of one color
+                \item<4-> In the end, we just need to know the \emph{color of each pixel}
+                \item<5-> Hence, one ray from the mid-point of each pixel should be a good approximation$^*$ \\                 
+            \end{itemize}
+            \vspace{0.3cm}
+            \begin{itemize}
+                \footnotesize
+                \item[$^*$] We will discuss more advanced techniques later that improve quality
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \centering
+            \pause
+            \begin{tikzpicture}[scale=0.6]
+                % Define 3D styles
+                \tikzset{
+                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
+                    pixel/.style={fill=AccentColor!60, thick},
+                    primary ray/.style={->, very thick, red!90},
+                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+                }
+            
                     \fill[screen] (-3,-3) rectangle (3,3);
 
-                    \fill[pixel] (-2,-2) rectangle (-1,-1);
-                    \draw[RayColor, very thick] (eye.center) -- (-1.5, -1.5);
-                    \draw[->, RayColor, very thick] (-1.5, -1.5) -- (obj);
                     
                     \foreach \x in {-3,-2,...,3} {
                         \draw[gray!60, thin] (\x,-3) -- (\x,3);
@@ -186,55 +252,149 @@
                     \foreach \z in {-3,-2,...,3} {
                         \draw[gray!60, thin] (-3,\z) -- (3,\z);
                     }
+
+
+                    \pause
+                    \fill[pixel] (-2,-2) rectangle (-1,-1);
+
+                    \pause 
+                    \pause
                     
                     \foreach \x in {-2.5,-1.5,...,2.5} {
                         \foreach \z in {-2.5,-1.5,...,2.5} {
-                             \fill[red!70] (\x, \z) circle (0.08);
-                             \draw[ray, thick, opacity=0.4] (eye.center) -- (\x,\z);
+                             \fill[red!70] (\x, \z) circle (0.1);
                         }
                     }
-                \end{scope}
+
+
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}{The Full Picture}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[node distance=1.2cm]
+                \node<2->[process] (screen) {Place screen in front of eye};
+                \node<3->[process, below of=screen] (start) {For each pixel};
+                \draw<3->[arrow] (screen) -- (start);
+
+                \node<4->[process, below of=start] (ray) {Shoot ray from eye};
+                \draw<4->[arrow] (start) -- (ray);
+
+                \node<5->[process, below of=ray] (intersect) {Find closest intersection};
+                \draw<5->[arrow] (ray) -- (intersect);
+
+                \node<6->[process, fill=AccentColor!50, below of=intersect] (shade) {Calculate color$^*$};
+                \draw<6->[arrow] (intersect) -- (shade);
                 
+                \node<7->[process, below of=shade] (end) {Set pixel color};
+                \draw<7->[arrow] (shade) -- (end);
                 
-      
+    
+                \draw<8->[arrow] (end) -- ($(end)+(-2.25,0)$) |- (start);
                 
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                % Define 3D styles
+                \tikzset{
+                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
+                    pixel/.style={fill=AccentColor!60, thick},
+                    primary ray/.style={->, very thick, red!90},
+                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+                }
+                
+                % Eye position in 3D space
+                
+                \node[eye] (eye) at (0,0,0) {\faIcon{eye}};
+                % Object in 3D space
+                \node[sphere, minimum size=1cm] (obj) at (8,0,3.8) {};            
                 
                 % Labels
                 \node[below] at (0,-0.6,0) {\small Eye};
-                \node[below] at (3.5,-4,0) {\small Screen};
                 \node[below] at (8,-1,3.8) {\small \objectcolor{Object}};
+
+                \node[circle, fill=LightColor, minimum size=1cm] (sun) at (5,3.5) {\faIcon{sun}};
+                \node[below] at (5,5) {\small \textcolor{LightColor}{Light Source}};
+
+                \pause 
+                
+                \node[below] at (3.5,-4,0) {\small Screen};
+
+                \only<6->{
+                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,0,0)$);
+                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,-0.2,-1)$);
+                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,-0.3,-2)$);
+                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,0.5,1)$);
+                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,1.2,2)$);
+                }
+
+
+                % Screen plane in 3D (using canvas is plane)
+                \begin{scope}[canvas is zy plane at x=3.5]
+                    % Background screen
+                    \fill[screen] (-3,-3) rectangle (3,3);
+
+                    
+                    \foreach \x in {-3,-2,...,3} {
+                        \draw[gray!60, thin] (\x,-3) -- (\x,3);
+                    }
+                    \foreach \z in {-3,-2,...,3} {
+                        \draw[gray!60, thin] (-3,\z) -- (3,\z);
+                    }
+
+
+                    \pause
+
+
+                    \fill[pixel] (-2,-2) rectangle (-1,-1);
+
+                    \pause 
+                    \fill[red!70] (-1.5, -1.5) circle (0.1);
+                    \draw<5->[ray, very thick] (eye.center) -- (-1.5, -1.5);
+                    \draw<5->[->, ray, very thick] (-1.5, -1.5) -- (obj);
+
+                    \pause
+                    \pause
+                    \pause 
+
+
+                    \fill[RayColor!60] (-2,-2) rectangle (-1,-1);
+                    \fill[red!70] (-1.5, -1.5) circle (0.1);
+
+                    \pause
+
+                    \foreach \x in {-2.5,-1.5,...,2.5} {
+                        \foreach \z in {-2.5,-1.5,...,2.5} {
+                             \fill[red!70] (\x, \z) circle (0.1);
+                             \draw[ray, thick, opacity=0.3] (eye.center) -- (\x,\z);
+                        }
+                    }
+
+
+                \end{scope}
+
+
+                \draw<4>[->, ray, very thick] (eye) -- ($(obj) + (3.5, 0, 1.5)$);
+
+
+
                 
             \end{tikzpicture}
         \end{column}
     \end{columns}
 \end{frame}
 
-\begin{frame}{Ray Casting Algorithm}
-    \begin{center}
-        \begin{tikzpicture}[node distance=1.5cm]
-            \node[process] (start) {For each pixel};
-            \node[process, below of=start] (ray) {Shoot ray from eye};
-            \node[process, below of=ray] (intersect) {Find closest intersection};
-            \node[process, below of=intersect] (shade) {Calculate color};
-            \node[process, below of=shade] (end) {Set pixel color};
-            
-            \draw[arrow] (start) -- (ray);
-            \draw[arrow] (ray) -- (intersect);
-            \draw[arrow] (intersect) -- (shade);
-            \draw[arrow] (shade) -- (end);
-            
-            % Side illustration
-            \begin{scope}[xshift=6cm, yshift=-1cm]
-                \draw[step=0.3cm, gray, very thin] (0,0) grid (2,1.5);
-                \node[eye] (eye) at (3,0.75) {};
-                \node[sphere] (sphere) at (-1,0.75) {};
-                \draw[ray] (eye) -- (0.6,0.75) -- (sphere);
-                \node[pixel] at (0.6,0.75) {};
-                \node[below] at (0.6,0.4) {\tiny Pixel};
-            \end{scope}
-        \end{tikzpicture}
-    \end{center}
-\end{frame}
+
+\include{qa}
+\include{references}
+
+\end{document}
+\endinput
 
 % --- Section 3: Mathematical Foundation ---
 \section{The Mathematics of Rays}
@@ -2029,55 +2189,4 @@
         \end{tikzpicture}
     \end{center}
 \end{frame}
-
-\begin{frame}{Questions \& Discussion}
-    \begin{center}
-        \Huge \textcolor{PrimaryColor}{Questions?}
-        
-        \vspace{1cm}
-        
-        \begin{tikzpicture}
-            \node[circle, fill=LightColor, minimum size=3cm] at (0,0) {\Huge \faIcon{question}};
-            
-            % Decorative rays
-            \foreach \angle in {0,45,90,135,180,225,270,315} {
-                \draw[lightray] (0,0) -- (\angle:2.5);
-            }
-        \end{tikzpicture}
-        
-        \vspace{1cm}
-        
-        \Large \textcolor{SecondaryColor}{Thank you for your attention!}
-    \end{center}
-\end{frame}
-
-% --- References ---
-\begin{frame}{References \& Further Reading}
-    \footnotesize
-    \begin{thebibliography}{9}
-        \bibitem{shirley}
-        Peter Shirley, Steve Marschner et al. 
-        \textit{Fundamentals of Computer Graphics (4th Edition)}.
-        CRC Press, 2016.
-        
-        \bibitem{pharr}
-        Matt Pharr, Wenzel Jakob, and Greg Humphreys.
-        \textit{Physically Based Rendering: From Theory to Implementation (3rd Edition)}.
-        Morgan Kaufmann, 2016.
-        
-        \bibitem{suffern}
-        Kevin Suffern.
-        \textit{Ray Tracing from the Ground Up}.
-        A K Peters/CRC Press, 2007.
-        
-        \bibitem{mit}
-        MIT OpenCourseWare: 6.837 Computer Graphics.
-        \texttt{https://ocw.mit.edu/courses/6-837-computer-graphics-fall-2012/}
-        
-        \bibitem{scratchapixel}
-        Scratchapixel: Learn Computer Graphics Programming.
-        \texttt{https://www.scratchapixel.com/}
-    \end{thebibliography}
-\end{frame}
-
 \end{document}
