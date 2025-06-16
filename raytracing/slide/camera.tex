@@ -1,157 +1,5 @@
 \section{Rays and Cameras}
 
-\begin{frame}{What is a Ray?}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Ray Representation}
-                A ray is defined by:
-                \begin{align}
-                    \mathbf{P}(t) & = \mathbf{R_o} + t \cdot \mathbf{R_d}
-                \end{align}
-                where:
-                \begin{itemize}
-                    \item $\mathbf{R_o}$ = Origin point
-                    \item $\mathbf{R_d}$ = Direction vector
-                    \item $t$ = Parameter ($t \geq 0$)
-                \end{itemize}
-            \end{mathbox}
-            \vspace{0.3cm}
-            \href{https://www.desmos.com/calculator/0tloiudmdt}{Check out here on desmos.}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                % Origin
-
-                % Points on ray
-                \fill[SecondaryColor] (2,1.5) circle (3pt);
-                \node[below] at (2,1) {$\mathbf{P}(t_1)$};
-                \fill[SecondaryColor] (4,3) circle (3pt);
-                \node[below] at (4,2.75) {$\mathbf{P}(t_2)$};
-
-
-                % Direction vector
-                \draw[->, very thick, red] (0,0) -- (2,1.5);
-                \node[above] at (0.8,0.9) {$\mathbf{R_d}$};
-
-                % Ray continuation
-                \draw[ray, dashed] (2,1.5) -- (5,3.75);
-
-                \fill[PrimaryColor] (0,0) circle (3pt);
-                \node[below left] at (0,0) {$\mathbf{R_o}$};
-
-                % Parameter illustration
-                \draw[<->, thin] (0,-1) -- (2,-1);
-                \node[below] at (1,-1) {$t_1=1$};
-                \draw[<->, thin] (0,-2) -- (4,-2);
-                \node[below] at (2,-2) {$t_2$};
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-\end{frame}
-
-
-\begin{frame}{Camera Representation}
-    \begin{center}
-        \begin{tikzpicture}[scale=0.7]
-            % Define 3D styles
-            \tikzset{
-                camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
-                image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
-                pixel/.style={fill=AccentColor!60, thick},
-                primary ray/.style={->, very thick, red!90},
-                object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
-            }
-
-            % 3D coordinate system
-            \draw[<->, thick, PrimaryColor] (0,0,0) -- (1.5,0,0);
-            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1.5,0);
-            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,2);
-            \node[right] at (1.5,0,0) {\textcolor{PrimaryColor}{$\mathbf{u}$}};
-            \node[above] at (0,1.5,0) {\textcolor{PrimaryColor}{$\mathbf{v}$}};
-            \node[below] at (0,0,2) {\textcolor{PrimaryColor}{$\mathbf{w}$}};
-
-            % Camera/Eye position in 3D space
-            \node[eye] (camera) at (0,0,0) {\faIcon{camera}};
-            % \node[below] at (0.2,-0.5,0) {\textcolor{PrimaryColor}{Camera}};
-
-
-            \draw[thick, gray] (camera) -- (4,2,2);
-            \draw[thick, gray] (camera) -- (4,-2,2);
-            \draw[thick, gray] (camera) -- (4,2,-2);
-            \draw[thick, gray] (camera) -- (4,-2,-2);
-
-            % Objects in 3D scene
-            \node[sphere, minimum size=1cm] (sphere1) at (8,1,2) {};
-            \node[sphere, minimum size=0.8cm] (sphere2) at (7,-1,-1) {};
-            \node[triangle, minimum size=1cm] (tri) at (9,0.5,0) {};
-
-            \draw[<->, thick, gray] (0, 2.5, 0) -- (4, 2.5, 0) node[midway, above] {\textcolor{gray}{$n$}};
-
-            \node[below] at (0, -0.5, 0) {\textcolor{PrimaryColor!80}{$\mathbf{e}$}};
-
-            \begin{scope}[
-                    ->,
-                    plane x={(0.8944,-0.4472, 0)},
-                    plane y={(0,0,-1)},
-                    canvas is plane,
-                ]
-                \fill[PrimaryColor!30, opacity=0.3] 
-                    (0,0) 
-                    -- (2,0)
-                    arc[start angle=0, end angle=25, radius=2]
-                    -- (0,0)
-                    -- (2,0)
-                    arc[start angle=0, end angle=-25, radius=2]
-                -- cycle;
-                \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=25, radius=2];
-                \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=-25, radius=2];
-                \node[below] at (2.2,0.3) {\textcolor{PrimaryColor}{$fov$}};
-            \end{scope}
-
-
-            % Image plane in 3D (using canvas is plane)
-            \begin{scope}[canvas is zy plane at x=4]
-                % Background image plane
-                \fill[image plane] (-2,-2) rectangle (2,2);
-                \node[right] at (2.2,-2.8) {\textcolor{AccentColor}{Image Plane}};
-
-                % Pixel grid
-                \foreach \y in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
-                        \draw[thin, gray] (-2,\y) -- (2,\y);
-                    }
-                \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
-                        \draw[thin, gray] (\z,-2) -- (\z,2);
-                    }
-
-                % Sample pixels
-                \fill[pixel] (0.5,1) rectangle (1,1.5);
-                \fill[pixel] (0,-1.5) rectangle (0.5,-1);
-
-                % Pixel centers
-                \fill[red!70] (0.75, 1.25) circle (0.08);
-                \fill[red!70] (0.25, -1.25) circle (0.08);
-
-                % Primary rays from camera through pixels
-                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.75, 1.25);
-                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.25, -1.25);
-                % Extended rays to objects
-                \draw[ray, dashed, thick] (0.75, 1.25) -- (sphere1);
-                \draw[ray, dashed, thick] (0.25, -1.25) -- (sphere2);
-
-                % height and width of image plane
-                \draw[<->, thin] (-2,-2.5) -- (2,-2.5) node[midway, below] {\textcolor{gray}{$w$}};
-                \draw[<->, thin] (-2.5,-2) -- (-2.5,2) node[midway, right] {\textcolor{gray}{$h$}};
-            \end{scope}
-        \end{tikzpicture}
-    \end{center}
-
-    \begin{conceptbox}{Camera Description}
-        Camera position $\mathbf{e}$, orthobasis $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$, \\
-        field of view $fov$, distance to near plane $n$, \\
-        image dimensions $(w \times h)$.
-    \end{conceptbox}
-\end{frame}
-
 \begin{frame}{The Pinhole Camera Model}
     \begin{columns}
         \begin{column}{0.5\textwidth}
@@ -435,7 +283,7 @@
                 \draw[optical axis] (-4,0) -- (6,0);
                 
                 % Thin lens at origin
-                \draw[lens] (0,-2.5) -- (0,2.5);
+                \lens{(0,0)}{2cm}{5cm};
                 \node[below] at (0,-2.8) {\textcolor{PrimaryColor}{Thin Lens}};
                 
                 % Object at distance z
@@ -517,7 +365,7 @@
                 \node[left] at (-1,0) {\objectcolor{\tiny Near}};
                 
                 % Lens
-                \draw[lens] (0,-3) -- (0,3);
+                \lens{(0,0)}{2cm}{6cm};
                 \node[below] at (0,-3.3) {\textcolor{PrimaryColor}{Lens}};
                 
                 % Image plane
@@ -563,7 +411,7 @@
             \node[above] at (-3,3) {\textbf{Large Aperture (f/1.4)}};
             
             % Lens with large aperture
-            \draw[lens] (-3,-2) -- (-3,2);
+            \lens{(-3,0)}{2cm}{4cm};
             \draw[thick, blue] (-3.1,-1.5) -- (-2.9,-1.5);
             \draw[thick, blue] (-3.1,1.5) -- (-2.9,1.5);
             \node[left] at (-3.3,0) {\textcolor{blue}{\tiny Wide}};
@@ -590,7 +438,7 @@
             \node[above] at (3,3) {\textbf{Small Aperture (f/11)}};
             
             % Lens with small aperture
-            \draw[lens] (3,-2) -- (3,2);
+            \lens{(3,0)}{2cm}{4cm};
             \draw[thick, blue] (2.95,-0.5) -- (3.05,-0.5);
             \draw[thick, blue] (2.95,0.5) -- (3.05,0.5);
             \node[right] at (3.3,0) {\textcolor{blue}{\tiny Narrow}};
@@ -730,95 +578,7 @@
     \end{conceptbox}
 \end{frame}
 
-\begin{frame}{Pinhole vs Thin Lens Comparison}
-    \begin{center}
-        \begin{tikzpicture}[scale=0.8]
-            % Pinhole camera illustration
-            \node[above] at (-3,3) {\textbf{Pinhole Camera}};
-            
-            % Pinhole point
-            \fill[PrimaryColor] (-3,0) circle (2pt);
-            \node[below] at (-3,-0.3) {\textcolor{PrimaryColor}{\tiny Pinhole}};
-            
-            % Objects at different distances
-            \draw[thick, ObjectColor] (-5,1) -- (-5,-1);
-            \draw[thick, ObjectColor] (-4.5,0.5) -- (-4.5,-0.5);
-            \draw[thick, ObjectColor] (-4,1.5) -- (-4,-1.5);
-            
-            % Image plane
-            \draw[thick, gray] (-1,-2) -- (-1,2);
-            
-            % All rays sharp (single ray per pixel)
-            \draw[ray] (-5,1) -- (-3,0) -- (-1,-0.8);
-            \draw[ray] (-4.5,0.5) -- (-3,0) -- (-1,-0.4);
-            \draw[ray] (-4,1.5) -- (-3,0) -- (-1,-1.2);
-            
-            % All points sharp
-            \fill[green!80!black] (-1,-0.8) circle (2pt);
-            \fill[green!80!black] (-1,-0.4) circle (2pt);
-            \fill[green!80!black] (-1,-1.2) circle (2pt);
-            
-            \node[below] at (-3,-2.5) {\textcolor{green!80!black}{\tiny Everything sharp}};
-            
-            % vs divider
-            \node at (0,0) {\huge \textcolor{AccentColor}{vs}};
-            
-            % Thin lens camera illustration
-            \node[above] at (3,3) {\textbf{Thin Lens Camera}};
-            
-            % Lens
-            \draw[lens] (3,-1.5) -- (3,1.5);
-            \node[below] at (3,-1.8) {\textcolor{PrimaryColor}{\tiny Lens}};
-            
-            % Objects at different distances (same as pinhole)
-            \draw[thick, ObjectColor] (1,1) -- (1,-1);
-            \draw[thick, ObjectColor] (1.5,0.5) -- (1.5,-0.5);
-            \draw[thick, ObjectColor] (2,1.5) -- (2,-1.5);
-            
-            % Image plane
-            \draw[thick, gray] (5,-2) -- (5,2);
-            
-            % Multiple rays showing depth of field
-            \draw[ray, opacity=0.7] (1,1) -- (2.8,0.3) -- (5,-0.4);
-            \draw[ray, opacity=0.7] (1,1) -- (3.2,0.3) -- (5,-1.2);
-            \draw[ray] (1.5,0.5) -- (2.9,0.15) -- (5,-0.3);
-            \draw[ray] (1.5,0.5) -- (3.1,0.15) -- (5,-0.7);
-            \draw[ray, opacity=0.7] (2,1.5) -- (2.7,0.45) -- (5,0.2);
-            \draw[ray, opacity=0.7] (2,1.5) -- (3.3,0.45) -- (5,-1.8);
-            
-            % Blur circles and sharp point
-            \fill[red, opacity=0.4] (5,-0.8) circle (8pt);
-            \fill[green!80!black] (5,-0.5) circle (2pt);
-            \fill[orange, opacity=0.4] (5,-0.8) circle (12pt);
-            
-            \node[below] at (3,-2.5) {\textcolor{AccentColor}{\tiny Realistic DOF}};
-        \end{tikzpicture}
-    \end{center}
 
-    \vspace{0.5cm}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{raybox}{Pinhole Advantages}
-                \begin{itemize}
-                    \item Everything in focus
-                    \item Simple ray generation
-                    \item No aberrations
-                    \item Predictable results
-                \end{itemize}
-            \end{raybox}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{raybox}{Thin Lens Advantages}
-                \begin{itemize}
-                    \item Realistic camera behavior
-                    \item Artistic depth control
-                    \item Natural looking images
-                    \item Photography simulation
-                \end{itemize}
-            \end{raybox}
-        \end{column}
-    \end{columns}
-\end{frame}
 
 \begin{frame}{Other Camera Types}
     \begin{columns}
@@ -887,6 +647,199 @@
                     \item Dynamic scene rendering
                 \end{itemize}
             \end{conceptbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+
+
+\begin{frame}{Camera Representation}
+    \begin{center}
+        \begin{tikzpicture}[scale=0.7]
+            % Define 3D styles
+            \tikzset{
+                camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+                image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
+                pixel/.style={fill=AccentColor!60, thick},
+                primary ray/.style={->, very thick, red!90},
+                object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+            }
+
+            % 3D coordinate system
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (1.5,0,0);
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1.5,0);
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,2);
+            \node[right] at (1.5,0,0) {\textcolor{PrimaryColor}{$\mathbf{u}$}};
+            \node[above] at (0,1.5,0) {\textcolor{PrimaryColor}{$\mathbf{v}$}};
+            \node[below] at (0,0,2) {\textcolor{PrimaryColor}{$\mathbf{w}$}};
+
+            % Camera/Eye position in 3D space
+            \node[eye] (camera) at (0,0,0) {\faIcon{camera}};
+            % \node[below] at (0.2,-0.5,0) {\textcolor{PrimaryColor}{Camera}};
+
+
+            \draw[thick, gray] (camera) -- (4,2,2);
+            \draw[thick, gray] (camera) -- (4,-2,2);
+            \draw[thick, gray] (camera) -- (4,2,-2);
+            \draw[thick, gray] (camera) -- (4,-2,-2);
+
+            % Objects in 3D scene
+            \node[sphere, minimum size=1cm] (sphere1) at (8,1,2) {};
+            \node[sphere, minimum size=0.8cm] (sphere2) at (7,-1,-1) {};
+            \node[triangle, minimum size=1cm] (tri) at (9,0.5,0) {};
+
+            \draw[<->, thick, gray] (0, 2.5, 0) -- (4, 2.5, 0) node[midway, above] {\textcolor{gray}{$n$}};
+
+            \node[below] at (0, -0.5, 0) {\textcolor{PrimaryColor!80}{$\mathbf{e}$}};
+
+            \begin{scope}[
+                    ->,
+                    plane x={(0.8944,-0.4472, 0)},
+                    plane y={(0,0,-1)},
+                    canvas is plane,
+                ]
+                \fill[PrimaryColor!30, opacity=0.3] 
+                    (0,0) 
+                    -- (2,0)
+                    arc[start angle=0, end angle=25, radius=2]
+                    -- (0,0)
+                    -- (2,0)
+                    arc[start angle=0, end angle=-25, radius=2]
+                -- cycle;
+                \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=25, radius=2];
+                \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=-25, radius=2];
+                \node[below] at (2.2,0.3) {\textcolor{PrimaryColor}{$fov$}};
+            \end{scope}
+
+
+            % Image plane in 3D (using canvas is plane)
+            \begin{scope}[canvas is zy plane at x=4]
+                % Background image plane
+                \fill[image plane] (-2,-2) rectangle (2,2);
+                \node[right] at (2.2,-2.8) {\textcolor{AccentColor}{Image Plane}};
+
+                % Pixel grid
+                \foreach \y in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+                        \draw[thin, gray] (-2,\y) -- (2,\y);
+                    }
+                \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+                        \draw[thin, gray] (\z,-2) -- (\z,2);
+                    }
+
+                % Sample pixels
+                \fill[pixel] (0.5,1) rectangle (1,1.5);
+                \fill[pixel] (0,-1.5) rectangle (0.5,-1);
+
+                % Pixel centers
+                \fill[red!70] (0.75, 1.25) circle (0.08);
+                \fill[red!70] (0.25, -1.25) circle (0.08);
+
+                % Primary rays from camera through pixels
+                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.75, 1.25);
+                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.25, -1.25);
+                % Extended rays to objects
+                \draw[ray, dashed, thick] (0.75, 1.25) -- (sphere1);
+                \draw[ray, dashed, thick] (0.25, -1.25) -- (sphere2);
+
+                % height and width of image plane
+                \draw[<->, thin] (-2,-2.5) -- (2,-2.5) node[midway, below] {\textcolor{gray}{$w$}};
+                \draw[<->, thin] (-2.5,-2) -- (-2.5,2) node[midway, right] {\textcolor{gray}{$h$}};
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+
+    \begin{conceptbox}{Camera Description}
+        Camera position $\mathbf{e}$, orthobasis $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$, \\
+        field of view $fov$, distance to near plane $n$, \\
+        image dimensions $(w \times h)$.
+    \end{conceptbox}
+\end{frame}
+
+
+\begin{frame}{Ray Generation Mathematics}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % Define 3D styles for math diagram
+                \tikzset{
+                    camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+                    image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8}
+                }
+
+                % Camera position
+                \node[camera] (camera) at (0,0,0) {\faIcon{camera}};
+                \node[below] at (0,-0.6,0) {\small $\mathbf{e}$};
+
+                % Image plane with mathematical annotations
+                \begin{scope}[canvas is zy plane at x=2.5]
+                    \fill[image plane] (-1.5,-1.5) rectangle (1.5,1.5);
+
+                    % Sample pixel
+                    \fill[AccentColor!80] (0.5,0.8) rectangle (0.8,1.1);
+                    \fill[red!70] (0.65, 0.95) circle (0.05);
+
+                    % Dimensions
+                    \draw[<->, thin] (-1.5,-1.8) -- (1.5,-1.8);
+                    \node[below] at (0,-1.8) {\small $n_x$};
+                    \draw[<->, thin] (-1.8,-1.5) -- (-1.8,1.5);
+                    \node[left] at (-1.8,0) {\small $n_y$};
+
+                    % Pixel coordinates
+                    \draw[dashed, thin] (0.5,0.8) -- (0.5,-1.8);
+                    \draw[dashed, thin] (-1.8,0.8) -- (0.5,0.8);
+                    \node[below] at (0.5,-1.6) {\tiny $i$};
+                    \node[left] at (-1.6,0.8) {\tiny $j$};
+                \end{scope}
+
+                % Ray from camera through pixel
+                \draw[ray, very thick] (camera) -- (0.65, 0.95);
+                \draw[ray, dashed, thick] (0.65, 0.95) -- (4, 1.5, 1.5);
+
+                % Distance annotation
+                \draw[<->, thin] (0,0.3,0) -- (2.5,0.3,0);
+                \node[above] at (1.25,0.3,0) {\small $d$};
+
+                % Coordinate system
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (1,0,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,1);
+                \node[below right] at (1,0,0) {\small $\mathbf{u}$};
+                \node[above] at (0,1,0) {\small $\mathbf{v}$};
+                \node[below] at (0,0,1) {\small $\mathbf{w}$};
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Ray Equation}
+                For pixel $(i,j)$:
+                \begin{align}
+                    s & = \frac{i + 0.5}{n_x} \\
+                    t & = \frac{j + 0.5}{n_y}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Ray direction:}
+                \begin{align}
+                    \mathbf{d} & = (s - 0.5) \cdot \text{FOV} \cdot \mathbf{u}       \\
+                               & \quad + (t - 0.5) \cdot \text{FOV} \cdot \mathbf{v} \\
+                               & \quad + d \cdot \mathbf{w}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Parametric ray:}
+                \begin{equation}
+                    \mathbf{r}(\lambda) = \mathbf{e} + \lambda \mathbf{d}
+                \end{equation}
+            \end{mathbox}
+
+            \vspace{0.3cm}
+            \begin{itemize}
+                \item $\mathbf{e}$: camera position
+                \item $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$: orthonormal basis
+                \item $d$: distance to image plane
+                \item FOV: field of view factor
+                \item $\lambda \geq 0$: ray parameter
+            \end{itemize}
         \end{column}
     \end{columns}
 \end{frame}

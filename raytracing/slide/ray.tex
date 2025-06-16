@@ -1,91 +1,251 @@
 \section{Ray Generation}
-
-
-
-
-\begin{frame}{Ray Generation Mathematics}
+\begin{frame}{What is a Ray?}
     \begin{columns}
         \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.7]
-                % Define 3D styles for math diagram
-                \tikzset{
-                    camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
-                    image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8}
-                }
+            \begin{mathbox}{Ray Representation}
+                A ray is defined by:
+                \begin{align}
+                    \mathbf{P}(t) & = \mathbf{R_o} + t \cdot \mathbf{R_d}
+                \end{align}
+                where:
+                \begin{itemize}
+                    \item $\mathbf{R_o}$ = Origin point
+                    \item $\mathbf{R_d}$ = Direction vector
+                    \item $t$ = Parameter ($t \geq 0$)
+                \end{itemize}
+            \end{mathbox}
+            \vspace{0.3cm}
+            \href{https://www.desmos.com/calculator/0tloiudmdt}{Check out here on desmos.}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Origin
 
-                % Camera position
-                \node[camera] (camera) at (0,0,0) {\faIcon{camera}};
-                \node[below] at (0,-0.6,0) {\small $\mathbf{e}$};
+                % Points on ray
+                \fill[SecondaryColor] (2,1.5) circle (3pt);
+                \node[below] at (2,1) {$\mathbf{P}(t_1)$};
+                \fill[SecondaryColor] (4,3) circle (3pt);
+                \node[below] at (4,2.75) {$\mathbf{P}(t_2)$};
 
-                % Image plane with mathematical annotations
-                \begin{scope}[canvas is zy plane at x=2.5]
-                    \fill[image plane] (-1.5,-1.5) rectangle (1.5,1.5);
 
-                    % Sample pixel
-                    \fill[AccentColor!80] (0.5,0.8) rectangle (0.8,1.1);
-                    \fill[red!70] (0.65, 0.95) circle (0.05);
+                % Direction vector
+                \draw[->, very thick, red] (0,0) -- (2,1.5);
+                \node[above] at (0.8,0.9) {$\mathbf{R_d}$};
 
-                    % Dimensions
-                    \draw[<->, thin] (-1.5,-1.8) -- (1.5,-1.8);
-                    \node[below] at (0,-1.8) {\small $n_x$};
-                    \draw[<->, thin] (-1.8,-1.5) -- (-1.8,1.5);
-                    \node[left] at (-1.8,0) {\small $n_y$};
+                % Ray continuation
+                \draw[ray, dashed] (2,1.5) -- (5,3.75);
 
-                    % Pixel coordinates
-                    \draw[dashed, thin] (0.5,0.8) -- (0.5,-1.8);
-                    \draw[dashed, thin] (-1.8,0.8) -- (0.5,0.8);
-                    \node[below] at (0.5,-1.6) {\tiny $i$};
-                    \node[left] at (-1.6,0.8) {\tiny $j$};
-                \end{scope}
+                \fill[PrimaryColor] (0,0) circle (3pt);
+                \node[below left] at (0,0) {$\mathbf{R_o}$};
 
-                % Ray from camera through pixel
-                \draw[ray, very thick] (camera) -- (0.65, 0.95);
-                \draw[ray, dashed, thick] (0.65, 0.95) -- (4, 1.5, 1.5);
+                % Parameter illustration
+                \draw[<->, thin] (0,-1) -- (2,-1);
+                \node[below] at (1,-1) {$t_1=1$};
+                \draw[<->, thin] (0,-2) -- (4,-2);
+                \node[below] at (2,-2) {$t_2$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
 
-                % Distance annotation
-                \draw[<->, thin] (0,0.3,0) -- (2.5,0.3,0);
-                \node[above] at (1.25,0.3,0) {\small $d$};
+\begin{frame}{The Heart of Ray Tracing}
+    \begin{center}
+        \huge \textcolor{PrimaryColor}{Finding Intersections}
+    \end{center}
 
-                % Coordinate system
-                \draw[<->, thick, PrimaryColor] (0,0,0) -- (1,0,0);
-                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1,0);
-                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,1);
-                \node[below right] at (1,0,0) {\small $\mathbf{u}$};
-                \node[above] at (0,1,0) {\small $\mathbf{v}$};
-                \node[below] at (0,0,1) {\small $\mathbf{w}$};
+    \vspace{0.5cm}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Ray
+                \draw[ray, very thick] (1.5,0.75) -- (4, 2);
+
+                % Various objects
+                \node[sphere] (sphere) at (2,1) {};
+                \node[plane, rotate=30] (plane) at (3,0.5) {};
+                \node[triangle] (tri) at (1,2) {};
+
+                % Intersection points
+                \fill[AccentColor] (1.5,0.75) circle (2pt);
+                \fill[AccentColor] (2.5,1.25) circle (2pt);
+
+                \draw[RayColor, very thick] (0,0) -- (1.5,0.75);
+                \draw[RayColor, very thick, opacity=0.3] (1.5,0.75) -- (2.85,1.425);
+                \node[below] at (0,0) {\raycolor{Ray}};
+
             \end{tikzpicture}
         \end{column}
         \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Ray Equation}
-                For pixel $(i,j)$:
-                \begin{align}
-                    s & = \frac{i + 0.5}{n_x} \\
-                    t & = \frac{j + 0.5}{n_y}
-                \end{align}
-
-                \vspace{0.2cm}
-                \textbf{Ray direction:}
-                \begin{align}
-                    \mathbf{d} & = (s - 0.5) \cdot \text{FOV} \cdot \mathbf{u}       \\
-                               & \quad + (t - 0.5) \cdot \text{FOV} \cdot \mathbf{v} \\
-                               & \quad + d \cdot \mathbf{w}
-                \end{align}
-
-                \vspace{0.2cm}
-                \textbf{Parametric ray:}
-                \begin{equation}
-                    \mathbf{r}(\lambda) = \mathbf{e} + \lambda \mathbf{d}
-                \end{equation}
-            \end{mathbox}
-
-            \vspace{0.3cm}
+            \textbf{Key Objects:}
             \begin{itemize}
-                \item $\mathbf{e}$: camera position
-                \item $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$: orthonormal basis
-                \item $d$: distance to image plane
-                \item FOV: field of view factor
-                \item $\lambda \geq 0$: ray parameter
+                \item \objectcolor{Planes}
+                \item \objectcolor{Spheres}
+                \item \objectcolor{Triangles}
+                \item \objectcolor{General Quadrics}
             \end{itemize}
+            \vspace{0.5cm}
+            \alert{Challenge:} Find the \textbf{closest} intersection efficiently!
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Ray-Plane Intersection}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Plane Equation}
+                Implicit form:
+                \begin{align}
+                    \mathbf{n} \cdot \mathbf{P} + D & = 0
+                \end{align}
+
+                Substituting ray equation:
+                \begin{align}
+                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D & = 0                                                                        \\
+                    t                                                   & = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
+                \end{align}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Plane
+                \draw[thick, ObjectColor] (-1,0) -- (3,2);
+                \node[below] at (1,1) {\objectcolor{Plane}};
+
+                % Normal vector
+                \draw[->, thick, SecondaryColor] (1,1) -- (0.5,2);
+                \node[left] at (0.5,2) {$\mathbf{n}$};
+
+                % Ray
+                \draw[ray] (-0.5,0.5) -- (2.5,1.5);
+                \node[below] at (-0.5,0.5) {$\mathbf{R_o}$};
+                \node[above] at (1.5,1.2) {$\mathbf{R_d}$};
+
+                % Intersection point
+                \fill[AccentColor] (1,1) circle (3pt);
+                \node[above] at (1,1) {\textcolor{AccentColor}{Intersection}};
+
+                % Distance illustration
+                \draw[dashed, thin] (1,1) -- (1,0);
+                \node[below] at (1,0) {$d$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+
+    \begin{conceptbox}{Key Insight}
+        \textbf{Explicit} ray equation meets \textbf{implicit} plane equation = Clean intersection formula!
+    \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Ray-Sphere Intersection}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Sphere Equation}
+                Implicit form (centered at origin):
+                \begin{align}
+                    \mathbf{P} \cdot \mathbf{P} - r^2 & = 0
+                \end{align}
+
+                Substituting ray equation:
+                \begin{align}
+                     & (\mathbf{R_o} + t\mathbf{R_d}) \cdot (\mathbf{R_o} + t\mathbf{R_d}) - r^2 = 0           \\
+                     & t^2 + 2(\mathbf{R_d} \cdot \mathbf{R_o})t + (\mathbf{R_o} \cdot \mathbf{R_o} - r^2) = 0
+                \end{align}
+
+                Quadratic formula: $t = \frac{-b \pm \sqrt{b^2-4ac}}{2a}$
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Sphere
+                \draw[thick, ObjectColor] (0,0) circle (1.5);
+                \node[below] at (0,-1.8) {\objectcolor{Sphere}};
+
+                % Center
+                \fill[ObjectColor] (0,0) circle (2pt);
+                \node[below left] at (0,0) {$\mathbf{O}$};
+
+                % Radius
+                \draw[thin, ObjectColor] (0,0) -- (1.5,0);
+                \node[below] at (0.75,0) {$r$};
+
+                % Ray with two intersections
+                \draw[ray] (-2,-0.5) -- (2,0.5);
+
+                % Intersection points
+                \fill[AccentColor] (-1.3,-0.35) circle (2pt);
+                \fill[AccentColor] (1.3,0.35) circle (2pt);
+                \node[above] at (-1.3,-0.35) {$t_1$};
+                \node[above] at (1.3,0.35) {$t_2$};
+
+                % Discriminant cases
+                \node[right] at (2.5,1) {
+                    \begin{minipage}{2cm}
+                        \tiny
+                        $\Delta > 0$: 2 roots\\
+                        $\Delta = 0$: 1 root\\
+                        $\Delta < 0$: no roots
+                    \end{minipage}
+                };
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Ray-Triangle Intersection}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Barycentric Approach}
+                Triangle defined by vertices $\mathbf{a}$, $\mathbf{b}$, $\mathbf{c}$:
+                \begin{align}
+                    \mathbf{P}(\beta,\gamma) & = \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                \end{align}
+
+                Set equal to ray equation:
+                \begin{align}
+                    \mathbf{R_o} + t\mathbf{R_d} & = \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                \end{align}
+
+                Solve 3×3 system for $t$, $\beta$, $\gamma$
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Triangle
+                \coordinate (A) at (0,0);
+                \coordinate (B) at (3,0);
+                \coordinate (C) at (1.5,2.5);
+
+                \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+
+                % Vertices
+                \fill[ObjectColor] (A) circle (2pt);
+                \fill[ObjectColor] (B) circle (2pt);
+                \fill[ObjectColor] (C) circle (2pt);
+                \node[below left] at (A) {$\mathbf{a}$};
+                \node[below right] at (B) {$\mathbf{b}$};
+                \node[above] at (C) {$\mathbf{c}$};
+
+                % Ray
+                \draw[ray] (-1,1) -- (2.5,1.5);
+
+                % Intersection point
+                \fill[AccentColor] (1.2,1.2) circle (2pt);
+
+                % Barycentric coordinates illustration
+                \draw[thin, SecondaryColor] (A) -- (1.2,1.2);
+                \draw[thin, SecondaryColor] (B) -- (1.2,1.2);
+                \draw[thin, SecondaryColor] (C) -- (1.2,1.2);
+
+                \node[right] at (3.5,1.5) {
+                    \begin{minipage}{2cm}
+                        \tiny
+                        Inside if:\\
+                        $\beta \geq 0$\\
+                        $\gamma \geq 0$\\
+                        $\beta + \gamma \leq 1$
+                    \end{minipage}
+                };
+            \end{tikzpicture}
         \end{column}
     \end{columns}
 \end{frame}

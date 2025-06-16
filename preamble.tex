@@ -125,3 +125,19 @@
     image ray/.style={->, thick, SecondaryColor},
     optical axis/.style={dashed, gray}
 }
+
+\newcommand{\lens}[3]{%
+  \begingroup
+    % half‐dimensions
+    \pgfmathsetlengthmacro{\a}{#2}%
+    \pgfmathsetlengthmacro{\b}{#3}%
+    \pgfmathsetlengthmacro{\c}{#3/2}%
+    \begin{scope}[shift={#1}]
+      \draw[line join=round, fill=blue!15]
+        (0,-{\c})
+          arc(-30:30:{\a} and {\b})
+          arc(150:210:{\a} and {\b})
+      ;
+    \end{scope}
+  \endgroup
+}
