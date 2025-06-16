@@ -17,19 +17,6 @@
 % --- Title Slide ---
 \begin{frame}
     \titlepage
-    \begin{center}
-        \begin{tikzpicture}[scale=0.5]
-            % Simple ray tracing illustration
-            \node[eye] (eye) at (0,0) {};
-            \node[sphere] (sphere) at (4,0) {};
-            \draw[ray] (eye) -- (sphere);
-            \draw[reflectray] (sphere) -- (6,2);
-            \draw[lightray] (2,3) -- (sphere);
-            \node[above] at (1,0.5) {\small \raycolor{Primary Ray}};
-            \node[above] at (5,1) {\small \raycolor{Reflected Ray}};
-            \node[above] at (3,2) {\small \raycolor{Light Ray}};
-        \end{tikzpicture}
-    \end{center}
 \end{frame}
 
 % --- Table of Contents ---
@@ -39,387 +26,7 @@
     \tableofcontents
 \end{frame}
 
-\section{Motivation}
-% --- Section 0: Introduction ---
-\begin{frame}{Why Learn This?}
-    \pause
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/frozen_castle.jpg}
-        \captionof*{figure}{Elsa's Castle in Frozen}
-    \end{minipage}%
-    \hfill
-    \pause
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \includegraphics[width=\linewidth]{images/cyberpunk_rtx.jpg}
-        \captionof*{figure}{ Cyberpunk 2077 with RTX}
-    \end{minipage}
-
-    \begin{itemize}
-        \item<3-> \textbf{Realistic graphics} of your favourite animated movies are the result of ground-breaking work in Ray Tracing by 
-        studios like Disney, Pixar, and DreamWorks. Do you know these films take years to render? 30 hours per frame! 
-        \item<4-> Lately, \textbf{RTX} is all the rage in gaming. New titles boast ray-tracing effects in real-time, not 30 hours per frame!
-        \item<5-> It's fun! You will know when you create your first ray-traced image!
-    \end{itemize}
-\end{frame}
-
-% --- Section 1: The Story Begins ---
-\section{The Story of Light}
-
-\begin{frame}{How Do We See?}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                % Sun
-                \node[circle, fill=LightColor, minimum size=1cm] (sun) at (0,3) {\faIcon{sun}};
-                \node[below] at (0,4.25) {\small \textcolor{LightColor}{Light Source}};
-                \draw[lightray] (sun) -- (2,1);
-                \draw[lightray] (sun) -- (3,2);
-                \draw[lightray] (sun) -- (4,1);
-                
-                % Object
-                \node[sphere] (obj) at (3,1) {};
-                
-                % Eye
-                \node[eye] (eye) at (5,3) {\faIcon{eye}};
-                \draw[reflectray] (3.1,2) -- (eye);
-                
-                \node[below] at (3,0) {\small \objectcolor{Object}};
-                \node[below] at (5,4.1) {\small \textcolor{PrimaryColor}{Observer}};
-            \end{tikzpicture}
-        \end{column}
-        \pause
-        \begin{column}{0.5\textwidth}
-
-            \only<2>{
-                \begin{conceptbox}{Natural Process}
-                    \begin{enumerate}
-                        \item Light travels from source 
-                        \item Light hits objects
-                        \item Light bounces to our eyes
-                        \item Our brain interprets the signal
-                    \end{enumerate}
-                \end{conceptbox}
-            }
-
-            \only<3>{
-                \begin{conceptbox}{Physical Process}
-                    \begin{enumerate}
-                        \footnotesize 
-                        \item Photon is emitted from source 
-                        \item Photon hits objects
-                        \item Part of the photon is reflected or absorbed
-                        \item The reflected photons reach our eyes
-                        \item The rods and cones in our retina detect the photons
-                        \item Our brain interprets the signal
-                        \item \textbf{Colour}: The wavelength of the photons
-                        \item \textbf{Brightness}: The number of photons
-                    \end{enumerate}
-                \end{conceptbox}
-            }
-
-            \only<4>{
-                \vspace{0.5cm}
-                \alert{Question:} How do we simulate this?
-            }
-
-        \end{column}
-    \end{columns}
-\end{frame}
-
-\begin{frame}{The Computer Graphics Challenge}
-    \begin{center}
-        \begin{tikzpicture}[scale=0.9]
-            % Real world
-            \node[rectangle, draw, minimum width=3cm, minimum height=2cm, fill=LightGray] (real) at (0,0) {\faIcon{globe} Real World};
-            \node[above] at (0,1.5) {\textbf{Infinite Complexity}};
-            
-            % Computer
-            \node[rectangle, draw, minimum width=3cm, minimum height=2cm, fill=PrimaryColor!20] (comp) at (5,0) {\faIcon{laptop} Computer};
-            \node[above] at (5,1.5) {\textbf{Finite Pixels}};
-
-            % Arrow
-            \draw[->, very thick, AccentColor]
-            (real.east) -- (comp.west)
-            node[midway, above, text=AccentColor, font=\footnotesize]{Simulate};
-
-            
-            % Challenges
-            \node[below] at (2.5,-2  ) {
-                \begin{minipage}{6cm}
-                    \textcolor{AccentColor}{\textbf{Challenges:}}
-                    \begin{itemize}
-                        \item Infinite light rays/photons
-                        \item Complex physics
-                        \item High computational cost
-                    \end{itemize}
-                \end{minipage}
-            };
-        \end{tikzpicture}
-    \end{center}
-\end{frame}
-
-% --- Section 2: Ray Casting ---
-\section{Ray Casting: Foundation}
-
-\begin{frame}{The Key Insight}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{raybox}{1. Reverse Engineering}
-                Instead of following light rays from light sources |
-
-                \vspace{0.1cm}
-                \textbf{Let's trace backwards!}
-
-                \textbf{Shoot rays from the eye}, find where it hits and find out how much light reaches there.
-            \end{raybox}
-            
-            \vspace{0.3cm}
-            This is the opposite of what happens in reality.
-            \textbf{Why does this work?}
-            \begin{itemize}
-                \small
-                \item<2-> Most light never reaches our eyes
-                \item<3-> Only trace rays that matter
-                \item<3-> Much more efficient!
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.6]
-                % Define 3D styles
-                \tikzset{
-                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
-                    pixel/.style={fill=AccentColor!60, thick},
-                    primary ray/.style={->, very thick, red!90},
-                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
-                }
-                
-                % Eye position in 3D space
-                
-                \node[eye] (eye) at (0,0,0) {\faIcon{eye}};
-                % Object in 3D space
-                \node[sphere, minimum size=1cm] (obj) at (8,0,3.8) {};            
-                
-                % Labels
-                \node[below] at (0,-0.6,0) {\small Eye};
-                \node[below] at (8,-1,3.8) {\small \objectcolor{Object}};
-
-                \node[circle, fill=LightColor, minimum size=1cm] (sun) at (5,3.5) {\faIcon{sun}};
-                \node[below] at (5,5) {\small \textcolor{LightColor}{Light Source}};
-
-                \draw[ray, very thick] (eye.center) -- (obj.west);
-                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,0,0)$);
-                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,-0.2,-1)$);
-                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,-0.3,-2)$);
-                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,0.5,1)$);
-                \draw[ray, thick, opacity=0.5] (obj.west) -- ($(sun.south) + (0,1.2,2)$);
-
-
-                \pause
-
-                \only<2> {
-                    \draw[ray, black!50, thick, opacity=0.8, dashed] (sun) -- (obj.north);
-                    \draw[ray, black!50, thick, opacity=0.8, dashed] (obj.north) -- (8,2) 
-                        node[above] {\small \textcolor{black!50}{Useless ray}};
-                }
-
-                \pause 
-                
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-\end{frame}
-
-
-\begin{frame}{From Infinite Rays to Finite Pixels}
-    \begin{columns}
-        \begin{column}{0.6\textwidth}
-            \begin{raybox}{2. Cutting Costs}
-                Instead of tracing infinite rays |
-
-                \vspace{0.1cm}
-                \textbf{Trace one ray per pixel.}
-            \end{raybox}
-            \vspace{0.3cm}
-            This comes with little tradeoff, because:
-            \begin{itemize}
-                \small
-                \item<2-> An image is just a grid of pixels
-                \item<3-> Each pixel can only be of one color
-                \item<4-> In the end, we just need to know the \emph{color of each pixel}
-                \item<5-> Hence, one ray from the mid-point of each pixel should be a good approximation$^*$ \\                 
-            \end{itemize}
-            \vspace{0.3cm}
-            \begin{itemize}
-                \footnotesize
-                \item<5->[$^*$] We will discuss more advanced techniques later that improve quality
-            \end{itemize}
-        \end{column}
-        \begin{column}{0.4\textwidth}
-            \centering
-            \pause
-            \begin{tikzpicture}[scale=0.6]
-                % Define 3D styles
-                \tikzset{
-                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
-                    pixel/.style={fill=AccentColor!60, thick},
-                    primary ray/.style={->, very thick, red!90},
-                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
-                }
-            
-                    \fill[screen] (-3,-3) rectangle (3,3);
-
-                    
-                    \foreach \x in {-3,-2,...,3} {
-                        \draw[gray!60, thin] (\x,-3) -- (\x,3);
-                    }
-                    \foreach \z in {-3,-2,...,3} {
-                        \draw[gray!60, thin] (-3,\z) -- (3,\z);
-                    }
-
-
-                    \pause
-                    \fill[pixel] (-2,-2) rectangle (-1,-1);
-
-                    \pause 
-                    \pause
-                    
-                    \foreach \x in {-2.5,-1.5,...,2.5} {
-                        \foreach \z in {-2.5,-1.5,...,2.5} {
-                             \fill[red!70] (\x, \z) circle (0.1);
-                        }
-                    }
-
-
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-\end{frame}
-
-
-\begin{frame}{The Full Picture}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[node distance=1.2cm]
-                \node<2->[process] (screen) {Place screen in front of eye};
-                \node<3->[process, below of=screen] (start) {For each pixel};
-                \draw<3->[arrow] (screen) -- (start);
-
-                \node<4->[process, below of=start] (ray) {Shoot ray from eye};
-                \draw<4->[arrow] (start) -- (ray);
-
-                \node<5->[process, below of=ray] (intersect) {Find closest intersection};
-                \draw<5->[arrow] (ray) -- (intersect);
-
-                \node<6->[process, fill=AccentColor!50, below of=intersect] (shade) {Calculate color$^*$};
-                \draw<6->[arrow] (intersect) -- (shade);
-                
-                \node<7->[process, below of=shade] (end) {Set pixel color};
-                \draw<7->[arrow] (shade) -- (end);
-                
-    
-                \draw<8->[arrow] (end) -- ($(end)+(-2.25,0)$) |- (start);
-                
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.6]
-                % Define 3D styles
-                \tikzset{
-                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
-                    pixel/.style={fill=AccentColor!60, thick},
-                    primary ray/.style={->, very thick, red!90},
-                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
-                }
-                
-                % Eye position in 3D space
-                
-                \node[eye] (eye) at (0,0,0) {\faIcon{eye}};
-                % Object in 3D space
-                \node[sphere, minimum size=1cm] (obj) at (8,0,3.8) {};            
-                
-                % Labels
-                \node[below] at (0,-0.6,0) {\small Eye};
-                \node[below] at (8,-1,3.8) {\small \objectcolor{Object}};
-
-                \node[circle, fill=LightColor, minimum size=1cm] (sun) at (5,3.5) {\faIcon{sun}};
-                \node[below] at (5,5) {\small \textcolor{LightColor}{Light Source}};
-
-                \pause 
-                
-                \node[below] at (3.5,-4,0) {\small Screen};
-
-                \only<6->{
-                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,0,0)$);
-                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,-0.2,-1)$);
-                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,-0.3,-2)$);
-                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,0.5,1)$);
-                    \draw[ray, thick, opacity=0.3] (obj.west) -- ($(sun.south) + (0,1.2,2)$);
-                }
-
-
-                % Screen plane in 3D (using canvas is plane)
-                \begin{scope}[canvas is zy plane at x=3.5]
-                    % Background screen
-                    \fill[screen] (-3,-3) rectangle (3,3);
-
-                    
-                    \foreach \x in {-3,-2,...,3} {
-                        \draw[gray!60, thin] (\x,-3) -- (\x,3);
-                    }
-                    \foreach \z in {-3,-2,...,3} {
-                        \draw[gray!60, thin] (-3,\z) -- (3,\z);
-                    }
-
-
-                    \pause
-
-
-                    \fill[pixel] (-2,-2) rectangle (-1,-1);
-
-                    \pause 
-                    \fill[red!70] (-1.5, -1.5) circle (0.1);
-                    \draw<5->[ray, very thick] (eye.center) -- (-1.5, -1.5);
-                    \draw<5->[->, ray, very thick] (-1.5, -1.5) -- (obj);
-
-                    \pause
-                    \pause
-                    \pause 
-
-
-                    \fill[RayColor!60] (-2,-2) rectangle (-1,-1);
-                    \fill[red!70] (-1.5, -1.5) circle (0.1);
-
-                    \pause
-
-                    \foreach \x in {-2.5,-1.5,...,2.5} {
-                        \foreach \z in {-2.5,-1.5,...,2.5} {
-                             \fill[red!70] (\x, \z) circle (0.1);
-                             \draw[ray, thick, opacity=0.3] (eye.center) -- (\x,\z);
-                        }
-                    }
-
-
-                \end{scope}
-
-
-                \draw<4>[->, ray, very thick] (eye) -- ($(obj) + (3.5, 0, 1.5)$);
-
-
-
-                
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-\end{frame}
-
-
-\include{qa}
-\include{references}
-
-\end{document}
-\endinput
+\include{overview}
 
 % --- Section 3: Mathematical Foundation ---
 \section{The Mathematics of Rays}
@@ -430,7 +37,7 @@
             \begin{mathbox}{Ray Representation}
                 A ray is defined by:
                 \begin{align}
-                    \mathbf{P}(t) &= \mathbf{R_o} + t \cdot \mathbf{R_d}
+                    \mathbf{P}(t) & = \mathbf{R_o} + t \cdot \mathbf{R_d}
                 \end{align}
                 where:
                 \begin{itemize}
@@ -439,33 +46,35 @@
                     \item $t$ = Parameter ($t \geq 0$)
                 \end{itemize}
             \end{mathbox}
+            \vspace{0.3cm}
+            \href{https://www.desmos.com/calculator/0tloiudmdt}{Check out here on desmos.}
         \end{column}
         \begin{column}{0.5\textwidth}
             \begin{tikzpicture}[scale=0.8]
                 % Origin
+
+                % Points on ray
+                \fill[SecondaryColor] (2,1.5) circle (3pt);
+                \node[below] at (2,1) {$\mathbf{P}(t_1)$};
+                \fill[SecondaryColor] (4,3) circle (3pt);
+                \node[below] at (4,2.75) {$\mathbf{P}(t_2)$};
+
+
+                % Direction vector
+                \draw[->, very thick, red] (0,0) -- (2,1.5);
+                \node[above] at (0.8,0.9) {$\mathbf{R_d}$};
+
+                % Ray continuation
+                \draw[ray, dashed] (2,1.5) -- (5,3.75);
+
                 \fill[PrimaryColor] (0,0) circle (3pt);
                 \node[below left] at (0,0) {$\mathbf{R_o}$};
-                
-                % Direction vector
-                \draw[->, very thick, RayColor] (0,0) -- (2,1.5);
-                \node[above] at (1,0.75) {$\mathbf{R_d}$};
-                
-                % Ray continuation
-                \draw[ray, dashed] (2,1.5) -- (4,3);
-                
-                % Points on ray
-                \fill[SecondaryColor] (1,0.75) circle (2pt);
-                \node[below] at (1,0.75) {$\mathbf{P}(t_1)$};
-                \fill[SecondaryColor] (2,1.5) circle (2pt);
-                \node[below] at (2,1.5) {$\mathbf{P}(t_2)$};
-                \fill[SecondaryColor] (3,2.25) circle (2pt);
-                \node[below] at (3,2.25) {$\mathbf{P}(t_3)$};
-                
+
                 % Parameter illustration
-                \draw[<->, thin] (0,-0.5) -- (1,-0.5);
-                \node[below] at (0.5,-0.5) {$t_1$};
-                \draw[<->, thin] (0,-0.8) -- (2,-0.8);
-                \node[below] at (1,-0.8) {$t_2$};
+                \draw[<->, thin] (0,-1) -- (2,-1);
+                \node[below] at (1,-1) {$t_1=1$};
+                \draw[<->, thin] (0,-2) -- (4,-2);
+                \node[below] at (2,-2) {$t_2$};
             \end{tikzpicture}
         \end{column}
     \end{columns}
@@ -473,46 +82,176 @@
 
 \begin{frame}{Camera and Ray Generation}
     \begin{center}
-        \begin{tikzpicture}[scale=0.9]
-            % Camera/Eye
-            \node[eye] (eye) at (0,0) {\faIcon{camera}};
-            \node[below] at (0,-0.8) {\textcolor{PrimaryColor}{Camera}};
-            
-            % Image plane
-            \draw[thick, AccentColor] (3,-2) -- (3,2);
-            \node[right] at (3,2.3) {\textcolor{AccentColor}{Image Plane}};
-            
-            % Pixel grid
-            \foreach \y in {-1.5,-1,-0.5,0,0.5,1,1.5} {
-                \draw[thin, gray] (2.8,\y) -- (3.2,\y);
+        \begin{tikzpicture}[scale=0.8]
+            % Define 3D styles
+            \tikzset{
+                camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+                image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
+                pixel/.style={fill=AccentColor!60, thick},
+                primary ray/.style={->, very thick, red!90},
+                object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
             }
-            
-            % Sample rays
-            \draw[ray] (eye) -- (3,1.5);
-            \draw[ray] (eye) -- (3,0.5);
-            \draw[ray] (eye) -- (3,-0.5);
-            \draw[ray] (eye) -- (3,-1.5);
-            
-            % Objects in scene
-            \node[sphere] (sphere1) at (6,1) {};
-            \node[sphere] (sphere2) at (5.5,-1) {};
-            \node[triangle] (tri) at (7,0) {};
-            
-            % Extend rays to objects
-            \draw[ray, dashed] (3,1.5) -- (sphere1);
-            \draw[ray, dashed] (3,-1.5) -- (sphere2);
-            
-            % Coordinate system
-            \draw[<->, thin] (0,3) -- (0,0) -- (3,0);
-            \node[left] at (0,1.5) {$v$};
-            \node[below] at (1.5,0) {$u$};
-            \node[below left] at (0,0) {$w$};
+
+            % 3D coordinate system
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (1.5,0,0);
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1.5,0);
+            \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,2);
+            \node[below right] at (1.5,0,0) {\textcolor{PrimaryColor}{$\mathbf{u}$}};
+            \node[above] at (0,1.5,0) {\textcolor{PrimaryColor}{$\mathbf{v}$}};
+            \node[below] at (0,0,2) {\textcolor{PrimaryColor}{$\mathbf{w}$}};
+
+            % Camera/Eye position in 3D space
+            \node[eye] (camera) at (0,0,0) {\faIcon{camera}};
+            % \node[below] at (0.2,-0.5,0) {\textcolor{PrimaryColor}{Camera}};
+
+
+            \draw[thick, gray] (camera) -- (4,2,2);
+            \draw[thick, gray] (camera) -- (4,-2,2);
+            \draw[thick, gray] (camera) -- (4,2,-2);
+            \draw[thick, gray] (camera) -- (4,-2,-2);
+
+            % Objects in 3D scene
+            \node[sphere, minimum size=1cm] (sphere1) at (8,1,2) {};
+            \node[sphere, minimum size=0.8cm] (sphere2) at (7,-1,-1) {};
+            \node[triangle, minimum size=1cm] (tri) at (9,0.5,0) {};
+
+            \begin{tikzpicture}[
+                    ->,
+                    plane x={(0.707,-0.707)},
+                    plane y={(0.707,0.707)},
+                    canvas is plane,
+                ]
+                \draw (0,0) -- (1,0);
+                \draw (0,0) -- (0,1);
+            \end{tikzpicture}
+
+
+            % Image plane in 3D (using canvas is plane)
+            \begin{scope}[canvas is zy plane at x=4]
+                % Background image plane
+                \fill[image plane] (-2,-2) rectangle (2,2);
+                \node[right] at (2.2,-2.2) {\textcolor{AccentColor}{Image Plane}};
+
+                % Pixel grid
+                \foreach \y in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+                        \draw[thin, gray] (-2,\y) -- (2,\y);
+                    }
+                \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+                        \draw[thin, gray] (\z,-2) -- (\z,2);
+                    }
+
+                % Sample pixels
+                \fill[pixel] (0.5,1) rectangle (1,1.5);
+                \fill[pixel] (0,-1.5) rectangle (0.5,-1);
+
+                % Pixel centers
+                \fill[red!70] (0.75, 1.25) circle (0.08);
+                \fill[red!70] (0.25, -1.25) circle (0.08);
+
+                % Primary rays from camera through pixels
+                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.75, 1.25);
+                \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.25, -1.25);
+                % Extended rays to objects
+                \draw[ray, dashed, thick] (0.75, 1.25) -- (sphere1);
+                \draw[ray, dashed, thick] (0.25, -1.25) -- (sphere2);
+            \end{scope}
+
+
+
+
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{conceptbox}{Camera Parameters}
         \textbf{Camera Definition:} Eye point $\mathbf{e}$, orthobasis $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$, field of view, image dimensions
     \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Ray Generation Mathematics}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % Define 3D styles for math diagram
+                \tikzset{
+                    camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+                    image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8}
+                }
+
+                % Camera position
+                \node[camera] (camera) at (0,0,0) {\faIcon{camera}};
+                \node[below] at (0,-0.6,0) {\small $\mathbf{e}$};
+
+                % Image plane with mathematical annotations
+                \begin{scope}[canvas is zy plane at x=2.5]
+                    \fill[image plane] (-1.5,-1.5) rectangle (1.5,1.5);
+
+                    % Sample pixel
+                    \fill[AccentColor!80] (0.5,0.8) rectangle (0.8,1.1);
+                    \fill[red!70] (0.65, 0.95) circle (0.05);
+
+                    % Dimensions
+                    \draw[<->, thin] (-1.5,-1.8) -- (1.5,-1.8);
+                    \node[below] at (0,-1.8) {\small $n_x$};
+                    \draw[<->, thin] (-1.8,-1.5) -- (-1.8,1.5);
+                    \node[left] at (-1.8,0) {\small $n_y$};
+
+                    % Pixel coordinates
+                    \draw[dashed, thin] (0.5,0.8) -- (0.5,-1.8);
+                    \draw[dashed, thin] (-1.8,0.8) -- (0.5,0.8);
+                    \node[below] at (0.5,-1.6) {\tiny $i$};
+                    \node[left] at (-1.6,0.8) {\tiny $j$};
+                \end{scope}
+
+                % Ray from camera through pixel
+                \draw[ray, very thick] (camera) -- (0.65, 0.95);
+                \draw[ray, dashed, thick] (0.65, 0.95) -- (4, 1.5, 1.5);
+
+                % Distance annotation
+                \draw[<->, thin] (0,0.3,0) -- (2.5,0.3,0);
+                \node[above] at (1.25,0.3,0) {\small $d$};
+
+                % Coordinate system
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (1,0,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,1);
+                \node[below right] at (1,0,0) {\small $\mathbf{u}$};
+                \node[above] at (0,1,0) {\small $\mathbf{v}$};
+                \node[below] at (0,0,1) {\small $\mathbf{w}$};
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Ray Equation}
+                For pixel $(i,j)$:
+                \begin{align}
+                    s & = \frac{i + 0.5}{n_x} \\
+                    t & = \frac{j + 0.5}{n_y}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Ray direction:}
+                \begin{align}
+                    \mathbf{d} & = (s - 0.5) \cdot \text{FOV} \cdot \mathbf{u}       \\
+                               & \quad + (t - 0.5) \cdot \text{FOV} \cdot \mathbf{v} \\
+                               & \quad + d \cdot \mathbf{w}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Parametric ray:}
+                \begin{equation}
+                    \mathbf{r}(\lambda) = \mathbf{e} + \lambda \mathbf{d}
+                \end{equation}
+            \end{mathbox}
+
+            \vspace{0.3cm}
+            \begin{itemize}
+                \item $\mathbf{e}$: camera position
+                \item $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$: orthonormal basis
+                \item $d$: distance to image plane
+                \item FOV: field of view factor
+                \item $\lambda \geq 0$: ray parameter
+            \end{itemize}
+        \end{column}
+    \end{columns}
 \end{frame}
 
 % --- Section 4: Camera Models ---
@@ -536,24 +275,24 @@
                 % Camera
                 \node[eye] (cam) at (0,0) {\faIcon{camera}};
                 \node[below] at (0,-0.8) {\textcolor{PrimaryColor}{Camera}};
-                
+
                 % Field of view cone
                 \draw[ray, fill=PrimaryColor!10] (0,0) -- (3,1.5) -- (3,-1.5) -- cycle;
                 \node[right] at (3,0) {\small FOV};
-                
+
                 % Objects at different distances
                 \node[sphere] (near) at (2,0.5) {};
                 \node[sphere] (far) at (4,0) {};
                 \node[above] at (2,1) {\tiny Near};
                 \node[above] at (4,0.5) {\tiny Far};
-                
+
                 % Image plane
                 \draw[thick, AccentColor] (1.5,-1) -- (1.5,1);
                 \node[right] at (1.5,1.2) {\tiny Image};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \vspace{0.5cm}
     \begin{center}
         \alert{Different camera models = Different visual effects!}
@@ -571,12 +310,12 @@
                     \item Linear perspective
                     \item No depth of field
                 \end{itemize}
-                
+
                 \vspace{0.3cm}
                 \textbf{Ray Generation:}
                 \begin{align}
-                    \mathbf{R_o} &= \mathbf{eye}\\
-                    \mathbf{R_d} &= \mathbf{pixel} - \mathbf{eye}
+                    \mathbf{R_o} & = \mathbf{eye}                  \\
+                    \mathbf{R_d} & = \mathbf{pixel} - \mathbf{eye}
                 \end{align}
             \end{mathbox}
         \end{column}
@@ -585,31 +324,31 @@
                 % Pinhole
                 \fill[PrimaryColor] (0,0) circle (2pt);
                 \node[below] at (0,-0.3) {\textcolor{PrimaryColor}{Pinhole}};
-                
+
                 % Image plane
                 \draw[thick, AccentColor] (2,-2) -- (2,2);
                 \node[right] at (2,2.3) {\textcolor{AccentColor}{Image Plane}};
-                
+
                 % Object
                 \draw[thick, ObjectColor] (-3,1) -- (-3,-1);
                 \node[left] at (-3,0) {\objectcolor{Object}};
-                
+
                 % Light rays
                 \draw[lightray] (-3,1) -- (0,0) -- (2,-0.5);
                 \draw[lightray] (-3,0) -- (0,0) -- (2,0);
                 \draw[lightray] (-3,-1) -- (0,0) -- (2,0.5);
-                
+
                 % Projected image
                 \draw[thick, SecondaryColor] (2,-0.5) -- (2,0.5);
                 \node[right] at (2,0) {\textcolor{SecondaryColor}{\tiny Inverted}};
-                
+
                 % Focal length
                 \draw[<->, thin] (0,-2.5) -- (2,-2.5);
                 \node[below] at (1,-2.5) {$f$ (focal length)};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Physical Reality}
         Real pinhole cameras exist! They create sharp images but require long exposure times due to tiny aperture.
     \end{conceptbox}
@@ -620,12 +359,12 @@
         \begin{column}{0.5\textwidth}
             \begin{mathbox}{Simplification}
                 \textbf{Problem:} Real pinhole creates inverted image
-                
+
                 \textbf{Solution:} Place image plane in front!
                 \begin{align}
-                    \mathbf{pixel} &= \mathbf{eye} + d \cdot \mathbf{w} + u \cdot \mathbf{u} + v \cdot \mathbf{v}
+                    \mathbf{pixel} & = \mathbf{eye} + d \cdot \mathbf{w} + u \cdot \mathbf{u} + v \cdot \mathbf{v}
                 \end{align}
-                
+
                 where:
                 \begin{itemize}
                     \item $d$ = distance to image plane
@@ -639,38 +378,38 @@
                 % Eye/Camera
                 \node[eye] (eye) at (0,0) {\faIcon{eye}};
                 \node[below] at (0,-0.5) {\textcolor{PrimaryColor}{Eye}};
-                
+
                 % Image plane (in front)
                 \draw[thick, AccentColor] (2,-2) -- (2,2);
                 \node[right] at (2,2.3) {\textcolor{AccentColor}{Image Plane}};
-                
+
                 % Pixel grid
                 \foreach \y in {-1.5,-1,-0.5,0,0.5,1,1.5} {
-                    \draw[thin, gray] (1.8,\y) -- (2.2,\y);
-                }
-                
+                        \draw[thin, gray] (1.8,\y) -- (2.2,\y);
+                    }
+
                 % Object
                 \draw[thick, ObjectColor] (4,1.5) -- (4,-1.5);
                 \node[right] at (4,0) {\objectcolor{Object}};
-                
+
                 % Rays through pixels
                 \draw[ray] (eye) -- (2,1.5) -- (4,1.5);
                 \draw[ray] (eye) -- (2,0) -- (4,0);
                 \draw[ray] (eye) -- (2,-1.5) -- (4,-1.5);
-                
+
                 % Coordinate system
                 \draw[->, thin] (0,2.5) -- (0,0) -- (2.5,0);
                 \node[left] at (0,1.25) {$\mathbf{v}$};
                 \node[below] at (1.25,0) {$\mathbf{u}$};
                 \node[above right] at (1.5,1.5) {$\mathbf{w}$};
-                
+
                 % Distance
                 \draw[<->, thin] (0,-2.5) -- (2,-2.5);
                 \node[below] at (1,-2.5) {$d$};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Advantage}
         \textbf{Upright image}, easier ray generation, same perspective as real pinhole!
     \end{conceptbox}
@@ -681,15 +420,15 @@
         \begin{column}{0.5\textwidth}
             \begin{mathbox}{Viewing Frustum}
                 \textbf{Definition:} The 3D region visible to the camera
-                
+
                 \textbf{Boundaries:}
                 \begin{itemize}
                     \item \textbf{Near plane} - Closest visible distance
-                    \item \textbf{Far plane} - Farthest visible distance  
+                    \item \textbf{Far plane} - Farthest visible distance
                     \item \textbf{Left/Right} - Horizontal field of view
                     \item \textbf{Top/Bottom} - Vertical field of view
                 \end{itemize}
-                
+
                 \textbf{Field of View:}
                 \begin{align}
                     \text{FOV} = 2 \arctan\left(\frac{h}{2d}\right)
@@ -700,33 +439,33 @@
             \begin{tikzpicture}[scale=0.8]
                 % Camera
                 \node[eye] (eye) at (0,0) {\faIcon{camera}};
-                
+
                 % Near plane
                 \draw[thick, AccentColor] (1,-1) -- (1,1);
                 \node[above] at (1,1.2) {\textcolor{AccentColor}{\tiny Near}};
-                
+
                 % Far plane
                 \draw[thick, SecondaryColor] (4,-2) -- (4,2);
                 \node[above] at (4,2.2) {\textcolor{SecondaryColor}{\tiny Far}};
-                
+
                 % Frustum edges
                 \draw[ray] (eye) -- (1,1) -- (4,2);
                 \draw[ray] (eye) -- (1,-1) -- (4,-2);
                 \draw[ray, dashed] (eye) -- (1,0) -- (4,0);
-                
+
                 % Frustum fill
                 \fill[PrimaryColor!10] (1,-1) -- (1,1) -- (4,2) -- (4,-2) -- cycle;
-                
+
                 % FOV angle
                 \draw[<->, thin, bend left] (0.5,0.5) to (0.5,-0.5);
                 \node[right] at (0.7,0) {\tiny FOV};
-                
+
                 % Objects inside/outside frustum
                 \node[sphere] (in) at (2.5,0.5) {};
                 \node[triangle] (out) at (3,-2.5) {};
                 \node[above] at (2.5,1) {\tiny Visible};
                 \node[below] at (3,-3) {\tiny Culled};
-                
+
                 % Distance labels
                 \draw[<->, thin] (0,-2.5) -- (1,-2.5);
                 \node[below] at (0.5,-2.5) {\tiny $n$};
@@ -735,7 +474,7 @@
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Culling}
         Objects outside the frustum are \textbf{culled} (not rendered) for efficiency!
     \end{conceptbox}
@@ -752,11 +491,11 @@
                     \item Objects same size regardless of distance
                     \item Infinite focal length
                 \end{itemize}
-                
+
                 \textbf{Ray Generation:}
                 \begin{align}
-                    \mathbf{R_o} &= \mathbf{pixel}\\
-                    \mathbf{R_d} &= \mathbf{w} \text{ (constant)}
+                    \mathbf{R_o} & = \mathbf{pixel}                \\
+                    \mathbf{R_d} & = \mathbf{w} \text{ (constant)}
                 \end{align}
             \end{mathbox}
         \end{column}
@@ -765,34 +504,34 @@
                 % Image plane
                 \draw[thick, AccentColor] (0,-2) -- (0,2);
                 \node[left] at (0,2.3) {\textcolor{AccentColor}{Image Plane}};
-                
+
                 % Pixel grid
                 \foreach \y in {-1.5,-1,-0.5,0,0.5,1,1.5} {
-                    \draw[thin, gray] (-0.2,\y) -- (0.2,\y);
-                }
-                
+                        \draw[thin, gray] (-0.2,\y) -- (0.2,\y);
+                    }
+
                 % Object
                 \draw[thick, ObjectColor] (4,1.5) -- (4,-1.5);
                 \node[right] at (4,0) {\objectcolor{Object}};
-                
+
                 % Rays through pixels
                 \draw[ray] (eye) -- (2,1.5) -- (4,1.5);
                 \draw[ray] (eye) -- (2,0) -- (4,0);
                 \draw[ray] (eye) -- (2,-1.5) -- (4,-1.5);
-                
+
                 % Coordinate system
                 \draw[->, thin] (0,2.5) -- (0,0) -- (2.5,0);
                 \node[left] at (0,1.25) {$\mathbf{v}$};
                 \node[below] at (1.25,0) {$\mathbf{u}$};
                 \node[above right] at (1.5,1.5) {$\mathbf{w}$};
-                
+
                 % Distance
                 \draw[<->, thin] (0,-2.5) -- (2,-2.5);
                 \node[below] at (1,-2.5) {$d$};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Applications}
         \textbf{Technical drawings}, \textbf{CAD software}, \textbf{2D games}, architectural visualization
     \end{conceptbox}
@@ -810,10 +549,10 @@
             \draw[ray] (eye1) -- (-2,0.5) -- (-0.5,0.8);
             \node[below] at (-3,0.2) {\small Converging rays};
             \node[below] at (-3,-0.1) {\small Size $\propto$ 1/distance};
-            
+
             % vs
             \node at (0,1) {\huge \textcolor{AccentColor}{vs}};
-            
+
             % Orthographic  
             \node[rectangle, draw, minimum width=3cm, minimum height=2cm, fill=SecondaryColor!20] at (3,2) {Orthographic};
             \draw[ray] (2,1.5) -- (4.5,1.5);
@@ -824,7 +563,7 @@
             \node[below] at (3,-0.1) {\small Constant size};
         \end{tikzpicture}
     \end{center}
-    
+
     \vspace{0.5cm}
     \begin{columns}
         \begin{column}{0.5\textwidth}
@@ -861,7 +600,7 @@
                     \item Surveillance, VR applications
                 \end{itemize}
             \end{conceptbox}
-            
+
             \vspace{0.3cm}
             \begin{conceptbox}{Thin Lens Camera}
                 \begin{itemize}
@@ -883,7 +622,7 @@
                 \draw[ray, bend left=60] (fisheye) to (1,3.5);
                 \draw[ray, bend right=60] (fisheye) to (1,0.5);
                 \node[right] at (2.2,2) {\tiny Wide FOV};
-                
+
                 % Thin lens illustration
                 \node[above] at (0,0.5) {\textbf{Thin Lens}};
                 \draw[thick, PrimaryColor] (-0.5,-1) -- (0.5,-1);
@@ -895,7 +634,7 @@
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{conceptbox}{Environment Camera}
@@ -927,7 +666,7 @@
     \begin{center}
         \huge \textcolor{PrimaryColor}{Finding Intersections}
     \end{center}
-    
+
     \vspace{0.5cm}
     \begin{columns}
         \begin{column}{0.5\textwidth}
@@ -935,16 +674,16 @@
                 % Ray
                 \draw[ray, very thick] (0,0) -- (4,2);
                 \node[below] at (0,0) {\raycolor{Ray}};
-                
+
                 % Various objects
                 \node[sphere] (sphere) at (2,1) {};
                 \node[plane, rotate=30] (plane) at (3,0.5) {};
                 \node[triangle] (tri) at (1,2) {};
-                
+
                 % Intersection points
                 \fill[AccentColor] (1.5,0.75) circle (2pt);
                 \fill[AccentColor] (2,1) circle (2pt);
-                
+
                 \node[right] at (4,2) {\small Different objects, different math!};
             \end{tikzpicture}
         \end{column}
@@ -952,7 +691,7 @@
             \textbf{Key Objects:}
             \begin{itemize}
                 \item \objectcolor{Planes} - Linear equations
-                \item \objectcolor{Spheres} - Quadratic equations  
+                \item \objectcolor{Spheres} - Quadratic equations
                 \item \objectcolor{Triangles} - Barycentric coordinates
                 \item \objectcolor{General Quadrics} - Polynomial solving
             \end{itemize}
@@ -968,13 +707,13 @@
             \begin{mathbox}{Plane Equation}
                 Implicit form:
                 \begin{align}
-                    \mathbf{n} \cdot \mathbf{P} + D &= 0
+                    \mathbf{n} \cdot \mathbf{P} + D & = 0
                 \end{align}
-                
+
                 Substituting ray equation:
                 \begin{align}
-                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D &= 0\\
-                    t &= -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
+                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D & = 0                                                                        \\
+                    t                                                   & = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
                 \end{align}
             \end{mathbox}
         \end{column}
@@ -983,27 +722,27 @@
                 % Plane
                 \draw[thick, ObjectColor] (-1,0) -- (3,2);
                 \node[below] at (1,1) {\objectcolor{Plane}};
-                
+
                 % Normal vector
                 \draw[->, thick, SecondaryColor] (1,1) -- (0.5,2);
                 \node[left] at (0.5,2) {$\mathbf{n}$};
-                
+
                 % Ray
                 \draw[ray] (-0.5,0.5) -- (2.5,1.5);
                 \node[below] at (-0.5,0.5) {$\mathbf{R_o}$};
                 \node[above] at (1.5,1.2) {$\mathbf{R_d}$};
-                
+
                 % Intersection point
                 \fill[AccentColor] (1,1) circle (3pt);
                 \node[above] at (1,1) {\textcolor{AccentColor}{Intersection}};
-                
+
                 % Distance illustration
                 \draw[dashed, thin] (1,1) -- (1,0);
                 \node[below] at (1,0) {$d$};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Key Insight}
         \textbf{Explicit} ray equation meets \textbf{implicit} plane equation = Clean intersection formula!
     \end{conceptbox}
@@ -1015,15 +754,15 @@
             \begin{mathbox}{Sphere Equation}
                 Implicit form (centered at origin):
                 \begin{align}
-                    \mathbf{P} \cdot \mathbf{P} - r^2 &= 0
+                    \mathbf{P} \cdot \mathbf{P} - r^2 & = 0
                 \end{align}
-                
+
                 Substituting ray equation:
                 \begin{align}
-                    &(\mathbf{R_o} + t\mathbf{R_d}) \cdot (\mathbf{R_o} + t\mathbf{R_d}) - r^2 = 0\\
-                    &t^2 + 2(\mathbf{R_d} \cdot \mathbf{R_o})t + (\mathbf{R_o} \cdot \mathbf{R_o} - r^2) = 0
+                     & (\mathbf{R_o} + t\mathbf{R_d}) \cdot (\mathbf{R_o} + t\mathbf{R_d}) - r^2 = 0           \\
+                     & t^2 + 2(\mathbf{R_d} \cdot \mathbf{R_o})t + (\mathbf{R_o} \cdot \mathbf{R_o} - r^2) = 0
                 \end{align}
-                
+
                 Quadratic formula: $t = \frac{-b \pm \sqrt{b^2-4ac}}{2a}$
             \end{mathbox}
         \end{column}
@@ -1032,24 +771,24 @@
                 % Sphere
                 \draw[thick, ObjectColor] (0,0) circle (1.5);
                 \node[below] at (0,-1.8) {\objectcolor{Sphere}};
-                
+
                 % Center
                 \fill[ObjectColor] (0,0) circle (2pt);
                 \node[below left] at (0,0) {$\mathbf{O}$};
-                
+
                 % Radius
                 \draw[thin, ObjectColor] (0,0) -- (1.5,0);
                 \node[below] at (0.75,0) {$r$};
-                
+
                 % Ray with two intersections
                 \draw[ray] (-2,-0.5) -- (2,0.5);
-                
+
                 % Intersection points
                 \fill[AccentColor] (-1.3,-0.35) circle (2pt);
                 \fill[AccentColor] (1.3,0.35) circle (2pt);
                 \node[above] at (-1.3,-0.35) {$t_1$};
                 \node[above] at (1.3,0.35) {$t_2$};
-                
+
                 % Discriminant cases
                 \node[right] at (2.5,1) {
                     \begin{minipage}{2cm}
@@ -1070,14 +809,14 @@
             \begin{mathbox}{Barycentric Approach}
                 Triangle defined by vertices $\mathbf{a}$, $\mathbf{b}$, $\mathbf{c}$:
                 \begin{align}
-                    \mathbf{P}(\beta,\gamma) &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                    \mathbf{P}(\beta,\gamma) & = \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
                 \end{align}
-                
+
                 Set equal to ray equation:
                 \begin{align}
-                    \mathbf{R_o} + t\mathbf{R_d} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                    \mathbf{R_o} + t\mathbf{R_d} & = \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
                 \end{align}
-                
+
                 Solve 3×3 system for $t$, $\beta$, $\gamma$
             \end{mathbox}
         \end{column}
@@ -1087,9 +826,9 @@
                 \coordinate (A) at (0,0);
                 \coordinate (B) at (3,0);
                 \coordinate (C) at (1.5,2.5);
-                
+
                 \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
-                
+
                 % Vertices
                 \fill[ObjectColor] (A) circle (2pt);
                 \fill[ObjectColor] (B) circle (2pt);
@@ -1097,18 +836,18 @@
                 \node[below left] at (A) {$\mathbf{a}$};
                 \node[below right] at (B) {$\mathbf{b}$};
                 \node[above] at (C) {$\mathbf{c}$};
-                
+
                 % Ray
                 \draw[ray] (-1,1) -- (2.5,1.5);
-                
+
                 % Intersection point
                 \fill[AccentColor] (1.2,1.2) circle (2pt);
-                
+
                 % Barycentric coordinates illustration
                 \draw[thin, SecondaryColor] (A) -- (1.2,1.2);
                 \draw[thin, SecondaryColor] (B) -- (1.2,1.2);
                 \draw[thin, SecondaryColor] (C) -- (1.2,1.2);
-                
+
                 \node[right] at (3.5,1.5) {
                     \begin{minipage}{2cm}
                         \tiny
@@ -1123,6 +862,12 @@
     \end{columns}
 \end{frame}
 
+\include{qa}
+\include{references}
+
+\end{document}
+\endinput
+
 % --- Section 6: From Casting to Tracing ---
 \section{From Ray Casting to Ray Tracing}
 
@@ -1135,11 +880,11 @@
             \node[sphere] (obj1) at (1,1) {};
             \draw[ray] (eye1) -- (obj1);
             \node[below] at (0,0.2) {\small Primary rays only};
-            
+
             % Arrow
             \draw[->, very thick, AccentColor] (0,0) -- (0,-1);
             \node[right] at (0.2,-0.5) {\textcolor{AccentColor}{Add secondary rays}};
-            
+
             % Ray Tracing
             \node[rectangle, draw, minimum width=3cm, minimum height=2cm, fill=SecondaryColor!20] at (0,-3) {Ray Tracing};
             \node[eye] (eye2) at (-1,-2.5) {};
@@ -1151,7 +896,7 @@
             \node[below] at (0,-4.8) {\small Primary + Secondary rays};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{raybox}{Ray Casting}
@@ -1184,24 +929,24 @@
             \node[sphere] (sphere) at (4,0) {};
             \node[circle, fill=LightColor, minimum size=0.8cm] (light) at (2,3) {\faIcon{lightbulb}};
             \node[sphere] (mirror) at (6,2) {};
-            
+
             % Primary ray
             \draw[ray, very thick] (eye) -- (sphere);
             \node[below] at (2,-0.3) {\raycolor{1. Primary Ray}};
-            
+
             % Shadow ray
             \draw[shadowray] (sphere) -- (light);
             \node[right] at (3.5,1.8) {\textcolor{DarkGray}{2. Shadow Ray}};
-            
+
             % Reflection ray
             \draw[reflectray] (sphere) -- (mirror);
             \node[above] at (5,1.2) {\textcolor{SecondaryColor}{3. Reflection Ray}};
-            
+
             % Ground plane
             \draw[thick, ObjectColor] (-1,-1.5) -- (7,-1.5);
             \draw[refractray] (sphere) -- (4,-1.5);
             \node[right] at (4.2,-1) {\textcolor{AccentColor}{4. Refraction Ray}};
-            
+
             % Labels
             \node[above] at (2,3.5) {\textcolor{LightColor}{Light Source}};
             \node[above] at (6,2.8) {\textcolor{ObjectColor}{Mirror}};
@@ -1215,22 +960,22 @@
         \begin{tikzpicture}[scale=0.7]
             % Tree structure showing recursion
             \node[circle, draw, fill=PrimaryColor!30] (root) at (0,4) {Eye};
-            
+
             % Level 1
             \node[circle, draw, fill=RayColor!30] (obj1) at (-2,2) {Obj1};
             \node[circle, draw, fill=RayColor!30] (obj2) at (2,2) {Obj2};
-            
+
             % Level 2
             \node[circle, draw, fill=SecondaryColor!30] (mirror1) at (-3,0) {Mirror};
             \node[circle, draw, fill=AccentColor!30] (glass1) at (-1,0) {Glass};
             \node[circle, draw, fill=SecondaryColor!30] (mirror2) at (1,0) {Mirror};
             \node[circle, draw, fill=AccentColor!30] (glass2) at (3,0) {Glass};
-            
+
             % Level 3
             \node[circle, draw, fill=ObjectColor!30] (final1) at (-3.5,-2) {Obj};
             \node[circle, draw, fill=ObjectColor!30] (final2) at (-2.5,-2) {Obj};
             \node[circle, draw, fill=ObjectColor!30] (final3) at (2.5,-2) {Obj};
-            
+
             % Connections
             \draw[arrow] (root) -- (obj1);
             \draw[arrow] (root) -- (obj2);
@@ -1241,7 +986,7 @@
             \draw[arrow] (mirror1) -- (final1);
             \draw[arrow] (glass1) -- (final2);
             \draw[arrow] (mirror2) -- (final3);
-            
+
             % Depth labels
             \node[right] at (4,4) {\textcolor{PrimaryColor}{Depth 0}};
             \node[right] at (4,2) {\textcolor{RayColor}{Depth 1}};
@@ -1249,7 +994,7 @@
             \node[right] at (4,-2) {\textcolor{ObjectColor}{Depth 3}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{conceptbox}{Recursion Control}
         \textbf{Base Cases:} Maximum depth reached OR ray contribution becomes negligible
     \end{conceptbox}
@@ -1264,9 +1009,9 @@
             \begin{mathbox}{Reflection Law}
                 Given incident ray $\mathbf{d}$ and surface normal $\mathbf{n}$:
                 \begin{align}
-                    \mathbf{r} &= \mathbf{d} - 2(\mathbf{d} \cdot \mathbf{n})\mathbf{n}
+                    \mathbf{r} & = \mathbf{d} - 2(\mathbf{d} \cdot \mathbf{n})\mathbf{n}
                 \end{align}
-                
+
                 \vspace{0.5cm}
                 \textbf{Physical principle:}\\
                 Angle of incidence = Angle of reflection
@@ -1277,47 +1022,47 @@
                 % Mirror surface
                 \draw[thick, ObjectColor] (-0.5,0) -- (3.5,0);
                 \node[below] at (1.5,-0.3) {\objectcolor{Mirror Surface}};
-                
+
                 % Normal vector
                 \draw[->, thick, SecondaryColor] (1.5,0) -- (1.5,2);
                 \node[right] at (1.5,2) {$\mathbf{n}$};
-                
+
                 % Incident ray
                 \draw[ray] (0,1.5) -- (1.5,0);
                 \node[above left] at (0.5,1) {$\mathbf{d}$};
-                
+
                 % Reflected ray
                 \draw[reflectray] (1.5,0) -- (3,1.5);
                 \node[above right] at (2.5,1) {$\mathbf{r}$};
-                
+
                 % Angle indicators
                 \draw[thin] (1.5,0) -- (1.2,0.5);
                 \draw[thin] (1.5,0) -- (1.8,0.5);
                 \node[above] at (1.2,0.3) {$\theta$};
                 \node[above] at (1.8,0.3) {$\theta$};
-                
+
                 % Intersection point
                 \fill[AccentColor] (1.5,0) circle (2pt);
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{center}
         \begin{tikzpicture}[scale=0.6]
             % Depth progression
             \node[above] at (0,2) {\textbf{Reflection Depth}};
-            
+
             \foreach \depth/\x in {0/0, 1/2.5, 2/5, 3/7.5} {
-                \begin{scope}[xshift=\x cm]
-                    \draw[thick] (0,0) -- (2,0);
-                    \node[eye] at (1,-1) {};
-                    \draw[ray] (1,-1) -- (1,0);
-                    \foreach \i in {1,...,\depth} {
-                        \draw[reflectray] (1,0) -- (0.5+\i*0.3,0.8);
-                    }
-                    \node[below] at (1,-1.5) {Depth \depth};
-                \end{scope}
-            }
+                    \begin{scope}[xshift=\x cm]
+                        \draw[thick] (0,0) -- (2,0);
+                        \node[eye] at (1,-1) {};
+                        \draw[ray] (1,-1) -- (1,0);
+                        \foreach \i in {1,...,\depth} {
+                                \draw[reflectray] (1,0) -- (0.5+\i*0.3,0.8);
+                            }
+                        \node[below] at (1,-1.5) {Depth \depth};
+                    \end{scope}
+                }
         \end{tikzpicture}
     \end{center}
 \end{frame}
@@ -1327,16 +1072,16 @@
         \begin{column}{0.5\textwidth}
             \begin{mathbox}{Snell's Law}
                 \begin{align}
-                    n_1 \sin\theta_1 &= n_2 \sin\theta_2
+                    n_1 \sin\theta_1 & = n_2 \sin\theta_2
                 \end{align}
-                
+
                 where:
                 \begin{itemize}
                     \item $n_1, n_2$ = refractive indices
                     \item $\theta_1$ = incident angle
                     \item $\theta_2$ = refracted angle
                 \end{itemize}
-                
+
                 \vspace{0.3cm}
                 \textbf{Examples:}
                 \begin{itemize}
@@ -1352,23 +1097,23 @@
                 \draw[thick, ObjectColor] (-1,0) -- (3,0);
                 \node[left] at (-1,0.5) {\small Air ($n_1$)};
                 \node[left] at (-1,-0.5) {\small Glass ($n_2$)};
-                
+
                 % Normal
                 \draw[->, SecondaryColor, dashed] (1,-2) -- (1,2);
                 \node[right] at (1,2) {$\mathbf{n}$};
-                
+
                 % Incident ray
                 \draw[ray] (0,1.5) -- (1,0);
                 \node[above] at (0.3,1) {$\theta_1$};
-                
+
                 % Refracted ray
                 \draw[refractray] (1,0) -- (1.3,-1.5);
                 \node[below] at (1.2,-0.5) {$\theta_2$};
-                
+
                 % Angles
                 \draw[thin] (1,0) arc (270:225:0.5);
                 \draw[thin] (1,0) arc (270:300:0.5);
-                
+
                 % Critical angle illustration
                 \node[right] at (3.5,0) {
                     \begin{minipage}{2cm}
@@ -1381,7 +1126,7 @@
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{Physical Intuition}
         Light bends when moving between materials with different densities
     \end{conceptbox}
@@ -1393,34 +1138,34 @@
             % Light source
             \node[circle, fill=LightColor, minimum size=1cm] (light) at (0,3) {\faIcon{sun}};
             \node[above] at (0,3.8) {\textcolor{LightColor}{Light Source}};
-            
+
             % Occluding object
             \node[sphere] (occluder) at (2,2) {};
             \node[above] at (2,2.8) {\textcolor{ObjectColor}{Occluder}};
-            
+
             % Target object
             \node[sphere] (target) at (5,0) {};
             \node[below] at (5,-0.8) {\textcolor{ObjectColor}{Target}};
-            
+
             % Eye
             \node[eye] (eye) at (7,0) {\faIcon{eye}};
-            
+
             % Primary ray from eye
             \draw[ray] (eye) -- (target);
             \node[above] at (6,0.2) {\raycolor{Primary}};
-            
+
             % Shadow ray (blocked)
             \draw[shadowray] (target) -- (occluder);
             \draw[shadowray, dashed] (occluder) -- (light);
             \node[left] at (3.5,1.2) {\textcolor{DarkGray}{Shadow Ray}};
             \node[right] at (3.5,1.5) {\textcolor{AccentColor}{BLOCKED!}};
-            
+
             % Shadow region
             \fill[pattern=north east lines, pattern color=gray] (2.5,1.5) -- (4,0.5) -- (6,-0.5) -- (5.5,0.5) -- cycle;
             \node[right] at (6,0.8) {\textcolor{DarkGray}{Shadow}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{raybox}{Shadow Ray Algorithm}
         \textbf{For each intersection point:}
         \begin{enumerate}
@@ -1441,21 +1186,21 @@
             % Surface
             \draw[thick, ObjectColor] (-1,0) -- (4,0);
             \node[below] at (1.5,-0.3) {\objectcolor{Surface}};
-            
+
             % True intersection point
             \fill[SecondaryColor] (2,0) circle (3pt);
             \node[above] at (2,0.3) {\textcolor{SecondaryColor}{True intersection}};
-            
+
             % Computed intersection points (with error)
             \fill[AccentColor] (1.95,-0.05) circle (2pt);
             \fill[AccentColor] (2.05,0.05) circle (2pt);
             \node[below] at (1.95,-0.3) {\textcolor{AccentColor}{Computed}};
             \node[above] at (2.05,0.3) {\textcolor{AccentColor}{Computed}};
-            
+
             % Secondary rays from computed points
             \draw[reflectray] (1.95,-0.05) -- (1,1);
             \draw[shadowray] (2.05,0.05) -- (3,1);
-            
+
             % Problems
             \node[right] at (4.5,0.5) {
                 \begin{minipage}{3cm}
@@ -1469,7 +1214,7 @@
             };
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{conceptbox}{The Evil Epsilon}
         \textbf{Solution:} Add small offset $\varepsilon$ when starting secondary rays from surfaces\\
         \textbf{Challenge:} Too small → still problems; Too large → visible artifacts
@@ -1486,7 +1231,7 @@
                     \item $n$ = number of pixels
                     \item $m$ = number of objects
                 \end{itemize}
-                
+
                 \vspace{0.3cm}
                 \textbf{With secondary rays:}
                 \begin{itemize}
@@ -1499,19 +1244,19 @@
             \begin{tikzpicture}[scale=0.7]
                 % Performance graph
                 \begin{axis}[
-                    width=6cm,
-                    height=4cm,
-                    xlabel={Scene Complexity},
-                    ylabel={Render Time},
-                    grid=major,
-                    legend pos=north west
-                ]
-                \addplot[thick, PrimaryColor] coordinates {(1,1) (2,2) (3,3) (4,4) (5,5)};
-                \addplot[thick, AccentColor] coordinates {(1,1) (2,4) (3,9) (4,16) (5,25)};
-                \legend{Ray Casting, Ray Tracing}
+                        width=6cm,
+                        height=4cm,
+                        xlabel={Scene Complexity},
+                        ylabel={Render Time},
+                        grid=major,
+                        legend pos=north west
+                    ]
+                    \addplot[thick, PrimaryColor] coordinates {(1,1) (2,2) (3,3) (4,4) (5,5)};
+                    \addplot[thick, AccentColor] coordinates {(1,1) (2,4) (3,9) (4,16) (5,25)};
+                    \legend{Ray Casting, Ray Tracing}
                 \end{axis}
             \end{tikzpicture}
-            
+
             \vspace{0.3cm}
             \textbf{Optimization strategies:}
             \begin{itemize}
@@ -1532,22 +1277,22 @@
             % Ray
             \draw[ray, very thick] (0,0) -- (8,2);
             \node[below] at (0,0) {\raycolor{Ray}};
-            
+
             % Many objects scattered
             \foreach \x/\y in {1/0.5, 2/1.8, 3/0.2, 4/1.5, 5/0.8, 6/1.2, 7/0.4} {
-                \node[sphere, scale=0.5] at (\x,\y) {};
-            }
-            
+                    \node[sphere, scale=0.5] at (\x,\y) {};
+                }
+
             % Intersection tests
             \foreach \x/\y in {1/0.5, 2/1.8, 3/0.2, 4/1.5, 5/0.8, 6/1.2, 7/0.4} {
-                \draw[dashed, red, thin] (0,0) -- (\x,\y);
-            }
-            
+                    \draw[dashed, red, thin] (0,0) -- (\x,\y);
+                }
+
             \node[below] at (4,-1) {\textcolor{AccentColor}{\textbf{Problem:} Test every object for every ray!}};
             \node[below] at (4,-1.5) {Scene with 1M objects = 1M tests per ray};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{conceptbox}{Computational Explosion}
         \textbf{Complexity:} For $N$ objects and $R$ rays → $O(N \times R)$ intersection tests\\
         \textbf{Real scenes:} Millions of triangles, millions of rays → Billions of tests!
@@ -1566,7 +1311,7 @@
                     \item Only test objects in hit boxes
                 \end{enumerate}
             \end{raybox}
-            
+
             \vspace{0.3cm}
             \textbf{Key Benefits:}
             \begin{itemize}
@@ -1579,15 +1324,15 @@
             \begin{tikzpicture}[scale=0.7]
                 % BVH Tree structure
                 \node[rectangle, draw, fill=PrimaryColor!20, minimum width=3cm, minimum height=1cm] (root) at (0,3) {Root BBox};
-                
+
                 \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.3cm, minimum height=0.8cm] (left) at (-1.5,1.5) {Left BBox};
                 \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.3cm, minimum height=0.8cm] (right) at (1.5,1.5) {Right BBox};
-                
+
                 \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (ll) at (-2.2,0) {LL};
                 \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (lr) at (-0.8,0) {LR};
                 \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (rl) at (0.8,0) {RL};
                 \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (rr) at (2.2,0) {RR};
-                
+
                 % Tree connections
                 \draw[arrow] (root) -- (left);
                 \draw[arrow] (root) -- (right);
@@ -1595,7 +1340,7 @@
                 \draw[arrow] (left) -- (lr);
                 \draw[arrow] (right) -- (rl);
                 \draw[arrow] (right) -- (rr);
-                
+
                 % Ray traversal
                 \draw[ray, very thick] (-3,2.5) -- (3,1);
                 \node[below] at (0,-1) {\small \raycolor{Ray tests hierarchy top-down}};
@@ -1616,7 +1361,7 @@
                     \item Split into two groups
                     \item Recursively build subtrees
                 \end{enumerate}
-                
+
                 \vspace{0.3cm}
                 \textbf{Split strategies:}
                 \begin{itemize}
@@ -1632,23 +1377,23 @@
                 \draw[thick, PrimaryColor] (-0.5,-0.5) rectangle (3.5,2.5);
                 \draw[thick, SecondaryColor] (-0.3,-0.3) rectangle (1.3,1.3);
                 \draw[thick, SecondaryColor] (1.7,0.7) rectangle (3.3,2.3);
-                
+
                 % Objects
                 \node[sphere, scale=0.3] at (0,0) {};
                 \node[sphere, scale=0.3] at (1,1) {};
                 \node[triangle, scale=0.3] at (2,1) {};
                 \node[sphere, scale=0.3] at (3,2) {};
-                
+
                 % Split line
                 \draw[dashed, AccentColor, thick] (1.5,-0.5) -- (1.5,2.5);
                 \node[right] at (1.6,1) {\textcolor{AccentColor}{Split}};
-                
+
                 % Ray traversal example
                 \draw[ray] (-1,1.5) -- (4,0.5);
-                
+
                 \node[below] at (1.5,-1) {\small Spatial subdivision};
             \end{tikzpicture}
-            
+
             \vspace{0.3cm}
             \begin{conceptbox}{Traversal}
                 \textbf{Stack-based traversal:} Test bounding boxes, push hit children onto stack
@@ -1665,28 +1410,28 @@
         \begin{tikzpicture}[scale=0.9]
             % Timeline
             \draw[thick, PrimaryColor] (0,0) -- (8,0);
-            
+
             % Milestones
             \node[above] at (1,0.5) {\textbf{2018}};
             \node[below] at (1,-0.5) {\textcolor{SecondaryColor}{NVIDIA RTX 20}};
             \fill[SecondaryColor] (1,0) circle (3pt);
-            
+
             \node[above] at (3,0.5) {\textbf{2020}};
             \node[below] at (3,-0.5) {\textcolor{AccentColor}{RTX 30 Series}};
             \fill[AccentColor] (3,0) circle (3pt);
-            
+
             \node[above] at (5,0.5) {\textbf{2021}};
             \node[below] at (5,-0.5) {\textcolor{ObjectColor}{Vulkan RT}};
             \fill[ObjectColor] (5,0) circle (3pt);
-            
+
             \node[above] at (7,0.5) {\textbf{2022+}};
             \node[below] at (7,-0.5) {\textcolor{RayColor}{RDNA3, RTX 40}};
             \fill[RayColor] (7,0) circle (3pt);
-            
+
             \node[below] at (4,-2) {\large \textcolor{PrimaryColor}{\textbf{From Software to Silicon}}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \textbf{Hardware Features:}
@@ -1715,29 +1460,29 @@
             % GPU die representation
             \draw[thick, PrimaryColor] (0,0) rectangle (8,5);
             \node[above] at (4,5.3) {\textbf{RTX GPU Architecture}};
-            
+
             % Streaming Multiprocessors
             \foreach \x in {0.5,2.5,4.5,6.5} {
-                \draw[SecondaryColor, thick] (\x,3.5) rectangle (\x+1.5,4.8);
-                \node at (\x+0.75,4.15) {\textcolor{SecondaryColor}{\textbf{SM}}};
-            }
-            
+                    \draw[SecondaryColor, thick] (\x,3.5) rectangle (\x+1.5,4.8);
+                    \node at (\x+0.75,4.15) {\textcolor{SecondaryColor}{\textbf{SM}}};
+                }
+
             % RT Cores
             \foreach \x in {1,3,5,7} {
-                \draw[AccentColor, thick, fill=AccentColor!20] (\x,2.5) rectangle (\x+0.8,3.2);
-                \node at (\x+0.4,2.85) {\textcolor{AccentColor}{\textbf{RT}}};
-            }
-            
+                    \draw[AccentColor, thick, fill=AccentColor!20] (\x,2.5) rectangle (\x+0.8,3.2);
+                    \node at (\x+0.4,2.85) {\textcolor{AccentColor}{\textbf{RT}}};
+                }
+
             % Tensor Cores
             \foreach \x in {0.5,2.5,4.5,6.5} {
-                \draw[RayColor, thick, fill=RayColor!20] (\x,1.5) rectangle (\x+1.5,2.2);
-                \node at (\x+0.75,1.85) {\textcolor{RayColor}{\textbf{Tensor}}};
-            }
-            
+                    \draw[RayColor, thick, fill=RayColor!20] (\x,1.5) rectangle (\x+1.5,2.2);
+                    \node at (\x+0.75,1.85) {\textcolor{RayColor}{\textbf{Tensor}}};
+                }
+
             % Memory
             \draw[ObjectColor, thick] (0.5,0.3) rectangle (7.5,1.2);
             \node at (4,0.75) {\textcolor{ObjectColor}{\textbf{GDDR6 Memory}}};
-            
+
             % Labels
             \node[right] at (8.2,4.15) {\textcolor{SecondaryColor}{Shader Cores}};
             \node[right] at (8.2,2.85) {\textcolor{AccentColor}{Ray Tracing}};
@@ -1745,7 +1490,7 @@
             \node[right] at (8.2,0.75) {\textcolor{ObjectColor}{High Bandwidth}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{raybox}{RT Core Functions}
         \textbf{Hardware accelerated:} BVH traversal, ray-triangle intersection, ray-box intersection\\
         \textbf{Result:} Massive parallel ray processing with dedicated silicon
@@ -1764,7 +1509,7 @@
                     \item Widely adopted in games
                 \end{itemize}
             \end{conceptbox}
-            
+
             \vspace{0.3cm}
             \begin{conceptbox}{Vulkan Ray Tracing}
                 \textbf{Cross-platform standard:}
@@ -1783,19 +1528,19 @@
                 \node[rectangle, draw, fill=SecondaryColor!20, minimum width=4cm, minimum height=0.8cm] (api) at (0,2) {DXR / Vulkan RT};
                 \node[rectangle, draw, fill=AccentColor!20, minimum width=4cm, minimum height=0.8cm] (driver) at (0,1) {GPU Driver};
                 \node[rectangle, draw, fill=ObjectColor!20, minimum width=4cm, minimum height=0.8cm] (hw) at (0,0) {RT Hardware};
-                
+
                 % Arrows
                 \draw[arrow] (app) -- (api);
                 \draw[arrow] (api) -- (driver);
                 \draw[arrow] (driver) -- (hw);
-                
+
                 % Side annotations
                 \node[right] at (2.2,3) {\small Game/Engine};
                 \node[right] at (2.2,2) {\small Standard API};
                 \node[right] at (2.2,1) {\small Optimization};
                 \node[right] at (2.2,0) {\small RT Cores};
             \end{tikzpicture}
-            
+
             \vspace{0.5cm}
             \textbf{Key Innovation:}
             \begin{itemize}
@@ -1819,26 +1564,26 @@
             \node[sphere] (sphere1) at (3,2) {};
             \node[sphere] (sphere2) at (5,1) {};
             \node[eye] (eye) at (7,2) {\faIcon{eye}};
-            
+
             % Multiple path samples
             \draw[ray, bend left=10] (eye) to (sphere2);
             \draw[reflectray, bend right=15] (sphere2) to (sphere1);
             \draw[lightray, bend left=20] (sphere1) to (light);
-            
+
             \draw[ray, bend left=20] (eye) to (sphere2);
             \draw[reflectray, bend left=10] (sphere2) to (3,4);
             \draw[lightray] (3,4) to (light);
-            
+
             \draw[ray, bend right=10] (eye) to (sphere2);
             \draw[reflectray, bend right=25] (sphere2) to (sphere1);
             \draw[refractray, bend left=15] (sphere1) to (2,0);
-            
+
             % Path labels
             \node[below] at (4,-0.5) {\raycolor{\textbf{Multiple Random Paths}}};
             \node[above] at (4,4.8) {\textcolor{LightColor}{\textbf{Monte Carlo Integration}}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{raybox}{Ray Tracing Limitations}
@@ -1871,7 +1616,7 @@
             \end{align}
         \end{mathbox}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \textbf{Components:}
@@ -1889,28 +1634,28 @@
                 \draw[thick, ObjectColor] (-1,0) -- (3,0);
                 \fill[AccentColor] (1,0) circle (3pt);
                 \node[below] at (1,-0.3) {$\mathbf{p}$};
-                
+
                 % Normal
                 \draw[->, SecondaryColor, thick] (1,0) -- (1,1.5);
                 \node[right] at (1,1.5) {$\mathbf{n}$};
-                
+
                 % Incoming light hemisphere
                 \draw[lightray] (0,1.2) -- (1,0);
                 \draw[lightray] (0.5,1.5) -- (1,0);
                 \draw[lightray] (1.5,1.5) -- (1,0);
                 \draw[lightray] (2,1.2) -- (1,0);
-                
+
                 % Outgoing direction
                 \draw[->, RayColor, thick] (1,0) -- (0.3,1);
                 \node[left] at (0.3,1) {$\omega_o$};
-                
+
                 % Hemisphere
                 \draw[dashed] (1,0) circle (1.2);
                 \node[above] at (1,1.8) {\small Hemisphere $\Omega$};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-    
+
     \begin{conceptbox}{The Challenge}
         \textbf{Integral:} Infinite directions to sample → Monte Carlo approximation needed
     \end{conceptbox}
@@ -1928,36 +1673,36 @@
             \draw[ray] (eye1) -- (-2,0.5) -- (-0.5,0.8);
             \node[below] at (-3,0.2) {\small Converging rays};
             \node[below] at (-3,-0.1) {\small Size $\propto$ 1/distance};
-            
+
             % vs
             \node at (0,1) {\huge \textcolor{AccentColor}{vs}};
-            
+
             % Path Tracing side
             \node[above] at (2,3) {\textbf{Path Tracing}};
             \node[eye] (eye2) at (0.5,1) {};
             \node[sphere] (obj2) at (2,1) {};
             \node[sphere] (obj3) at (3,2) {};
             \node[circle, fill=LightColor, minimum size=0.6cm] (light2) at (4,0.5) {};
-            
+
             % Multiple random paths
             \draw[ray, bend left=10] (eye2) to (sphere2);
             \draw[reflectray, bend right=15] (sphere2) to (sphere1);
             \draw[lightray, bend left=20] (sphere1) to (light);
-            
+
             \draw[ray, bend left=20] (eye2) to (sphere2);
             \draw[reflectray, bend left=10] (sphere2) to (3,4);
             \draw[lightray] (3,4) to (light);
-            
+
             \draw[ray, bend right=10] (eye2) to (sphere2);
             \draw[reflectray, bend right=25] (sphere2) to (sphere1);
             \draw[refractray, bend left=15] (sphere1) to (2,0);
-            
+
             % Path labels
             \node[below] at (4,-0.5) {\raycolor{\textbf{Multiple Random Paths}}};
             \node[above] at (4,4.8) {\textcolor{LightColor}{\textbf{Monte Carlo Integration}}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{raybox}{Ray Tracing Limitations}
@@ -1991,25 +1736,25 @@
         \vspace{0.5cm}
         \huge \textcolor{AccentColor}{Now what color should that pixel be?}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{tikzpicture}[scale=0.8]
                 % Simple sphere with different shading
                 \draw[thick, ObjectColor] (0,0) circle (1.5);
-                
+
                 % Light direction
                 \node[circle, fill=LightColor, minimum size=0.6cm] (light) at (-1,2) {};
                 \draw[lightray] (light) -- (0,0.8);
-                
+
                 % Normal at surface
                 \draw[->, SecondaryColor, thick] (0,0.8) -- (-0.3,1.5);
                 \node[left] at (-0.3,1.5) {$\mathbf{n}$};
-                
+
                 % Eye direction
                 \node[eye] (eye) at (3,1) {};
                 \draw[ray] (eye) -- (0,0.8);
-                
+
                 \node[below] at (0,-2) {\textcolor{ObjectColor}{\textbf{The intersection is just the beginning}}};
             \end{tikzpicture}
         \end{column}
@@ -2021,7 +1766,7 @@
                 \item Light interaction
                 \item Visual realism
             \end{itemize}
-            
+
             \vspace{0.5cm}
             \alert{Next lesson:} Deep dive into shading models!
         \end{column}
@@ -2037,7 +1782,7 @@
             \draw[lightray] (-4,2) -- (phong);
             \draw[ray] (-1,1) -- (phong);
             \node[below] at (-3,0) {\textcolor{SecondaryColor}{Ad-hoc but fast}};
-            
+
             % PBR illustration  
             \node[above] at (0,2.5) {\textbf{Physically Based}};
             \node[sphere] (pbr) at (0,1) {};
@@ -2045,7 +1790,7 @@
             \draw[reflectray] (pbr) -- (1,2);
             \draw[ray] (2,1) -- (pbr);
             \node[below] at (0,0) {\textcolor{AccentColor}{Physically accurate}};
-            
+
             % Advanced illustration
             \node[above] at (3,2.5) {\textbf{Advanced}};
             \node[sphere] (adv) at (3,1) {};
@@ -2055,14 +1800,14 @@
             \node[below] at (3,0) {\textcolor{RayColor}{Subsurface, etc.}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.33\textwidth}
             \begin{conceptbox}{Phong/Blinn-Phong}
                 \textbf{Components:}
                 \begin{itemize}
                     \item Ambient
-                    \item Diffuse  
+                    \item Diffuse
                     \item Specular
                 \end{itemize}
                 \textbf{Pro:} Fast, simple\\
@@ -2107,16 +1852,16 @@
             \node[rectangle, rounded corners, fill=SecondaryColor!20, minimum width=2.5cm, minimum height=1.5cm] (games) at (4,2) {Video Games};
             \node[rectangle, rounded corners, fill=AccentColor!20, minimum width=2.5cm, minimum height=1.5cm] (arch) at (0,0) {Architecture};
             \node[rectangle, rounded corners, fill=ObjectColor!20, minimum width=2.5cm, minimum height=1.5cm] (product) at (4,0) {Product Design};
-            
+
             % Center
             \node[circle, fill=LightColor, minimum size=2cm] (center) at (2,1) {\textbf{Ray Tracing}};
-            
+
             % Connections
             \draw[arrow] (center) -- (movies);
             \draw[arrow] (center) -- (games);
             \draw[arrow] (center) -- (arch);
             \draw[arrow] (center) -- (product);
-            
+
             % Icons
             \node at (0,2.5) {\faIcon{film}};
             \node at (4,2.5) {\faIcon{gamepad}};
@@ -2124,7 +1869,7 @@
             \node at (4,0.5) {\faIcon{car}};
         \end{tikzpicture}
     \end{center}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \textbf{Traditional (Offline):}
@@ -2151,9 +1896,9 @@
     \begin{conceptbox}{Hardware Acceleration}
         \textbf{Modern GPUs:} Dedicated ray tracing cores, massive parallelization
     \end{conceptbox}
-    
+
     \vspace{0.3cm}
-    
+
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \textbf{Emerging Techniques:}
@@ -2174,9 +1919,9 @@
             \end{itemize}
         \end{column}
     \end{columns}
-    
+
     \vspace{0.5cm}
-    
+
     \begin{center}
         \large \textcolor{PrimaryColor}{\textbf{Ray tracing is becoming the future of computer graphics!}}
     \end{center}
@@ -2193,9 +1938,9 @@
         \item \highlight{Implementation challenges} include floating-point precision and performance optimization
         \item \highlight{Real-world impact} spans from Hollywood movies to real-time gaming
     \end{enumerate}
-    
+
     \vspace{0.5cm}
-    
+
     \begin{center}
         \begin{tikzpicture}[scale=0.6]
             % Final illustration
@@ -2204,12 +1949,12 @@
             \node[sphere] at (3,1) {};
             \node[triangle] at (4,-1) {};
             \node[circle, fill=LightColor, minimum size=0.8cm] at (2,2) {\faIcon{lightbulb}};
-            
+
             \draw[ray] (eye) -- (2,0) -- (4,1);
             \draw[reflectray] (2,0) -- (3,1);
             \draw[shadowray] (2,0) -- (2,2);
             \draw[refractray] (2,0) -- (4,-1);
-            
+
             \node[below] at (2,-2) {\textcolor{PrimaryColor}{\textbf{The art and science of light}}};
         \end{tikzpicture}
     \end{center}
