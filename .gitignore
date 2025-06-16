@@ -103,15 +103,15 @@ yarn-debug.log*
 yarn-error.log*
 
 # Images that might be generated
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.bmp
-*.tiff
-*.ppm
-*.pgm
-*.pbm
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.bmp
+# *.tiff
+# *.ppm
+# *.pgm
+# *.pbm
 
 # Archive files
 *.zip
