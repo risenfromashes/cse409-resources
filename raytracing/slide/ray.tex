@@ -1,0 +1,91 @@
+\section{Ray Generation}
+
+
+
+
+\begin{frame}{Ray Generation Mathematics}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % Define 3D styles for math diagram
+                \tikzset{
+                    camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+                    image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8}
+                }
+
+                % Camera position
+                \node[camera] (camera) at (0,0,0) {\faIcon{camera}};
+                \node[below] at (0,-0.6,0) {\small $\mathbf{e}$};
+
+                % Image plane with mathematical annotations
+                \begin{scope}[canvas is zy plane at x=2.5]
+                    \fill[image plane] (-1.5,-1.5) rectangle (1.5,1.5);
+
+                    % Sample pixel
+                    \fill[AccentColor!80] (0.5,0.8) rectangle (0.8,1.1);
+                    \fill[red!70] (0.65, 0.95) circle (0.05);
+
+                    % Dimensions
+                    \draw[<->, thin] (-1.5,-1.8) -- (1.5,-1.8);
+                    \node[below] at (0,-1.8) {\small $n_x$};
+                    \draw[<->, thin] (-1.8,-1.5) -- (-1.8,1.5);
+                    \node[left] at (-1.8,0) {\small $n_y$};
+
+                    % Pixel coordinates
+                    \draw[dashed, thin] (0.5,0.8) -- (0.5,-1.8);
+                    \draw[dashed, thin] (-1.8,0.8) -- (0.5,0.8);
+                    \node[below] at (0.5,-1.6) {\tiny $i$};
+                    \node[left] at (-1.6,0.8) {\tiny $j$};
+                \end{scope}
+
+                % Ray from camera through pixel
+                \draw[ray, very thick] (camera) -- (0.65, 0.95);
+                \draw[ray, dashed, thick] (0.65, 0.95) -- (4, 1.5, 1.5);
+
+                % Distance annotation
+                \draw[<->, thin] (0,0.3,0) -- (2.5,0.3,0);
+                \node[above] at (1.25,0.3,0) {\small $d$};
+
+                % Coordinate system
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (1,0,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1,0);
+                \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,1);
+                \node[below right] at (1,0,0) {\small $\mathbf{u}$};
+                \node[above] at (0,1,0) {\small $\mathbf{v}$};
+                \node[below] at (0,0,1) {\small $\mathbf{w}$};
+            \end{tikzpicture}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Ray Equation}
+                For pixel $(i,j)$:
+                \begin{align}
+                    s & = \frac{i + 0.5}{n_x} \\
+                    t & = \frac{j + 0.5}{n_y}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Ray direction:}
+                \begin{align}
+                    \mathbf{d} & = (s - 0.5) \cdot \text{FOV} \cdot \mathbf{u}       \\
+                               & \quad + (t - 0.5) \cdot \text{FOV} \cdot \mathbf{v} \\
+                               & \quad + d \cdot \mathbf{w}
+                \end{align}
+
+                \vspace{0.2cm}
+                \textbf{Parametric ray:}
+                \begin{equation}
+                    \mathbf{r}(\lambda) = \mathbf{e} + \lambda \mathbf{d}
+                \end{equation}
+            \end{mathbox}
+
+            \vspace{0.3cm}
+            \begin{itemize}
+                \item $\mathbf{e}$: camera position
+                \item $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$: orthonormal basis
+                \item $d$: distance to image plane
+                \item FOV: field of view factor
+                \item $\lambda \geq 0$: ray parameter
+            \end{itemize}
+        \end{column}
+    \end{columns}
+\end{frame}
