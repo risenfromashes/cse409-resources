@@ -48,6 +48,7 @@
     \end{columns}
 \end{frame}
 
+
 \begin{frame}{The Heart of Ray Tracing}
     \begin{center}
         \huge \textcolor{PrimaryColor}{Finding Intersections}
@@ -89,52 +90,645 @@
     \end{columns}
 \end{frame}
 
+
+\begin{frame}{3D Plane Representation}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Plane Definition}
+                A plane is defined by:
+                \begin{itemize}
+                    \item Point $\mathbf{P_0} = (x_0, y_0, z_0)$ on plane
+                    \item Normal vector $\mathbf{n} = (A, B, C)$
+                \end{itemize}
+                \textbf{Implicit equation:}
+                \vspace*{-0.3cm}
+                \begin{align*}
+                    & \mathbf{n} \cdot (\mathbf{P} - \mathbf{P_0}) = 0 \\
+                    & \mathbf{n} \cdot \mathbf{P} + D = 0 \text{ where }  D = -\mathbf{n} \cdot \mathbf{P_0} \\
+                    & A x + B y + C z + D = 0\\
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                % 3D coordinate system
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1,-1) node[below left] {$z$};
+                
+                % 3D Plane using canvas transformation
+                \begin{scope}[
+                    plane origin={(2,1,0)},
+                    plane x={(0.707,0, 0.707)},
+                    plane y={(0,0.707,-0.707)},
+                    canvas is plane]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.6] 
+                        (-1, -1) -- (-1, 1) -- (1, 1) -- (1, -1) -- cycle;
+
+                    \only<1>{
+                    \fill[AccentColor] (0.5,0.5) circle (2pt);
+                    \node[above] at (0.5,0.5) {$\mathbf{P}$};
+                    \draw[dashed, thin] (0, 0) -- (0.5,0.5);
+                    }
+                \end{scope}
+                
+                % Point on plane
+                \fill[ObjectColor] (2,1,0) circle (2pt);
+                \node[above right] at (2,1, 0) {$\mathbf{P_0}$};
+                
+                % Normal vector
+                \draw[->, thick, SecondaryColor] (2, 1, 0) -- (1,2,-1);
+                \node[above] at (1,2.5) {$\mathbf{n}$};
+                
+                \pause
+                % Test point
+                
+                % Distance illustration
+                \fill[AccentColor] (-0.5,2) circle (2pt);
+                \node[above] at (-0.5,2) {$\mathbf{P}$};
+                \draw[dashed, thin] (-0.5,2,0) -- (1,0.5,1.5) node[midway, left] {$d$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    \only<2->{
+        \begin{conceptbox}{Point-Plane Distance}
+            If $\mathbf{n}$ is normalized: $d = \mathbf{n} \cdot \mathbf{P} + D = \mathbf{n} \cdot (\mathbf{P} - \mathbf{P_0})$ \\
+            \textbf{Signed distance:} $d > 0$ (front), $d < 0$ (back), $d = 0$ (on plane)
+        \end{conceptbox}
+    }
+\end{frame}
+
 \begin{frame}{Ray-Plane Intersection}
     \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Plane Equation}
-                Implicit form:
-                \begin{align}
-                    \mathbf{n} \cdot \mathbf{P} + D & = 0
-                \end{align}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Intersection Method}
+                \textbf{Step 1:} Substitute ray into equation
+                \begin{align*}
+                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D &= 0\\
+                    \mathbf{n} \cdot \mathbf{R_o} + t(\mathbf{n} \cdot \mathbf{R_d}) + D &= 0
+                \end{align*}
+                
+                \textbf{Step 2:} Solve for parameter $t$
+                \begin{align*}
+                    t = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % 3D Plane
+                \begin{scope}[canvas is xy plane at z=0.3, transform shape]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] 
+                        (-0.5,0.5) -- (2.5,0.5) -- (3,2) -- (0,2) -- cycle;
+                \end{scope}
+                
+                % Normal vector
+                \draw[->, thick, SecondaryColor] (1.25,1.25) -- (0.75,2.25);
+                \node[left] at (0.75,2.25) {$\mathbf{n}$};
+                
+                % Ray
+                \draw[ray, very thick] (-1,-1) -- (2.5,2.5);
+                \node[below] at (-1,-1) {$\mathbf{R_o}$};
+                \draw[->, red, thick] (-1,-1) -- (0,0) node[midway, right] {$\mathbf{R_d}$};
+                
+                % Intersection point
+                \fill[AccentColor] (1.25,1.25) circle (3pt);
+                \node[left] at (1.25,1.25) {\textcolor{AccentColor}{$\mathbf{P}(t)$}};
+                
+                % Parameter illustration
+                \draw[<->, thin] (-1,-2) -- (1.25,-2) node[midway, below] {$t$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    \pause
+    \begin{conceptbox}{Cases}
+        \begin{itemize}
+            \item If $\mathbf{n} \cdot \mathbf{R_d} = 0$: Ray parallel to plane (0 or infinite)
+            \item If $\mathbf{n} \cdot \mathbf{R_d} < 0$: Ray hits front face
+            \item If $\mathbf{n} \cdot \mathbf{R_d} > 0$: Ray hits back face
+        \end{itemize}
+    \end{conceptbox}
+\end{frame}
 
-                Substituting ray equation:
-                \begin{align}
-                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D & = 0                                                                        \\
-                    t                                                   & = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
-                \end{align}
+
+\begin{frame}{Additional Checks}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Validation Rules}
+                After computing $t$, verify:
+                \begin{enumerate}
+                    \item \textbf{Behind check:} $t > t_{\text{min}}$
+                    \item \textbf{Closest check:} $t < t_{\text{current}}$
+                    \item \textbf{Valid range:} $t \geq 0$
+                \end{enumerate}
+                
+                Where:
+                \begin{itemize}
+                    \item $t_{\text{min}}$: Minimum ray distance (not behind eye)
+                    \item $t_{\text{current}}$: Distance to closest intersection so far
+                \end{itemize}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % Ray origin
+                
+                % Ray direction
+                \draw[ray, very thick] (0,0) -- (5,2.5);
+                
+                % t_min region
+                \draw[red, very thick] (0,0) -- (1.5,0.75) node[midway, above, xshift=-0.5cm] {\textcolor{red}{$t < t_{\text{min}}$}};
+
+                \node[eye] (eye) at (1.5,0.75) {\faIcon{eye}};
+                
+                % Valid intersection
+                \draw[green, very thick] (eye) -- (3.5,1.75) node[midway, below, yshift=-0.1cm] {\textcolor{green}{Valid}};
+                
+                % Too far intersection
+                \fill[orange] (3.5,1.75) circle (3pt);
+                \node[above, yshift=0.5cm, xshift=0.25cm] at (3.5,1.75) {\textcolor{orange}{$t > t_{\text{current}}$}};
+                
+                % Behind ray
+                \fill[red] (-1,-0.5) circle (3pt);
+                \node[below] at (-1,-0.5) {\textcolor{red}{$t < 0$}};
+                \draw[red, dashed] (0,0) -- (-1,-0.5);
+
+                \fill[PrimaryColor] (0,0) circle (3pt);
+                \node[below] at (0.1,-0.1) {$\mathbf{R_o}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}    
+
+\end{frame}
+
+\begin{frame}{Ray-Triangle Intersection Overview}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{conceptbox}{Two Main Approaches}
+                \textbf{Method 1: Two-Step Process}
+                \begin{enumerate}
+                    \item Ray-plane intersection
+                    \item Inside/outside triangle test
+                \end{enumerate}
+                
+                \vspace{0.5cm}
+                \textbf{Method 2: Direct Barycentric}
+                \begin{enumerate}
+                    \item Set up 3×3 linear system
+                    \item Solve for t, $\beta$, $\gamma$ simultaneously
+                \end{enumerate}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                \begin{scope}[plane x={(0.707, 0, 0.707)}, plane y={(0, 0.9, -0.436)}, canvas is plane]
+                    % Triangle vertices in 3D space
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (3,0);
+                    \coordinate (C) at (1.5,2.5);
+                    
+                    % Triangle
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.7] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    \node[below] at (A) {$\mathbf{a}$};
+                    \node[below] at (B) {$\mathbf{b}$};
+                    \node[above] at (C) {$\mathbf{c}$};
+                \end{scope}
+                
+                % Ray coming from above
+                \begin{scope}[canvas is xy plane at z=2]
+                    \coordinate (RayStart) at (-1,1);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=0]
+                    \coordinate (RayEnd) at (2,1);
+                \end{scope}
+                
+                \draw[ray, very thick] (RayStart) -- (RayEnd);
+                \node[above] at (RayStart) {\raycolor{Ray}};
+                
+                % Intersection point
+                \fill[AccentColor] (0.9,0.75) circle (3pt);
+                \node[below right, xshift=0.25cm] at (0.9,0.75) {\textcolor{AccentColor}{Intersection}};
+
+                               
+                \draw[->, thick, SecondaryColor] (0.9,0.75) -- (-0.3,1.8) node[midway, left] {$\mathbf{n}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+\begin{frame}{What Are Barycentric Coordinates?}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Barycentric Definition}
+                Any point P in the triangle's plane:
+                \begin{align*}
+                    \mathbf{P}(\alpha,\beta,\gamma) &= \alpha\mathbf{a} + \beta\mathbf{b} + \gamma\mathbf{c}
+                \end{align*}
+                where: $\alpha + \beta + \gamma = 1$
+
+                \vspace{0.3cm}
+
+                \pause
+                \textbf{Physical Interpretation:}
+                \begin{itemize}
+                    \item $\alpha$, $\beta$, $\gamma$ are \textit{weights}
+                    \item P is the \textit{center of mass}
+                    \item Also called \textit{barycenter}
+                \end{itemize}
             \end{mathbox}
         \end{column}
         \begin{column}{0.5\textwidth}
             \begin{tikzpicture}[scale=0.8]
-                % Plane
-                \draw[thick, ObjectColor] (-1,0) -- (3,2);
-                \node[below] at (1,1) {\objectcolor{Plane}};
+                \begin{scope}[canvas is xy plane at z=0]
+                    % Triangle
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices with weights
+                    \fill[ObjectColor] (A) circle (3pt);
+                    \fill[ObjectColor] (B) circle (3pt);
+                    \fill[ObjectColor] (C) circle (3pt);
+                    \node[below] at (A) {$\mathbf{a}$ ($\alpha=0.3$)};
+                    \node[below] at (B) {$\mathbf{b}$ ($\beta=0.5$)};
+                    \node[above] at (C) {$\mathbf{c}$ ($\gamma=0.2$)};
+                    
+                    % Point P
+                    \coordinate (P) at (2.2,1.2);
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[left] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                    
+                    % Sub-triangles for area interpretation
+                    \draw[thin, SecondaryColor, dashed] (P) -- (A);
+                    \draw[thin, SecondaryColor, dashed] (P) -- (B);
+                    \draw[thin, SecondaryColor, dashed] (P) -- (C);
+                    
+                    % Area labels
+                    \fill[red!15, opacity=0.5] (A) -- (B) -- (P) -- cycle;
+                    \fill[green!15, opacity=0.5] (C) -- (B) -- (P) -- cycle;
+                    \fill[blue!15, opacity=0.5] (A) -- (C) -- (P) -- cycle;
 
-                % Normal vector
-                \draw[->, thick, SecondaryColor] (1,1) -- (0.5,2);
-                \node[left] at (0.5,2) {$\mathbf{n}$};
+                    \node[red] at (2.2,0.4) {$A_{\gamma}$};
+                    \node[green] at (2.6,1.7) {$A_{\alpha}$};
+                    \node[blue] at (1.6,1.7) {$A_{\beta}$};
 
-                % Ray
-                \draw[ray] (-0.5,0.5) -- (2.5,1.5);
-                \node[below] at (-0.5,0.5) {$\mathbf{R_o}$};
-                \node[above] at (1.5,1.2) {$\mathbf{R_d}$};
 
-                % Intersection point
-                \fill[AccentColor] (1,1) circle (3pt);
-                \node[above] at (1,1) {\textcolor{AccentColor}{Intersection}};
+                \end{scope}
+            \end{tikzpicture}
+            \vspace{0.3cm}
+            \only<3->{
+                \begin{conceptbox}{Area Relationship}
+                    $\alpha = \frac{A_{\alpha}}{A_{total}}$, $\beta = \frac{A_{\beta}}{A_{total}}$, \\
+                    $\gamma = \frac{A_{\gamma}}{A_{total}}$
+                \end{conceptbox}
+            }
+        \end{column}
+    \end{columns}
+    \href{https://www.desmos.com/calculator/765wcscgs5}{Check out the Desmos demo.}
+\end{frame}
 
-                % Distance illustration
-                \draw[dashed, thin] (1,1) -- (1,0);
-                \node[below] at (1,0) {$d$};
+
+
+\begin{frame}{Barycentric Coordinates: Inside vs Outside}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Triangle Interior Test}
+                Point P is \textbf{inside} triangle if:
+                \begin{align*}
+                    \alpha, \beta, \gamma &\geq 0
+                \end{align*}
+                
+                Since $\alpha + \beta + \gamma = 1$, we can rewrite as:
+                \begin{align*}
+                    \beta &\geq 0 \\
+                    \gamma &\geq 0 \\
+                    \beta + \gamma &\leq 1
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                \begin{scope}[canvas is xy plane at z=0]
+                    % Triangle
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    \node[below] at (A) {$\mathbf{a}$};
+                    \node[below] at (B) {$\mathbf{b}$};
+                    \node[above] at (C) {$\mathbf{c}$};
+                    
+                    % Inside point
+                    \fill[green] (1.5,1) circle (2pt);
+                    \node[right, green] at (1.5,1) {Inside};
+                    \node[right, green] at (0.3,0.3) {\scriptsize $\beta=0.4, \gamma=0.3$};
+                    
+                    % Outside points
+                    \fill[red] (-0.5,1) circle (2pt);
+                    \node[left, red] at (-0.5,1) {Outside};
+                    \node[left, red] at (-0.5,0.4) {$\beta<0$};
+                    
+                    \fill[red] (3,3.5) circle (2pt);
+                    \node[above, red] at (3,4.1) {Outside};
+                    \node[above, red] at (3,3.5) {$\beta+\gamma>1$};
+                    
+                    \fill[red] (4.5,0.5) circle (2pt);
+                    \node[right, red] at (4.5,0.5) {Outside};
+                    \node[right, red] at (4.5,0.0) {$\gamma<0$};
+                \end{scope}
             \end{tikzpicture}
         \end{column}
     \end{columns}
-
-    \begin{conceptbox}{Key Insight}
-        \textbf{Explicit} ray equation meets \textbf{implicit} plane equation = Clean intersection formula!
+    \pause
+    \begin{conceptbox}{Insight}
+        Barycentric coordinates doesn't just tell us if a point is inside a triangle, but also it's position with respect to other vertices.
     \end{conceptbox}
 \end{frame}
+
+\endinput
+
+\begin{frame}{Method 1: Two-Step Ray-Triangle Intersection}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Algorithm Steps}
+                \textbf{Step 1:} Ray-Plane Intersection
+                \begin{align}
+                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D &= 0 \\
+                    t &= -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
+                \end{align}
+                
+                \textbf{Step 2:} Inside/Outside Test
+                \begin{align}
+                    \mathbf{P} &= \mathbf{R_o} + t\mathbf{R_d} \\
+                    \mathbf{P} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                \end{align}
+                
+                Solve for $\beta$, $\gamma$ and check bounds
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % Step 1: Ray-plane intersection
+                \begin{scope}[plane x={(0.707, 0, 0.707)}, plane y={(0, 0.9, -0.436)}, canvas is plane]
+                    % Extended plane
+                    \fill[ObjectColor!10, opacity=0.3] (-1,-1) rectangle (5,4);
+                    
+                    % Triangle
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    
+                    % Plane intersection point (outside triangle)
+                    \coordinate (PlaneHit) at (3.5,1);
+                    \fill[orange] (PlaneHit) circle (2pt);
+                    \node[right, orange] at (PlaneHit) {Step 1: Plane hit};
+                    
+                    % Triangle intersection point
+                    \coordinate (TriHit) at (2,1);
+                    \fill[AccentColor] (TriHit) circle (2pt);
+                    \node[below, AccentColor] at (TriHit) {Step 2: Triangle hit};
+                \end{scope}
+                \draw[->, thick, SecondaryColor] (0.9,0.75) -- (-0.3,1.8) node[midway, left] {$\mathbf{n}$};
+                
+                % Rays
+                \begin{scope}[canvas is xy plane at z=2]
+                    \coordinate (RayStart1) at (2.5,0.5);
+                    \coordinate (RayStart2) at (1,0.5);
+                \end{scope}
+                
+                \draw[ray, orange] (RayStart1) -- (3.5,1);
+                \draw[ray, AccentColor] (RayStart2) -- (2,1);
+            
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    
+    \begin{conceptbox}{Pros \& Cons}
+        \textbf{Advantages:} Conceptually simple, reuses plane intersection code \\
+        \textbf{Disadvantages:} Two separate computations, potential numerical issues
+    \end{conceptbox}
+\end{frame}
+
+
+\endinput
+
+\begin{frame}{Method 2: Direct Barycentric Intersection}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Direct Approach}
+                Set ray equation equal to barycentric form:
+                \begin{align}
+                    \mathbf{R_o} + t\mathbf{R_d} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                \end{align}
+                
+                Rearrange to linear system:
+                \begin{align}
+                    \begin{bmatrix}
+                        -\mathbf{R_d} & (\mathbf{b}-\mathbf{a}) & (\mathbf{c}-\mathbf{a})
+                    \end{bmatrix}
+                    \begin{bmatrix}
+                        t \\ \beta \\ \gamma
+                    \end{bmatrix}
+                    = \mathbf{R_o} - \mathbf{a}
+                \end{align}
+                
+                Solve using Cramer's rule or LU decomposition
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                \begin{scope}[canvas is xy plane at z=0]
+                    % Triangle
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    \node[below] at (A) {$\mathbf{a}$};
+                    \node[below] at (B) {$\mathbf{b}$};
+                    \node[above] at (C) {$\mathbf{c}$};
+                    
+                    % Edge vectors
+                    \draw[->, SecondaryColor, thick] (A) -- (B);
+                    \node[below, SecondaryColor] at (2,0) {$\mathbf{b}-\mathbf{a}$};
+                    \draw[->, SecondaryColor, thick] (A) -- (C);
+                    \node[left, SecondaryColor] at (1,1.5) {$\mathbf{c}-\mathbf{a}$};
+                    
+                    % Intersection point
+                    \coordinate (P) at (2.2,1.2);
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[right, AccentColor] at (P) {$\mathbf{P}(t,\beta,\gamma)$};
+                    
+                    % Parameter vectors
+                    \draw[->, thin, AccentColor] (A) -- (P);
+                    \node[below, AccentColor, small] at (1.1,0.6) {$\beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})$};
+                \end{scope}
+                
+                % Ray
+                \begin{scope}[canvas is xy plane at z=2]
+                    \coordinate (RayStart) at (1.2,0.2);
+                \end{scope}
+                
+                \draw[ray, very thick] (RayStart) -- (2.2,1.2);
+                \draw[->, RayColor, thick] (2.2,1.2) -- (3.2,2.2);
+                \node[above, RayColor] at (2.7,1.7) {$\mathbf{R_d}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Cramer's Rule Solution}
+    \begin{mathbox}{Matrix Form}
+        \begin{align}
+            \begin{bmatrix}
+                -R_{dx} & (b_x-a_x) & (c_x-a_x) \\
+                -R_{dy} & (b_y-a_y) & (c_y-a_y) \\
+                -R_{dz} & (b_z-a_z) & (c_z-a_z)
+            \end{bmatrix}
+            \begin{bmatrix}
+                t \\ \beta \\ \gamma
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+                R_{ox} - a_x \\
+                R_{oy} - a_y \\
+                R_{oz} - a_z
+            \end{bmatrix}
+        \end{align}
+    \end{mathbox}
+    
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Cramer's Rule}
+                Let $A$ be the coefficient matrix determinant
+                \begin{align}
+                    t &= \frac{1}{A} \begin{vmatrix}
+                        (R_o-a)_x & (b-a)_x & (c-a)_x \\
+                        (R_o-a)_y & (b-a)_y & (c-a)_y \\
+                        (R_o-a)_z & (b-a)_z & (c-a)_z
+                    \end{vmatrix} \\
+                    \beta &= \frac{1}{A} \begin{vmatrix}
+                        -R_{dx} & (R_o-a)_x & (c-a)_x \\
+                        -R_{dy} & (R_o-a)_y & (c-a)_y \\
+                        -R_{dz} & (R_o-a)_z & (c-a)_z
+                    \end{vmatrix} \\
+                    \gamma &= \frac{1}{A} \begin{vmatrix}
+                        -R_{dx} & (b-a)_x & (R_o-a)_x \\
+                        -R_{dy} & (b-a)_y & (R_o-a)_y \\
+                        -R_{dz} & (b-a)_z & (R_o-a)_z
+                    \end{vmatrix}
+                \end{align}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{conceptbox}{Implementation Notes}
+                \textbf{Validity Check:}
+                \begin{itemize}
+                    \item $t > 0$ (intersection in front)
+                    \item $\beta \geq 0$ (inside triangle)
+                    \item $\gamma \geq 0$ (inside triangle)
+                    \item $\beta + \gamma \leq 1$ (inside triangle)
+                \end{itemize}
+                
+                \vspace{0.3cm}
+                \textbf{Efficiency Tips:}
+                \begin{itemize}
+                    \item Early exit if $A \approx 0$ (parallel)
+                    \item Test bounds before computing all determinants
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Comparison and Applications}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{conceptbox}{Method Comparison}
+                \textbf{Two-Step Method:}
+                \begin{itemize}
+                    \item[+] Conceptually simple
+                    \item[+] Reuses existing plane code
+                    \item[-] Two separate computations
+                    \item[-] Potential numerical issues
+                \end{itemize}
+                
+                \vspace{0.5cm}
+                \textbf{Barycentric Method:}
+                \begin{itemize}
+                    \item[+] Single computation
+                    \item[+] Gets barycentric coords for free
+                    \item[+] More numerically stable
+                    \item[-] Slightly more complex setup
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                \begin{scope}[canvas is xy plane at z=0]
+                    % Triangle with texture coordinates
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices with texture coords
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    \node[below] at (A) {$\mathbf{a}$ (0,0)};
+                    \node[below] at (B) {$\mathbf{b}$ (1,0)};
+                    \node[above] at (C) {$\mathbf{c}$ (0.5,1)};
+                    
+                    % Intersection point
+                    \coordinate (P) at (2.2,1.2);
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[right, AccentColor] at (P) {$\mathbf{P}$};
+                    \node[right, AccentColor, small] at (2.2,0.9) {$tex = \beta t_b + \gamma t_c$};
+                \end{scope}
+            \end{tikzpicture}
+            
+            \vspace{0.3cm}
+            \begin{alertbox}{Bonus Applications}
+                Barycentric coordinates enable:
+                \begin{itemize}
+                    \item Texture coordinate interpolation
+                    \item Normal vector interpolation
+                    \item Color interpolation
+                    \item Any per-vertex attribute!
+                \end{itemize}
+            \end{alertbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
 
 \begin{frame}{Ray-Sphere Intersection}
     \begin{columns}
