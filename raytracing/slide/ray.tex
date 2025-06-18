@@ -1,4 +1,4 @@
-\section{Ray Generation}
+\section{Mathematics of Rays}
 \begin{frame}{What is a Ray?}
     \begin{columns}
         \begin{column}{0.5\textwidth}
@@ -224,7 +224,7 @@
                 
                 Where:
                 \begin{itemize}
-                    \item $t_{\text{min}}$: Minimum ray distance (not behind eye)
+                    \item $t_{\text{min}}$: Minimum ray distance (not behind eye/screen)
                     \item $t_{\text{current}}$: Distance to closest intersection so far
                 \end{itemize}
             \end{mathbox}
@@ -392,7 +392,7 @@
             }
         \end{column}
     \end{columns}
-    \href{https://www.desmos.com/calculator/765wcscgs5}{Check out the Desmos demo.}
+    \href{https://www.desmos.com/calculator/rb2zeav9og}{Check out the Desmos demo.}
 \end{frame}
 
 
@@ -467,7 +467,7 @@
                     \item  The sides
                         $\mathbf{e_1} = \mathbf{b} - \mathbf{a}$ and $\mathbf{e_2} = \mathbf{c} - \mathbf{a}$ are linearly independent vectors on the triangle's plane.
                     \pause
-                    \item Therefore, any point $\mathbf{P}$ in the triangle's plane can be expressed as a linear combination of these vectors.
+                    \item Therefore, any vector in the triangle's plane (e.g. $\mathbf{P} - \mathbf{a}$) can be expressed as a linear combination of these vectors.
                     \pause
                     \item We can express $\mathbf{P}$ as:
                         \begin{align*}
@@ -520,16 +520,16 @@
             \begin{mathbox}{Area Interpretation}
                 \begin{itemize}
                     \small
-                    \item  Let $\hat{\mathbf{n}}$ be an unit vector in the direction of the altitude from $C$. 
+                    \item  Let $\hat{\mathbf{u}}$ be an unit vector in the direction of the altitude towards $C$. 
                     \pause
-                    \item  The height of the triangle is $h = \hat{\mathbf{n}} \cdot (\mathbf{c} - \mathbf{a})$ (projection).
+                    \item  The height of the triangle is $h = \hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a})$ (projection).
                     \pause
-                    \item  The height of the shaded triangle is $h' = \hat{\mathbf{n}} \cdot (\mathbf{P} - \mathbf{a})$.
+                    \item  The height of the shaded triangle is $h' = \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a})$.
                     \pause
                     \item  Hence, \begin{align*}
                         A_{\gamma} &= \frac{1}{2} \cdot h' \cdot |\mathbf{b} - \mathbf{a}| \\
-                        &= \frac{1}{2} \cdot \left (\hat{\mathbf{n}} \cdot (\mathbf{P} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
-                        &= \frac{1}{2} \cdot \gamma \left (\hat{\mathbf{n}} \cdot (\mathbf{c} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
+                        &= \frac{1}{2} \cdot \left (\hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
+                        &= \frac{1}{2} \cdot \gamma \left (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
                         &= \gamma \frac{1}{2} \cdot h \cdot |\mathbf{b} - \mathbf{a}| = \gamma A_{total}
                     \end{align*}
                 \end{itemize}
@@ -562,7 +562,7 @@
                     \fill[red!60, opacity=0.2] (A) -- (P) -- (B) -- cycle;
                     \draw[PrimaryColor, dashed, thin] (A) -- (P) -- (B);
 
-                    \draw[->, blue, thick] (2, 0) -- (2, 1) node[midway, right] {$\hat{\mathbf{n}}$};
+                    \draw[->, blue, thick] (2, 0) -- (2, 1) node[midway, right] {$\hat{\mathbf{u}}$};
                     \draw[gray, thin] (2, 0) -- (2, 3) node[midway, right, yshift=0.3cm] {\small $h$};
                     \draw[gray, thin] (1.7, 0) -- (1.7, 1.6) node[midway, left, xshift=0.1cm] {\small $h'$};
 
@@ -576,13 +576,14 @@
                 Since, $\mathbf{P} = \mathbf{a} + \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a})$, 
                 \begin{align*}
                     \mathbf{P} - \mathbf{a} = \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a}) \\
-                    \hat{\mathbf{n}} \cdot (\mathbf{P} - \mathbf{a}) = \gamma (\hat{\mathbf{n}} \cdot (\mathbf{c} - \mathbf{a}))
+                    \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) = \gamma (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}))
                 \end{align*}
-                Since $\hat{\mathbf{n}}$ is perpendicular to $\mathbf{b} - \mathbf{a}$.
+                Since $\hat{\mathbf{u}}$ is perpendicular to $\mathbf{b} - \mathbf{a}$.
             }
         \end{column}
     \end{columns}
 \end{frame}
+
 
 
 \begin{frame}{Method 1: Two-Step Ray-Triangle Intersection}
@@ -596,7 +597,6 @@
                 \only<2->{
                     \textbf{Step 2:} Inside/Outside Test
                     \begin{align*}
-                        \mathbf{P} &= \mathbf{R_o} + t\mathbf{R_d} \\
                         \mathbf{P} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
                     \end{align*}
                     
