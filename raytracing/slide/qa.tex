@@ -5,12 +5,11 @@
         \vspace{1cm}
         
         \begin{tikzpicture}
-            \node[circle, fill=LightColor, minimum size=3cm] at (0,0) {\Huge \faIcon{question}};
-            
             % Decorative rays
             \foreach \angle in {0,45,90,135,180,225,270,315} {
                 \draw[lightray] (0,0) -- (\angle:2.5);
-            }
+                }
+            \node[circle, fill=LightColor, minimum size=3cm] at (0,0) {\Huge \faIcon{question}};
         \end{tikzpicture}
         
         \vspace{1cm}
