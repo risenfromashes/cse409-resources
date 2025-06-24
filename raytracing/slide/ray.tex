@@ -854,21 +854,51 @@
                             \end{vmatrix} \\
                             &= 2 A_{total} \hat{\mathbf{n}} 
                         \end{align*}
+                        $\mathbf{N}$ is the normal vector of the triangle scaled by twice the area.
                     }
                     \only<2>{
-                        \begin{itemize}
-                            \item $\mathbf{N}$ is the normal vector of the triangle scaled by twice the area.
-                            \item $\mathbf{N} \cdot \mathbf{R}_d$ is the projected area of the triangle 
-                                onto the plane perpendicular to the ray direction. 
-                        \end{itemize}                        
+                        We project the triangle onto the plane perpendicular to the ray direction $\mathbf{R_d}$.
+                    }
+                    \only<3>{
+                        $\mathbf{N} \cdot (-\mathbf{R}_d)$ is twices the projected area of the triangle 
+                                onto the plane perpendicular to the ray direction.                       
                         \begin{align*}
-                            \mathbf{N} \cdot \mathbf{R}_d
+                            \mathbf{N} \cdot (-\mathbf{R}_d)
                             &= \begin{vmatrix}
                                 -R_x & -R_y & -R_z \\
                                 b_x - a_x & b_y - a_y & b_z - a_z \\
                                 c_x - a_x & c_y - a_y & c_z - a_z
                             \end{vmatrix} \\
+                            &= \begin{vmatrix}
+                                -R_x & b_x - a_x & c_x - a_x \\
+                                -R_y & b_y - a_y & c_y - a_y \\
+                                -R_z & b_z - a_z & c_z - a_z
+                            \end{vmatrix} \\
                             & \propto A_{total} 
+                        \end{align*}
+                    }
+                    \only<4>{
+                        Now what about the $A_\gamma$ triangle? \\
+                        Same idea but a bit different.
+                    }
+                    \only<5>{
+                        \begin{itemize}
+                            \item Instead of projecting the triangle between $\mathbf{a}$, $\mathbf{c}$ and $\mathbf{P}$, 
+                        we project the triangle between $\mathbf{a}$, $\mathbf{c}$ and $\mathbf{R}_o$.
+                            \item From the perspective of the ray,
+                        points $\mathbf{P}$ and $\mathbf{R}_o$ are the same point, as both fall on the ray.
+                        \end{itemize}
+                    }
+                    \only<6>{
+                        (Twice) the area of the triangle between $\mathbf{a}$, $\mathbf{c}$ and $\mathbf{R}_o$ projected onto the plane perpendicular to the ray direction $\mathbf{R}_d$ is given by:
+                        \begin{align*}
+                            & (\mathbf{R}_o - \mathbf{a}) \times (\mathbf{c} - \mathbf{a}) \cdot (-\mathbf{R}_d) \\
+                            =& \begin{vmatrix}
+                                -R_x & -R_y & -R_z \\
+                                b_x - a_x & b_y - a_y & b_z - a_z \\
+                                R_{ox} - a_x & R_{oy} - a_y & R_{oz} - a_z
+                            \end{vmatrix} \\
+                            &\propto A_{\gamma}
                         \end{align*}
                     }
                 \end{mathbox}
@@ -879,6 +909,9 @@
                 \begin{tikzpicture}[scale=0.5]
                     % Point P
                     \coordinate (P) at (2.2,1.2,0);
+                    \coordinate (Ro) at ($(2.2,1.2,0)-8*(-0.707,0,-0.707)$);
+                    \coordinate (Rd) at ($(2.2,1.2,0)-5*(-0.707,0,-0.707)$);
+                    \coordinate (Rf) at ($(2.2,1.2,0)+8*(-0.707,0,-0.707)$);
                     \begin{scope}[canvas is xy plane at z=0]
                         % Triangle
                         \coordinate (A) at (0,0);
@@ -906,6 +939,17 @@
 
                         \node[blue] at (1.6,1.7) {$A_{\beta}$};
                     \end{scope}
+
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                    \draw[blue, ->] (P) --++ (0, 0, 6) node[right] {$\mathbf{N}$};
+                    \only<5->{
+                        \draw[thick, green, fill=green!30, opacity=0.5] (Ro) -- (A) -- (C) -- cycle;
+                    }
+                    \only<4->{
+                        \fill[blue!50, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+                    }
                     \only<2->{    
                         \begin{scope}[
                             plane origin={(2.2, 1.2, 0)},
@@ -916,21 +960,20 @@
                             \draw[PrimaryColor!60, opacity=0.8] (-3,-3) rectangle (3,3);
                             \fill[PrimaryColor!60, opacity=0.5] (-3,-3) rectangle (3,3);
 
-                            \coordinate (A) at (-1.556,-1.2);
-                            \coordinate (B) at (1.273,-1.2);
-                            \coordinate (C) at (-0.141,1.8);
-                            \draw[thick, red, fill=red!15, opacity=0.3] (A) -- (B) -- (C) -- cycle;
+                            \coordinate (A1) at (-1.556,-1.2);
+                            \coordinate (B1) at (1.273,-1.2);
+                            \coordinate (C1) at (-0.141,1.8);
+                            \only<3,6->{
+                                \draw[thick, red, fill=red!15, opacity=0.3] (A1) -- (B1) -- (C1) -- cycle;
+                            }
+                            \only<6->{
+                                \draw[thick, orange, fill=orange!80, opacity=0.3] (P) -- (A1) -- (C1) -- cycle;
+                            }
                         \end{scope}
-                        \coordinate (Ro) at ($(2.2,1.2,0)-8*(-0.707,0,-0.707)$);
-                        \coordinate (Rd) at ($(2.2,1.2,0)-5*(-0.707,0,-0.707)$);
-                        \coordinate (Rf) at ($(2.2,1.2,0)+8*(-0.707,0,-0.707)$);
                         \draw[PrimaryColor,fill=PrimaryColor] (Ro) circle (2pt) node[below] {$\mathbf{R_o}$};
                         \draw[ray] (Ro) -- (Rf);
                         \draw[->, red, thick] (Ro) -- (Rd) node[midway, above] {$\mathbf{R_d}$};
                     }
-                    \fill[AccentColor] (P) circle (3pt);
-                    \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
-                    \draw[blue, ->] (P) --++ (0, 0, 6) node[right] {$\mathbf{N}$};
                 \end{tikzpicture}
             \end{column}
         \end{columns}
