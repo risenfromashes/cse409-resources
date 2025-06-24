@@ -1,0 +1,122 @@
+
+\begin{frame}{General Quadric Surfaces}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Quadric Surface Definition}
+                General equation:
+                \begin{align*}
+                    Ax^2 + By^2 + Cz^2 + Dxy + Eyz \\ + Fxz
+                    + Gx + Hy + Iz + J = 0
+                \end{align*}
+                
+                \textbf{Common Quadric Surfaces:}
+                \begin{itemize}
+                    \item \textbf{Ellipsoid:} $\frac{x^2}{a^2} + \frac{y^2}{b^2} + \frac{z^2}{c^2} = 1$
+                    \item \textbf{Cone:} $\frac{x^2}{a^2} - \frac{y^2}{b^2} + \frac{z^2}{c^2} = 0$
+                    \item \textbf{Cylinder:} $\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1$
+                    \item \textbf{Hyperboloid \& Paraboloid}
+                \end{itemize}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % 3D coordinate system
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1,-1) node[below left] {$z$};
+                
+                % Ellipsoid representation
+                \begin{scope}[canvas is xy plane at z=1]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.6] 
+                        (1.5,1.5) ellipse (1.2 and 0.8);
+                \end{scope}
+                
+                % Ray intersecting ellipsoid
+                \draw[ray, very thick] (-2,0) -- (3,2.5);
+                \draw[->, red, thick] (-2,0) -- (-0.5,0.75) node[midway, above] {$\mathbf{R_d}$};
+                
+                % Intersection points
+                \fill[AccentColor] (0.5,1.25) circle (2pt);
+                \fill[AccentColor] (1.5,1.75) circle (2pt);
+                \node[below] at (0.5,1.25) {\textcolor{AccentColor}{$t_1$}};
+                \node[below] at (1.5,1.75) {\textcolor{AccentColor}{$t_2$}};
+                
+                \fill[AccentColor] (-2,0) circle (2pt);
+                \node[below, AccentColor] at (-2,0)  {$\mathbf{R_o}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    
+    \vspace{0.3cm}
+    \href{https://tutorial.math.lamar.edu/Classes/CalcIII/QuadricSurfaces.aspx}{\alert{Reference:} Quadric Surfaces in Paul's Online Notes}
+\end{frame}
+
+\begin{frame}{Ray-Quadric Surface Intersection}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Intersection Method}
+                \only<1>{
+                    \textbf{Step 1:} Substitute ray equation into quadric
+                    \begin{align*}
+                        \mathbf{P}(t) &= \mathbf{R_o} + t \cdot \mathbf{R_d}\\
+                        P_x &= R_{0x} + t \cdot R_{dx}\\
+                        P_y &= R_{0y} + t \cdot R_{dy}\\
+                        P_z &= R_{0z} + t \cdot R_{dz}
+                    \end{align*}
+                }
+                \only<2>{
+                    \textbf{Step 2:} Results in quadratic equation
+                    \begin{align*}
+                        ax^2 + bx + c = 0
+                    \end{align*}
+                }
+                \only<3->{
+                    \textbf{Step 3:} Solve using quadratic formula
+                    \begin{align*}
+                        t = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+                    \end{align*}
+                }
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % 3D coordinate system
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1,-1) node[below left] {$z$};
+                
+                % Ellipsoid representation
+                \begin{scope}[canvas is xy plane at z=1]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.6] 
+                        (1.5,1.5) ellipse (1.2 and 0.8);
+                \end{scope}
+                
+                % Ray intersecting ellipsoid
+                \draw[ray, very thick] (-2,0) -- (3,2.5);
+                \draw[->, red, thick] (-2,0) -- (-0.5,0.75) node[midway, above] {$\mathbf{R_d}$};
+                
+                % Intersection points
+                \fill[AccentColor] (0.5,1.25) circle (2pt);
+                \fill[AccentColor] (1.5,1.75) circle (2pt);
+                \node[below] at (0.5,1.25) {\textcolor{AccentColor}{$t_1$}};
+                \node[below] at (1.5,1.75) {\textcolor{AccentColor}{$t_2$}};
+                
+                \fill[AccentColor] (-2,0) circle (2pt);
+                \node[below, AccentColor] at (-2,0)  {$\mathbf{R_o}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    
+    \only<4->{
+        \begin{conceptbox}{Solution Cases}
+            \small
+            Check the discriminant $\Delta = b^2 - 4ac$:
+            \begin{itemize}
+                \item \textbf{$\Delta > 0$:} Two real solutions (ray intersects surface twice)
+                \item \textbf{$\Delta = 0$:} One solution (ray tangent to surface)  
+                \item \textbf{$\Delta < 0$:} No real solutions (ray misses surface)
+                \item \textbf{Accept:} Accept smaller $t$ such that $t_{\text{\text{min}}} < t < t_{\text{\text{current}}}$
+            \end{itemize}
+        \end{conceptbox}
+    }
+\end{frame}

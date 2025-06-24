@@ -1,0 +1,387 @@
+\subsubsection{Ray-AABB Intersection}
+\begin{frame}{Ray-AABB Intersection: Overview}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{conceptbox}{Axis-Aligned Bounding Box}
+                A simple 3D box or rectangle aligned with the coordinate axes.
+                \begin{itemize}
+                    \item The sides are parallel to the axes, that's why it's called \textbf{axis-aligned}.
+                    \item Usually used to enclose complex objects, which is why it's called a \textbf{bounding box}.
+                    \item Very efficient for intersection tests. \\
+                          (Just test 6 planes)
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[->, scale=0.7]
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1.2,-1.2) node[below left] {$z$};
+
+                \begin{scope}[canvas is zx plane at y=2]
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=2]
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is yz plane at x=2]
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=4]
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is yz plane at x=4]
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is zx plane at y=4]
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{AABB Mathematical Representation}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{AABB Representation}
+                \small
+                \begin{align*}
+                    \text{AABB} = \left\{ 
+                    (x, y, z) \,\middle|\,
+                    \begin{array}{c}
+                    x_{\min} \leq x \leq x_{\max} \\
+                    y_{\min} \leq y \leq y_{\max} \\
+                    z_{\min} \leq z \leq z_{\max}
+                    \end{array}
+                    \right\}
+                \end{align*}
+                
+                We can store,
+                \begin{align*}
+                    \mathbf{P}_{\text{min}} &= (x_{\text{min}}, y_{\text{min}}, z_{\text{min}}) \\
+                    \mathbf{P}_{\text{max}} &= (x_{\text{max}}, y_{\text{max}}, z_{\text{max}}) \\
+                \end{align*} 
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[->, scale=0.7]
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1.2,-1.2) node[below left] {$z$};
+
+                \begin{scope}[canvas is zx plane at y=2]
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=2]
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is yz plane at x=2]
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=4]
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is yz plane at x=4]
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \begin{scope}[canvas is zx plane at y=4]
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                \draw[PrimaryColor!80, fill=PrimaryColor!80] (2,2,2) circle (2pt) node[below right] {$\mathbf{P}_{\text{min}}$};
+                \draw[PrimaryColor!80, fill=PrimaryColor!80] (4,4,4) circle (2pt) node[above left] {$\mathbf{P}_{\text{max}}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Ray-AABB Intersection: Slab Method}
+    \begin{columns}
+        \begin{column}{0.55\textwidth}
+            \begin{mathbox}{Approach}
+                \only<1-2>{
+                    \textbf{Step 1:} Consider $x$ axis first. There are two planes:
+                    \alt<2>{
+                        \begin{align*}
+                            \underbrace{z}_{\mathbf{n}=(0,0,1)} \quad &\underbrace{- z_{\text{min}}}_{D=-z_{\text{min}}} &= 0 \\
+                            z \quad \quad \  &- z_{\text{max}} &= 0
+                        \end{align*}
+                    }{
+                        \begin{align*}
+                            z &= z_{\text{min}} \\
+                            z &= z_{\text{max}}
+                        \end{align*}
+                    }
+                }
+                \only<3>{
+                    \textbf{Step 2:} Compute intersection with ray:
+                    \begin{align*}
+                        t_{\text{min},x} &= - \frac{D + \mathbf{n}\cdot \mathbf{R_o}}{\mathbf{n}\cdot \mathbf{R_d}} \\
+                                &= - \frac{-z_{\text{min}} + R_{oz}}{R_{dz}} \\
+                        t_{\text{min},x} &= \frac{z_{\text{min}} - R_{oz}}{R_{dz}} 
+                    \end{align*}
+                    Similarly,
+                    \begin{align*}
+                        t_{\text{max},x} &= \frac{z_{\text{max}} - R_{oz}}{R_{dz}}
+                    \end{align*}
+                }
+                \only<4>{
+                    \textbf{Step 3:} Similarly for $y$ and $z$ axes:
+                    \begin{align*}
+                        t_{\text{min},y} &= \frac{y_{\text{min}} - R_{oy}}{R_{dy}} \\
+                        t_{\text{max},y} &= \frac{y_{\text{max}} - R_{oy}}{R_{dy}} \\
+                        t_{\text{min},z} &= \frac{z_{\text{min}} - R_{oz}}{R_{dz}} \\
+                        t_{\text{max},z} &= \frac{z_{\text{max}} - R_{oz}}{R_{dz}}
+                    \end{align*}
+                }
+
+                \only<5->{
+                    \textbf{Step 4:} Find the overlap of the intervals:
+                    \begin{align*}
+                        t_{\text{enter}} &= \max(t_{\text{min},x}, t_{\text{min},y}, t_{\text{min},z}) \\
+                        t_{\text{exit}} &= \min(t_{\text{max},x}, t_{\text{max},y}, t_{\text{max},z})
+                    \end{align*}
+                    \begin{tikzpicture}
+                        \draw[<->, PrimaryColor, thick] (-2.5,0) -- (2.5,0) node[midway, above] {$t$};
+                        \draw[<->, PrimaryColor, thick] (-2.5,-0.5) -- (2.5,-0.5);
+                        \draw[<->, PrimaryColor, thick] (-2.5,-1) -- (2.5,-1);
+                        \draw[<->, PrimaryColor, thick] (-2.5,-1.5) -- (2.5,-1.5);
+                        % x‐slab interval (blue): from -1.8 to 2.2
+                        \draw[blue, fill=blue!80] (-1.8,-0.05) rectangle (2.2,0.05);
+                        \node[blue, below] at (2.2,0)   {\footnotesize $t_{\min,x}$};
+                        \node[blue, below] at (-1.8,0)  {\footnotesize $t_{\max,x}$};
+
+                        % y‐slab interval (green): from -1.2 to 1.3
+                        \draw[green, fill=green!80] (-1.2,-0.55) rectangle (1.3,-0.45);
+                        \node[green, below] at (-1.2,-0.5) {\footnotesize $t_{\min,y}$};
+                        \node[green, below] at (1.3,-0.5)  {\footnotesize $t_{\max,y}$};
+
+                        % z‐slab interval (red): from 0.5 to 1.7
+                        \draw[red, fill=red!80] (0.5,-1.05) rectangle (1.7,-0.95);
+                        \node[red, below] at (0.5,-1)   {\footnotesize $t_{\min,z}$};
+                        \node[red, below] at (1.7,-1)   {\footnotesize $t_{\max,z}$};
+
+                        % enter/exit (AccentColor): exact overlap = [0.5, 1.3]
+                        \draw[AccentColor, fill=AccentColor!80] (0.5,-1.55) rectangle (1.3,-1.45);
+                        \node[AccentColor, below] at (0.5,-1.5) {\footnotesize $t_{\text{enter}}$};
+                        \node[AccentColor, below] at (1.3,-1.5) {\footnotesize $t_{\text{exit}}$};
+                    \end{tikzpicture}
+                }
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.45\textwidth}
+            \small
+            \begin{tikzpicture}[->, scale=0.5]
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1.2,-1.2) node[below left] {$z$};
+                \coordinate (RD) at (0.5,0.5,-2);
+                \coordinate (Rd) at ($0.4714*(RD)$);
+                \coordinate (Px1) at (2, 1.5, 8);
+                \coordinate (Px2) at (4, 3.5, 0);
+                \coordinate (Py1) at (2.5, 2, 6);
+                \coordinate (Py2) at (4.5, 4, -2);
+                \coordinate (Pz1) at (3.5, 3, 2); 
+                \coordinate (Pz2) at (3,  2.5, 4); 
+                \coordinate (Ro) at ($(Px1)-4*(Rd)$);
+                \coordinate (Rf) at ($(Px2)+4*(Rd)$);
+                \only<4->{
+                \begin{scope}[canvas is zx plane at y=2]
+                    \draw[green, fill=green!50, opacity=0.15] (-2,0) rectangle (6,6);
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                }
+                \only<1->{
+                \begin{scope}[canvas is xy plane at z=2]
+                    \draw[red, fill=red!50, opacity=0.15] (0,0) rectangle (6,6);
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                    \only<1-2>{
+                        \node[red, below right ] at (6,0) {$z = z_{\text{max}}$};
+                    }
+                \end{scope}
+                }
+                \only<2>{
+                    \draw[blue,->] (3,3,2) -- (3,3,4) node[below] {$\mathbf{n}$};  
+                }
+                \only<4->{
+                \begin{scope}[canvas is yz plane at x=2]
+                    \draw[blue, fill=blue!50, opacity=0.15] (0,0) rectangle (6,8);
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                }
+                \only<1->{
+                \begin{scope}[canvas is xy plane at z=4]
+                    \draw[red, fill=red!50, opacity=0.15] (0,0) rectangle (6,6);
+                    \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
+                    \only<1-2>{
+                        \node[red, below right ] at (6,0) {$z = z_{\text{min}}$};
+                    }
+                \end{scope}
+                }
+                \only<4->{
+                \begin{scope}[canvas is yz plane at x=4]
+                    \draw[blue, fill=blue!50, opacity=0.15] (0,0) rectangle (6,8);
+                    \draw[blue, fill=blue!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                }
+                \only<4->{
+                \begin{scope}[canvas is zx plane at y=4]
+                    \draw[green, fill=green!50, opacity=0.15] (-2,0) rectangle (6,6);
+                    \draw[green, fill=green!20, opacity=0.6] (2,2) rectangle (4,4);
+                \end{scope}
+                }
+                \only<3->{
+                    \draw[ray, very thick] (Ro) -- (Rf);
+                    \draw[PrimaryColor, fill=PrimaryColor!60] (Ro) circle (2pt) node[below right] {$\mathbf{R_o}$};
+                    \draw[red, ->, thick] (Ro) --++ ($2*(Rd)$) node[below,xshift=0.3cm] {$\mathbf{R_d}$};
+                }
+                \only<3->{
+                    \fill[PrimaryColor!80] (Pz1) circle (2pt) node[below right] {$\mathbf{t}_{\text{min},z}$};
+                    \fill[PrimaryColor!80] (Pz2) circle (2pt) node[below right] {$\mathbf{t}_{\text{max},z}$};
+                }
+                \only<4->{
+                    \fill[PrimaryColor!80] (Py1) circle (2pt)
+                            node[below right] {$\mathbf{t_{\min,y}}$};
+                    \fill[PrimaryColor!80] (Py2) circle (2pt)
+                        node[below right] {$\mathbf{t_{\max,y}}$};
+                    \fill[PrimaryColor!80] (Px1) circle (2pt)
+                        node[above left] {$\mathbf{t_{\min,x}}$};
+                    \fill[PrimaryColor!80] (Px2) circle (2pt)
+                        node[above left] {$\mathbf{t_{\max,x}}$};
+                }
+                \only<5->{
+                    \draw[-, AccentColor, very thick] (Pz1) -- (Pz2);
+                }
+
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\endinput
+
+\begin{frame}{AABB Intersection: Final Algorithm}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{mathbox}{Ray-AABB Test}
+                \textbf{Step 1:} Compute all slab intersections
+                \begin{align*}
+                    t_{enter} &= \max(t_{min,x}, t_{min,y}, t_{min,z}) \\
+                    t_{exit} &= \min(t_{max,x}, t_{max,y}, t_{max,z})
+                \end{align*}
+                
+                \textbf{Step 2:} Check intersection conditions
+                \begin{itemize}
+                    \item \alert{Hit if:} $t_{enter} \leq t_{exit}$ and $t_{exit} \geq 0$
+                    \item \alert{Miss if:} $t_{enter} > t_{exit}$ or $t_{exit} < 0$
+                \end{itemize}
+                
+                \textbf{Step 3:} Return closest intersection
+                \begin{itemize}
+                    \item If $t_{enter} \geq 0$: return $t_{enter}$
+                    \item Else: return $t_{exit}$ (ray starts inside)
+                \end{itemize}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % 3D AABB with detailed ray intersection
+                \begin{scope}[
+                    x={(1cm,0cm)},
+                    y={(0cm,1cm)},
+                    z={(-0.5cm,-0.5cm)}
+                ]
+                    % AABB faces with transparency
+                    \fill[ObjectColor!15, opacity=0.8] (1,1,1) -- (3,1,1) -- (3,3,1) -- (1,3,1) -- cycle;
+                    \fill[ObjectColor!15, opacity=0.8] (1,1,3) -- (3,1,3) -- (3,3,3) -- (1,3,3) -- cycle;
+                    \fill[ObjectColor!15, opacity=0.6] (1,1,1) -- (1,3,1) -- (1,3,3) -- (1,1,3) -- cycle;
+                    \fill[ObjectColor!15, opacity=0.6] (3,1,1) -- (3,3,1) -- (3,3,3) -- (3,1,3) -- cycle;
+                    \fill[ObjectColor!15, opacity=0.6] (1,1,1) -- (3,1,1) -- (3,1,3) -- (1,1,3) -- cycle;
+                    \fill[ObjectColor!15, opacity=0.6] (1,3,1) -- (3,3,1) -- (3,3,3) -- (1,3,3) -- cycle;
+                    
+                    % AABB wireframe
+                    \draw[ObjectColor, thick] (1,1,1) -- (3,1,1) -- (3,3,1) -- (1,3,1) -- cycle;
+                    \draw[ObjectColor, thick] (1,1,3) -- (3,1,3) -- (3,3,3) -- (1,3,3) -- cycle;
+                    \draw[ObjectColor, thick] (1,1,1) -- (1,1,3);
+                    \draw[ObjectColor, thick] (3,1,1) -- (3,1,3);
+                    \draw[ObjectColor, thick] (3,3,1) -- (3,3,3);
+                    \draw[ObjectColor, thick] (1,3,1) -- (1,3,3);
+                    
+                    % Ray
+                    \draw[ray, very thick] (0,0,0) -- (4,4,4);
+                    \fill[PrimaryColor] (0,0,0) circle (2pt);
+                    
+                    % Intersection points
+                    \fill[AccentColor] (1,1,1) circle (3pt);
+                    \fill[AccentColor] (3,3,3) circle (3pt);
+                    
+                    % Labels
+                    \node[below] at (1,1,1) {$t_{enter}$};
+                    \node[above] at (3,3,3) {$t_{exit}$};
+                \end{scope}
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{AABB Implementation Optimizations}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{conceptbox}{Efficient Implementation}
+                \textbf{Early Exit Strategies:}
+                \begin{enumerate}
+                    \item Check each axis incrementally
+                    \item Exit immediately if $t_{enter} > t_{exit}$
+                    \item Use IEEE floating point properties
+                \end{enumerate}
+                
+                \vspace{0.3cm}
+                \textbf{Handle Edge Cases:}
+                \begin{itemize}
+                    \item $R_d = 0$: ray parallel to slab faces
+                    \item Negative ray direction: swap $t_{\text{min}}$ and $t_{\text{max}}$
+                    \item Ray starting inside AABB
+                \end{itemize}
+                
+                \vspace{0.3cm}
+                \textbf{Performance Notes:}
+                \begin{itemize}
+                    \item AABB test is \alert{much faster} than triangle test
+                    \item Enables BVH traversal with early pruning
+                    \item Critical for real-time ray tracing
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                % BVH tree visualization
+                \node[draw, ObjectColor, thick] at (0,3) {AABB Root};
+                \node[draw, ObjectColor] at (-1.5,1.5) {AABB L};
+                \node[draw, ObjectColor] at (1.5,1.5) {AABB R};
+                \node[draw, SecondaryColor] at (-2.5,0) {Tri 1};
+                \node[draw, SecondaryColor] at (-0.5,0) {Tri 2};
+                \node[draw, SecondaryColor] at (0.5,0) {Tri 3};
+                \node[draw, SecondaryColor] at (2.5,0) {Tri 4};
+                
+                % Connections
+                \draw[thick] (0,3) -- (-1.5,1.5);
+                \draw[thick] (0,3) -- (1.5,1.5);
+                \draw[thick] (-1.5,1.5) -- (-2.5,0);
+                \draw[thick] (-1.5,1.5) -- (-0.5,0);
+                \draw[thick] (1.5,1.5) -- (0.5,0);
+                \draw[thick] (1.5,1.5) -- (2.5,0);
+                
+                % Ray traversal
+                \draw[ray, very thick] (-3,2) -- (3,2);
+                \fill[AccentColor] (0,2) circle (2pt);
+                \node[above] at (0,2.3) {\small Hit Root};
+                \fill[red] (1.5,2) circle (2pt);
+                \node[above] at (1.5,2.3) {\small Hit R};
+                \draw[red, thick, opacity=0.5] (-1.5,1.5) circle (0.3);
+                \node[below] at (-1.5,1) {\small \color{red} Miss L};
+                
+                \node[below] at (0,-1) {\small BVH Acceleration};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}

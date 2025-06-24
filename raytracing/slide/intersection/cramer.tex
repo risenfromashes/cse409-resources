@@ -1,0 +1,235 @@
+%% optional
+{
+    \setbeamercolor{background canvas}{bg=PrimaryColor!30, fg=black}
+    \begin{frame}{Cramer's Rule Intuition}
+        \begin{columns}
+            \begin{column}{0.65\textwidth}
+                \begin{mathbox}{Determinant Interpretation}
+                    Remember, $\beta = \frac{A_{\beta}}{A_{\text{total}}}$? \\
+
+                    Determinants measure areas of projected triangles.
+                    \begin{align*}
+                        \begin{vmatrix}
+                            -R_{dx} & (b_x-a_x) & (c_x-a_x) \\
+                            -R_{dy} & (b_y-a_y) & (c_y-a_y) \\
+                            -R_{dz} & (b_z-a_z) & (c_z-a_z)
+                        \end{vmatrix} &\propto A_{\text{total}} \\
+                        \begin{vmatrix}
+                            -R_{dx} & R_ox-a_x & c_x-a_x \\
+                            -R_{dy} & R_oy-a_y & c_y-a_y \\
+                            -R_{dz} & R_oz-a_z & c_z-a_z
+                        \end{vmatrix} &\propto A_{\beta}
+                    \end{align*}
+                    
+                    \textbf{Why?}
+                \end{mathbox}
+                
+            \end{column}
+            \begin{column}{0.35\textwidth}
+                \centering
+                \begin{tikzpicture}[scale=0.6]
+                    \begin{scope}[canvas is xy plane at z=0]
+                        % Triangle
+                        \coordinate (A) at (0,0);
+                        \coordinate (B) at (4,0);
+                        \coordinate (C) at (2,3);
+                        
+                        \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                        
+                        % Vertices with weights
+                        \fill[ObjectColor] (A) circle (3pt);
+                        \fill[ObjectColor] (B) circle (3pt);
+                        \fill[ObjectColor] (C) circle (3pt);
+                        \node[below] at (A) {$\mathbf{a}$};
+                        \node[below] at (B) {$\mathbf{b}$};
+                        \node[above] at (C) {$\mathbf{c}$};
+                        
+                        % Point P
+                        \coordinate (P) at (2.2,1.2);
+                        \fill[AccentColor] (P) circle (3pt);
+                        \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                        
+                        % Sub-triangles for area interpretation
+                        \draw[thin, SecondaryColor, dashed] (P) -- (A);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (B);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (C);
+                        
+                        % Area labels
+                        \fill[blue!25, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+
+
+                    \end{scope}
+                \end{tikzpicture}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+        \begin{frame}{Cramer's Rule Intuition}
+        \begin{columns}
+            \begin{column}{0.65\textwidth}
+                \begin{mathbox}{Determinant Interpretation}
+                    \only<1>{
+                        The areas can be found by cross products of vectors. Consider |
+                        \begin{align*}
+                            \mathbf{N} &= \mathbf{(\mathbf{b} - \mathbf{a})} \times \mathbf{(\mathbf{c} - \mathbf{a})} \\
+                            &= \begin{vmatrix}
+                                \mathbf{i} & \mathbf{j} & \mathbf{k} \\
+                                b_x - a_x & b_y - a_y & b_z - a_z \\
+                                c_x - a_x & c_y - a_y & c_z - a_z
+                            \end{vmatrix} \\
+                            &= 2 A_{\text{total}} \hat{\mathbf{n}} 
+                        \end{align*}
+                        $\mathbf{N}$ is the normal vector of the triangle scaled by twice the area.
+                    }
+                    \only<2>{
+                        \begin{itemize}
+                            \small
+                            \item We project the triangle onto the plane perpendicular to the ray direction $\mathbf{R_d}$. 
+                            \item Which we can do if you just multiply the original area with the cosine of the angle between the plane of the triangle and the ray direction.
+                            \begin{align*}
+                                A'_{\text{total}} = A_{\text{total}} \cdot \cos(\theta)
+                            \end{align*}
+                            Where $\theta$ is the angle between the triangle's plane and the ray direction.
+                            \item $\theta$ is also the angle between the normal vector $\mathbf{N}$ and the opposite of the ray direction $-\mathbf{R}_d$. So we can write:
+                            \begin{align*}
+                                A'_{\text{total}} = \frac{1}{2} \mathbf{N} \cdot (-\mathbf{R}_d)
+                            \end{align*}
+                        \end{itemize}
+                    }
+                    \only<3>{
+                        Therefore, the first determinant in Cramer's can be interpreted as follows:                    
+                        \begin{align*}
+                            \mathbf{N} \cdot (-\mathbf{R}_d)
+                            &= \begin{vmatrix}
+                                -R_x & -R_y & -R_z \\
+                                b_x - a_x & b_y - a_y & b_z - a_z \\
+                                c_x - a_x & c_y - a_y & c_z - a_z
+                            \end{vmatrix} \\
+                            &= \begin{vmatrix}
+                                -R_x & b_x - a_x & c_x - a_x \\
+                                -R_y & b_y - a_y & c_y - a_y \\
+                                -R_z & b_z - a_z & c_z - a_z
+                            \end{vmatrix} \\
+                            &= 2 A'_{\text{total}} \propto A_{\text{total}} 
+                        \end{align*}
+                    }
+                    \only<4>{
+                        Now what about the $A_\gamma$ triangle? \\
+                        We also find $A'_{\gamma}$ by projecting the triangle $A_\gamma$ onto the plane perpendicular to the ray direction $\mathbf{R}_d$.
+                    }
+                    \only<5>{
+                        \begin{itemize}
+                            \item Instead of projecting the triangle $\triangle (\mathbf{a}, \mathbf{c}, \mathbf{P})$,
+                            we project the triangle $\triangle (\mathbf{a}, \mathbf{c}, \mathbf{R}_o)$.
+                            \item From the perspective of the ray,
+                        points $\mathbf{P}$ and $\mathbf{R}_o$ are the same point, as both fall on the ray.
+                            \item So, both triangles have the same the same area $A'_\gamma$ when projected to the plane perpendicular to the ray direction $\mathbf{R}_d$.
+                        \end{itemize}
+                    }
+                    \only<6>{
+                        The projected area of the triangle can again be found using cross product followed by the dot product with the ray direction.
+                        \begin{align*}
+                            & (\mathbf{R}_o - \mathbf{a}) \times (\mathbf{c} - \mathbf{a}) \cdot (-\mathbf{R}_d) \\
+                            =& \begin{vmatrix}
+                                -R_x & -R_y & -R_z \\
+                                R_{ox} - a_x & R_{oy} - a_y & R_{oz} - a_z \\
+                                c_x - a_x & c_y - a_y & c_z - a_z
+                            \end{vmatrix} \\
+                            =& \begin{vmatrix}
+                                -R_x & R_{ox} - a_x & c_x - a_x \\
+                                -R_y & R_{oy} - a_y & c_y - a_y \\
+                                -R_z & R_{oz} - a_z & c_z - a_z
+                            \end{vmatrix} \\
+                            =& 2 A'_\gamma \propto A_{\gamma}
+                        \end{align*}
+                    }
+                \end{mathbox}
+                
+            \end{column}
+            \begin{column}{0.35\textwidth}
+                \centering
+                \begin{tikzpicture}[scale=0.5]
+                    % Point P
+                    \coordinate (P) at (2.2,1.2,0);
+                    \coordinate (Ro) at ($(2.2,1.2,0)-8*(-0.707,0,-0.707)$);
+                    \coordinate (Rd) at ($(2.2,1.2,0)-6*(-0.707,0,-0.707)$);
+                    \coordinate (Rd2) at ($(2.2,1.2,0)-2*(-0.707,0,-0.707)$);
+                    \coordinate (Rf) at ($(2.2,1.2,0)+8*(-0.707,0,-0.707)$);
+                    \begin{scope}[canvas is xy plane at z=0]
+                        % Triangle
+                        \coordinate (A) at (0,0);
+                        \coordinate (B) at (4,0);
+                        \coordinate (C) at (2,3);
+                        
+                        \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                        
+                        % Vertices with weights
+                        \fill[ObjectColor] (A) circle (3pt);
+                        \fill[ObjectColor] (B) circle (3pt);
+                        \fill[ObjectColor] (C) circle (3pt);
+                        \node[below] at (A) {$\mathbf{a}$};
+                        \node[below] at (B) {$\mathbf{b}$};
+                        \node[above] at (C) {$\mathbf{c}$};
+                        
+                        
+                        % Sub-triangles for area interpretation
+                        \draw[thin, SecondaryColor, dashed] (P) -- (A);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (B);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (C);
+                        
+                        % Area labels
+                        \fill[blue!25, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+                    \end{scope}
+
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                    \draw[blue, ->] (P) --++ (0, 0, 6) node[right] {$\mathbf{N}$};
+                    \only<5->{
+                        \draw[thick, green, fill=green!30, opacity=0.5] (Ro) -- (A) -- (C) -- cycle;
+                    }
+                    \only<4->{
+                        \fill[blue!50, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+                    }
+                    \only<2->{    
+                        \begin{scope}[
+                            plane origin={(2.2, 1.2, 0)},
+                            plane x={(2.907, 1.2, -0.707)},
+                            plane y={(2.2, 2.2, 0)},
+                            canvas is plane    
+                        ]
+                            \draw[PrimaryColor!60, opacity=0.8] (-3,-3) rectangle (3,3);
+                            \fill[PrimaryColor!60, opacity=0.5] (-3,-3) rectangle (3,3);
+
+                            \coordinate (A1) at (-1.556,-1.2);
+                            \coordinate (B1) at (1.273,-1.2);
+                            \coordinate (C1) at (-0.141,1.8);
+                            \only<3,6->{
+                                \draw[thick, red, fill=red!15, opacity=0.3] (A1) -- (B1) -- (C1) -- cycle;
+                            }
+                            \only<3>{
+                                \node[red, right] at (P) {$A'_{\text{total}}$};
+                            }
+                            \only<4,6->{
+                                \draw[thick, orange, fill=orange!80, opacity=0.3] (P) -- (A1) -- (C1) -- cycle;
+                            }
+                            \only<4>{
+                                \node[orange, right] at (P) {$A'_{\gamma}$};
+                            }
+                        \end{scope}
+                        \draw[PrimaryColor,fill=PrimaryColor] (Ro) circle (2pt) node[below] {$\mathbf{R_o}$};
+                        \draw[ray] (Ro) -- (Rf);
+                        \draw[->, red, thick] (Ro) -- (Rd) node[midway, above] {$\mathbf{R_d}$};
+                        \only<2>{
+                            \draw[->, red, thick] (P) -- (Rd2) node[midway, above right] {$-\mathbf{R_d}$};
+                        }
+                    }
+                \end{tikzpicture}
+            \end{column}
+        \end{columns}
+    \end{frame}
+}

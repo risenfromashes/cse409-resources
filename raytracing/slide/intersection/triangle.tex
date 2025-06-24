@@ -1,0 +1,285 @@
+
+\begin{frame}{Ray-Triangle Intersection Overview}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{conceptbox}{Two Main Approaches}
+                \textbf{Method 1: Two-Step Process}
+                \begin{enumerate}
+                    \item Ray-plane intersection
+                    \item Inside/outside triangle test
+                \end{enumerate}
+                
+                \vspace{0.5cm}
+                \textbf{Method 2: Direct Barycentric}
+                \begin{enumerate}
+                    \item Set up 3×3 linear system
+                    \item Solve for t, $\beta$, $\gamma$ simultaneously
+                \end{enumerate}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                \begin{scope}[plane x={(0.707, 0, 0.707)}, plane y={(0, 0.9, -0.436)}, canvas is plane]
+                    % Triangle vertices in 3D space
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (3,0);
+                    \coordinate (C) at (1.5,2.5);
+                    
+                    % Triangle
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.7] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    \node[below] at (A) {$\mathbf{a}$};
+                    \node[below] at (B) {$\mathbf{b}$};
+                    \node[above] at (C) {$\mathbf{c}$};
+                \end{scope}
+                
+                % Ray coming from above
+                \begin{scope}[canvas is xy plane at z=2]
+                    \coordinate (RayStart) at (-1,1);
+                \end{scope}
+                \begin{scope}[canvas is xy plane at z=0]
+                    \coordinate (RayEnd) at (2,1);
+                \end{scope}
+                
+                \draw[ray, very thick] (RayStart) -- (RayEnd);
+                \node[above] at (RayStart) {\raycolor{Ray}};
+                
+                % Intersection point
+                \fill[AccentColor] (0.9,0.75) circle (3pt);
+                \node[below right, xshift=0.25cm] at (0.9,0.75) {\textcolor{AccentColor}{Intersection}};
+
+                               
+                \draw[->, thick, SecondaryColor] (0.9,0.75) -- (-0.3,1.8) node[midway, left] {$\mathbf{n}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\input{intersection/barycentric.tex}
+
+\begin{frame}{Method 1: Two-Step Ray-Triangle Intersection}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Algorithm Steps}
+                \textbf{Step 1:} Ray-Plane Intersection
+                \begin{align*}
+                   t = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}
+                \end{align*}
+                \only<2->{
+                    \textbf{Step 2:} Inside/Outside Test
+                    \begin{align*}
+                        \mathbf{P} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                    \end{align*}
+                    
+                    Solve for $\beta$, $\gamma$ and check bounds.
+                }
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                % Step 1: Ray-plane intersection
+
+                % Rays
+                \coordinate (RayStart1) at (2.5,-1, 4);
+                \draw[ray, orange] (RayStart1) -- (3.5,0);
+
+                \begin{scope}[plane x={(0.707, 0, 0.707)}, plane y={(0, 1, 0)}, canvas is plane]
+                    % Extended plane
+                    \fill[blue!30, opacity=0.3] (-2,-1) rectangle (7,4);
+                    \draw[blue!60, thin] (-2,-1) rectangle (7,4);
+                    
+                    % Triangle
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+                    
+                    % Vertices
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    
+                    % Plane intersection point (outside triangle)
+                    \coordinate (PlaneHit) at (5,0.05);
+                    \fill[orange] (PlaneHit) circle (3pt);
+                    \node[right, orange] at (PlaneHit) {\small Step 1: Plane hit};
+                    
+                    \pause
+                    % Triangle intersection point
+                    \coordinate (TriHit) at (2,1);
+                    \fill[AccentColor] (TriHit) circle (3pt);
+                    \draw[ray, AccentColor] (PlaneHit) -- (TriHit);
+                    \node[right, AccentColor, xshift=0.3cm] at (TriHit) {\small Step 2: Triangle hit};
+                \end{scope}
+                
+            
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+
+
+\begin{frame}{Method 2: Direct Barycentric Intersection}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Direct Approach}
+                \small
+                Set ray equation equal to barycentric form:
+                \begin{align*}
+                    \mathbf{R_o} + t\mathbf{R_d} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a})
+                \end{align*}
+                
+                Rearrange to linear system:
+                \begin{align*}
+                    \begin{bmatrix}
+                        -\mathbf{R_d} & (\mathbf{b}-\mathbf{a}) & (\mathbf{c}-\mathbf{a})
+                    \end{bmatrix}
+                    \begin{bmatrix}
+                        t \\ \beta \\ \gamma
+                    \end{bmatrix}
+                    = \mathbf{R_o} - \mathbf{a}
+                \end{align*}
+                
+                Solve using Cramer's rule or \\ LU decomposition.
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+                \begin{tikzpicture}[scale=0.6]
+                \begin{scope}[plane x={(0.707, 0, 0.707)}, plane y={(0, 1, 0)}, canvas is plane]
+                    % Extended plane
+                    \fill[blue!30, opacity=0.3] (-2,-1) rectangle (7,4);
+                    \draw[blue!60, thin] (-2,-1) rectangle (7,4);
+                    \coordinate (A) at (0,0);
+                    \coordinate (B) at (4,0);
+                    \coordinate (C) at (2,3);
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] (A) -- (B) -- (C) -- cycle;
+                    
+                    \fill[ObjectColor] (A) circle (2pt);
+                    \fill[ObjectColor] (B) circle (2pt);
+                    \fill[ObjectColor] (C) circle (2pt);
+                    
+                    \coordinate (PlaneHit) at (2.5,0.75);
+                    \fill[orange] (PlaneHit) circle (3pt);
+                    
+                \end{scope}
+                \coordinate (RayStart1) at (1,0, 4);
+                \draw[ray, orange] (RayStart1) -- (2,1);
+                           
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Cramer's Rule Solution}
+    \begin{mathbox}{Matrix Form}
+        \vspace{-0.5cm}
+        \small
+        \begin{align*}
+            \underbrace{
+                \begin{bmatrix}
+                    -R_{dx} & b_x-a_x & c_x-a_x \\
+                    -R_{dy} & b_y-a_y & c_y-a_y \\
+                    -R_{dz} & b_z-a_z & c_z-a_z
+                \end{bmatrix}
+            }_{A}
+            \begin{bmatrix}
+                t \\ \beta \\ \gamma
+            \end{bmatrix}
+            =
+            \begin{bmatrix}
+                R_{ox} - a_x \\
+                R_{oy} - a_y \\
+                R_{oz} - a_z
+            \end{bmatrix}
+        \end{align*}
+    \end{mathbox}
+    \vspace{-0.1cm}
+    \pause
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Cramer's Rule}
+                \vspace{-0.3cm}
+                \footnotesize
+                \begin{align*}
+                    t &= \frac{1}{|A|} \begin{vmatrix}
+                        R_{ox}-a_x & b_x-a_x & c_x-a_x \\
+                        R_{oy}-a_y & b_y-a_y & c_y-a_y \\
+                        R_{oz}-a_z & b_z-a_z & c_z-a_z
+                    \end{vmatrix} \\
+                    \beta &= \frac{1}{|A|} \begin{vmatrix}
+                        -R_{dx} & R_{ox}-a_x & c_x-a_x \\
+                        -R_{dy} & R_{oy}-a_y & c_y-a_y \\
+                        -R_{dz} & R_{oz}-a_z & c_z-a_z
+                    \end{vmatrix} \\
+                    \gamma &= \frac{1}{|A|} \begin{vmatrix}
+                        -R_{dx} & b_x-a_x & R_{ox}-a_x \\
+                        -R_{dy} & b_y-a_y & R_{oy}-a_y \\
+                        -R_{dz} & b_z-a_z & R_{oz}-a_z
+                    \end{vmatrix}
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \pause
+        \begin{column}{0.4\textwidth}
+            \begin{conceptbox}{Checks}
+                \footnotesize
+                \begin{itemize}
+                    \item $t_{\text{\text{min}}} < t < t_{\text{\text{current}}}$ (valid intersection)
+                    \item $\beta, \gamma \geq 0$ and $\beta + \gamma \leq 1$ \\ (inside triangle)
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\input{intersection/cramer.tex}
+
+
+\begin{frame}{Bonus of Using Barycentric Coordinates}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{conceptbox}{Advantages}
+                \begin{itemize}
+                    \item Efficient to compute
+                    \item Get Barycentric coordinates for free
+                    \item Enables interpolation of vertex attributes\\
+                    Used in |
+                    \begin{itemize}
+                        \item Textures
+                        \item Normals
+                        \item Colors
+                    \end{itemize}
+                \end{itemize}
+            \end{conceptbox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+            \coordinate (A) at (90:4);    % top
+            \coordinate (B) at (210:4);   % left
+            \coordinate (C) at (-30:4);   % right
+            \fill[green] (A) -- (B) -- (C) -- cycle;
+            \fill[blue,
+                    path fading=west      % fades toward the left
+                ]
+                (A) -- (B) -- (C) -- cycle;
+            \fill[red,
+                    path fading=south      % fades toward the bottom
+                ]
+                (A) -- (B) -- (C) -- cycle;
+            \draw[black, thick] (A) -- (B) -- (C) -- cycle;
+            \fill[red]   (A) circle (3pt) node[above]      {$A$};
+            \fill[green] (B) circle (3pt) node[below left] {$B$};
+            \fill[blue]  (C) circle (3pt) node[below right]{$C$};
+            \coordinate (P) at (0, 0);
+            \fill[white] (P) circle (2pt) node[right] {$P$};
+            \node[below, white, yshift=-0.2cm] at (P) {\small $\alpha R + \beta G + \gamma B$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+\end{frame}

@@ -1,0 +1,171 @@
+
+
+\begin{frame}{3D Plane Representation}
+    \begin{columns}
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Plane Definition}
+                A plane is defined by:
+                \begin{itemize}
+                    \item Point $\mathbf{P_0} = (x_0, y_0, z_0)$ on plane
+                    \item Normal vector $\mathbf{n} = (A, B, C)$
+                \end{itemize}
+                \textbf{Implicit equation:}
+                \vspace*{-0.3cm}
+                \begin{align*}
+                    & \mathbf{n} \cdot (\mathbf{P} - \mathbf{P_0}) = 0 \\
+                    & \boxed{\mathbf{n} \cdot \mathbf{P} + D = 0} \text{ where }  D = -\mathbf{n} \cdot \mathbf{P_0} \\
+                    & \boxed{A x + B y + C z + D = 0}\\
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.35\textwidth}
+            \begin{tikzpicture}[scale=0.6]
+                % 3D coordinate system
+                \draw[->] (0,0) -- (3,0) node[right] {$x$};
+                \draw[->] (0,0) -- (0,3) node[above] {$y$};
+                \draw[->] (0,0) -- (-1,-1) node[below left] {$z$};
+                
+                % 3D Plane using canvas transformation
+                \begin{scope}[
+                    plane origin={(2,1,0)},
+                    plane x={(0.707,0, 0.707)},
+                    plane y={(0,0.707,-0.707)},
+                    canvas is plane]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20, opacity=0.6] 
+                        (-1, -1) -- (-1, 1) -- (1, 1) -- (1, -1) -- cycle;
+
+                    \only<1>{
+                    \fill[AccentColor] (0.5,0.5) circle (2pt);
+                    \node[above] at (0.5,0.5) {$\mathbf{P}$};
+                    \draw[dashed, thin] (0, 0) -- (0.5,0.5);
+                    }
+                \end{scope}
+                
+                % Point on plane
+                \fill[ObjectColor] (2,1,0) circle (2pt);
+                \node[above right] at (2,1, 0) {$\mathbf{P_0}$};
+                
+                % Normal vector
+                \draw[->, thick, SecondaryColor] (2, 1, 0) -- (1,2,-1);
+                \node[above] at (1,2.5) {$\mathbf{n}$};
+                
+                \pause
+                % Test point
+                
+                % Distance illustration
+                \fill[AccentColor] (-0.5,2) circle (2pt);
+                \node[above] at (-0.5,2) {$\mathbf{P}$};
+                \draw[dashed, thin] (-0.5,2,0) -- (1,0.5,1.5) node[midway, left] {$d$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    \only<2->{
+        \begin{conceptbox}{Point-Plane Distance}
+            If $\mathbf{n}$ is normalized: $d = \mathbf{n} \cdot \mathbf{P} + D = \mathbf{n} \cdot (\mathbf{P} - \mathbf{P_0})$ \\
+            \textbf{Signed distance:} $d > 0$ (front), $d < 0$ (back), $d = 0$ (on plane)
+        \end{conceptbox}
+    }
+\end{frame}
+
+\begin{frame}{Ray-Plane Intersection}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Intersection Method}
+                \textbf{Step 1:} Substitute ray into equation
+                \begin{align*}
+                    \mathbf{n} \cdot (\mathbf{R_o} + t\mathbf{R_d}) + D &= 0\\
+                    \mathbf{n} \cdot \mathbf{R_o} + t(\mathbf{n} \cdot \mathbf{R_d}) + D &= 0
+                \end{align*}
+                
+                \textbf{Step 2:} Solve for parameter $t$
+                \begin{align*}
+                    \boxed{t = -\frac{D + \mathbf{n} \cdot \mathbf{R_o}}{\mathbf{n} \cdot \mathbf{R_d}}}
+                \end{align*}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.8]
+                % 3D Plane
+                \begin{scope}[canvas is xy plane at z=0.3, transform shape]
+                    \draw[thick, ObjectColor, fill=ObjectColor!20] 
+                        (-0.5,0.5) -- (2.5,0.5) -- (3,2) -- (0,2) -- cycle;
+                \end{scope}
+                
+                % Normal vector
+                \draw[->, thick, SecondaryColor] (1.25,1.25) -- (0.75,2.25);
+                \node[left] at (0.75,2.25) {$\mathbf{n}$};
+                
+                % Ray
+                \draw[ray, very thick] (-1,-1) -- (2.5,2.5);
+                \node[below] at (-1,-1) {$\mathbf{R_o}$};
+                \draw[->, red, thick] (-1,-1) -- (0,0) node[midway, right] {$\mathbf{R_d}$};
+                
+                % Intersection point
+                \fill[AccentColor] (1.25,1.25) circle (3pt);
+                \node[left] at (1.25,1.25) {\textcolor{AccentColor}{$\mathbf{P}(t)$}};
+                
+                % Parameter illustration
+                \draw[<->, thin] (-1,-2) -- (1.25,-2) node[midway, below] {$t$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}
+    \pause
+    \begin{conceptbox}{Cases}
+        \begin{itemize}
+            \item If $\mathbf{n} \cdot \mathbf{R_d} = 0$: Ray parallel to plane (0 or infinite)
+            \item If $\mathbf{n} \cdot \mathbf{R_d} < 0$: Ray hits front face
+            \item If $\mathbf{n} \cdot \mathbf{R_d} > 0$: Ray hits back face
+        \end{itemize}
+    \end{conceptbox}
+\end{frame}
+
+
+\begin{frame}{Additional Checks}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Validation Rules}
+                After computing $t$, verify:
+                \begin{enumerate}
+                    \item \textbf{Behind check:} $t > t_{\text{\text{min}}}$
+                    \item \textbf{Closest check:} $t < t_{\text{\text{current}}}$
+                    \item \textbf{Valid range:} $t \geq 0$
+                \end{enumerate}
+                
+                Where:
+                \begin{itemize}
+                    \item $t_{\text{\text{min}}}$: Minimum ray distance (not behind eye/screen)
+                    \item $t_{\text{\text{current}}}$: Distance to closest intersection so far
+                \end{itemize}
+            \end{mathbox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \begin{tikzpicture}[scale=0.7]
+                % Ray origin
+                
+                % Ray direction
+                \draw[ray, very thick] (0,0) -- (5,2.5);
+                
+                % t_min region
+                \draw[red, very thick] (0,0) -- (1.5,0.75) node[midway, above, xshift=-0.5cm] {\textcolor{red}{$t < t_{\text{\text{min}}}$}};
+
+                \node[eye] (eye) at (1.5,0.75) {\faIcon{eye}};
+                
+                % Valid intersection
+                \draw[green, very thick] (eye) -- (3.5,1.75) node[midway, below, yshift=-0.1cm] {\textcolor{green}{Valid}};
+                
+                % Too far intersection
+                \fill[orange] (3.5,1.75) circle (3pt);
+                \node[above, yshift=0.5cm, xshift=0.25cm] at (3.5,1.75) {\textcolor{orange}{$t > t_{\text{\text{current}}}$}};
+                
+                % Behind ray
+                \fill[red] (-1,-0.5) circle (3pt);
+                \node[below] at (-1,-0.5) {\textcolor{red}{$t < 0$}};
+                \draw[red, dashed] (0,0) -- (-1,-0.5);
+
+                \fill[PrimaryColor] (0,0) circle (3pt);
+                \node[below] at (0.1,-0.1) {$\mathbf{R_o}$};
+            \end{tikzpicture}
+        \end{column}
+    \end{columns}    
+
+\end{frame}
