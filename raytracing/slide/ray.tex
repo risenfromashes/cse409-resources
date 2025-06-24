@@ -772,6 +772,171 @@
     \end{columns}
 \end{frame}
 
+{
+    \setbeamercolor{background canvas}{bg=PrimaryColor!30, fg=black}
+    \begin{frame}{Cramer's Rule Intuition}
+        \begin{columns}
+            \begin{column}{0.65\textwidth}
+                \begin{mathbox}{Determinant Interpretation}
+                    Remember, $\beta = \frac{A_{\beta}}{A_{total}}$? \\
+
+                    Determinants measure areas of projected triangles.
+                    \begin{align*}
+                        \begin{vmatrix}
+                            -R_{dx} & (b_x-a_x) & (c_x-a_x) \\
+                            -R_{dy} & (b_y-a_y) & (c_y-a_y) \\
+                            -R_{dz} & (b_z-a_z) & (c_z-a_z)
+                        \end{vmatrix} &\propto A_{total} \\
+                        \begin{vmatrix}
+                            -R_{dx} & (R_o-a)_x & (c-a)_x \\
+                            -R_{dy} & (R_o-a)_y & (c-a)_y \\
+                            -R_{dz} & (R_o-a)_z & (c-a)_z
+                        \end{vmatrix} &\propto A_{\beta}
+                    \end{align*}
+                    
+                    \textbf{Why?}
+                \end{mathbox}
+                
+            \end{column}
+            \begin{column}{0.35\textwidth}
+                \centering
+                \begin{tikzpicture}[scale=0.6]
+                    \begin{scope}[canvas is xy plane at z=0]
+                        % Triangle
+                        \coordinate (A) at (0,0);
+                        \coordinate (B) at (4,0);
+                        \coordinate (C) at (2,3);
+                        
+                        \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                        
+                        % Vertices with weights
+                        \fill[ObjectColor] (A) circle (3pt);
+                        \fill[ObjectColor] (B) circle (3pt);
+                        \fill[ObjectColor] (C) circle (3pt);
+                        \node[below] at (A) {$\mathbf{a}$};
+                        \node[below] at (B) {$\mathbf{b}$};
+                        \node[above] at (C) {$\mathbf{c}$};
+                        
+                        % Point P
+                        \coordinate (P) at (2.2,1.2);
+                        \fill[AccentColor] (P) circle (3pt);
+                        \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                        
+                        % Sub-triangles for area interpretation
+                        \draw[thin, SecondaryColor, dashed] (P) -- (A);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (B);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (C);
+                        
+                        % Area labels
+                        \fill[blue!25, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+
+
+                    \end{scope}
+                \end{tikzpicture}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+        \begin{frame}{Cramer's Rule Intuition}
+        \begin{columns}
+            \begin{column}{0.65\textwidth}
+                \begin{mathbox}{Determinant Interpretation}
+                    \only<1>{
+                        The areas can be found by cross products of vectors. Consider |
+                        \begin{align*}
+                            \mathbf{N} &= \mathbf{(\mathbf{b} - \mathbf{a})} \times \mathbf{(\mathbf{c} - \mathbf{a})} \\
+                            &= \begin{vmatrix}
+                                \mathbf{i} & \mathbf{j} & \mathbf{k} \\
+                                b_x - a_x & b_y - a_y & b_z - a_z \\
+                                c_x - a_x & c_y - a_y & c_z - a_z
+                            \end{vmatrix} \\
+                            &= 2 A_{total} \hat{\mathbf{n}} 
+                        \end{align*}
+                    }
+                    \only<2>{
+                        \begin{itemize}
+                            \item $\mathbf{N}$ is the normal vector of the triangle scaled by twice the area.
+                            \item $\mathbf{N} \cdot \mathbf{R}_d$ is the projected area of the triangle 
+                                onto the plane perpendicular to the ray direction. 
+                        \end{itemize}                        
+                        \begin{align*}
+                            \mathbf{N} \cdot \mathbf{R}_d
+                            &= \begin{vmatrix}
+                                -R_x & -R_y & -R_z \\
+                                b_x - a_x & b_y - a_y & b_z - a_z \\
+                                c_x - a_x & c_y - a_y & c_z - a_z
+                            \end{vmatrix} \\
+                            & \propto A_{total} 
+                        \end{align*}
+                    }
+                \end{mathbox}
+                
+            \end{column}
+            \begin{column}{0.35\textwidth}
+                \centering
+                \begin{tikzpicture}[scale=0.5]
+                    % Point P
+                    \coordinate (P) at (2.2,1.2,0);
+                    \begin{scope}[canvas is xy plane at z=0]
+                        % Triangle
+                        \coordinate (A) at (0,0);
+                        \coordinate (B) at (4,0);
+                        \coordinate (C) at (2,3);
+                        
+                        \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+                        
+                        % Vertices with weights
+                        \fill[ObjectColor] (A) circle (3pt);
+                        \fill[ObjectColor] (B) circle (3pt);
+                        \fill[ObjectColor] (C) circle (3pt);
+                        \node[below] at (A) {$\mathbf{a}$};
+                        \node[below] at (B) {$\mathbf{b}$};
+                        \node[above] at (C) {$\mathbf{c}$};
+                        
+                        
+                        % Sub-triangles for area interpretation
+                        \draw[thin, SecondaryColor, dashed] (P) -- (A);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (B);
+                        \draw[thin, SecondaryColor, dashed] (P) -- (C);
+                        
+                        % Area labels
+                        \fill[blue!25, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+
+                        \node[blue] at (1.6,1.7) {$A_{\beta}$};
+                    \end{scope}
+                    \only<2->{    
+                        \begin{scope}[
+                            plane origin={(2.2, 1.2, 0)},
+                            plane x={(2.907, 1.2, -0.707)},
+                            plane y={(2.2, 2.2, 0)},
+                            canvas is plane    
+                        ]
+                            \draw[PrimaryColor!60, opacity=0.8] (-3,-3) rectangle (3,3);
+                            \fill[PrimaryColor!60, opacity=0.5] (-3,-3) rectangle (3,3);
+
+                            \coordinate (A) at (-1.556,-1.2);
+                            \coordinate (B) at (1.273,-1.2);
+                            \coordinate (C) at (-0.141,1.8);
+                            \draw[thick, red, fill=red!15, opacity=0.3] (A) -- (B) -- (C) -- cycle;
+                        \end{scope}
+                        \coordinate (Ro) at ($(2.2,1.2,0)-8*(-0.707,0,-0.707)$);
+                        \coordinate (Rd) at ($(2.2,1.2,0)-5*(-0.707,0,-0.707)$);
+                        \coordinate (Rf) at ($(2.2,1.2,0)+8*(-0.707,0,-0.707)$);
+                        \draw[PrimaryColor,fill=PrimaryColor] (Ro) circle (2pt) node[below] {$\mathbf{R_o}$};
+                        \draw[ray] (Ro) -- (Rf);
+                        \draw[->, red, thick] (Ro) -- (Rd) node[midway, above] {$\mathbf{R_d}$};
+                    }
+                    \fill[AccentColor] (P) circle (3pt);
+                    \node[below] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+                    \draw[blue, ->] (P) --++ (0, 0, 6) node[right] {$\mathbf{N}$};
+                \end{tikzpicture}
+            \end{column}
+        \end{columns}
+    \end{frame}
+}
+
 
 \begin{frame}{Bonus of Using Barycentric Coordinates}
     \begin{columns}
