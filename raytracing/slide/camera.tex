@@ -1,120 +1,178 @@
-\section{Rays and Cameras}
+\section{Cameras}
 
 \begin{frame}{The Pinhole Camera Model}
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{mathbox}{Pinhole Camera}
-                \textbf{Key Properties:}
-                \begin{itemize}
-                    \item Point aperture (no lens)
-                    \item Perfect focus everywhere
-                    \item Linear perspective
-                    \item No depth of field
-                \end{itemize}
+                \footnotesize
+                The simplest camera. A box with a pinhole. Light entering the pinhole creates an image on the other side of the box.
+                \only<2->{
+                    \begin{itemize}
+                        \item Point aperture
+                        \item Perfect focus everywhere
+                        \only<3->{
+                            \item Inverted Image
+                        }
+                    \end{itemize}
+                }
 
-                \vspace{0.3cm}
-                \textbf{Ray Generation:}
-                \begin{align}
-                    \mathbf{R_o} & = \mathbf{eye}                  \\
-                    \mathbf{R_d} & = \mathbf{pixel} - \mathbf{eye}
-                \end{align}
+                \only<4->{
+                    \textbf{Ray Generation:}
+                    \begin{align*}
+                        \mathbf{R_o} & = \mathbf{hole}                  \\
+                        \mathbf{R_d} & = \frac{\mathbf{hole} - \mathbf{pixel}}{|\mathbf{hole} - \mathbf{pixel}|}
+                    \end{align*}
+                }
             \end{mathbox}
         \end{column}
         \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.9]
-                % Pinhole
-                \fill[PrimaryColor] (0,0) circle (2pt);
-                \node[below] at (0,-0.3) {\textcolor{PrimaryColor}{Pinhole}};
+            \begin{tikzpicture}[scale=0.35]
+                \tikzset{
+                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
+                    pixel/.style={fill=AccentColor!60, thick},
+                    primary ray/.style={->, very thick, red!90},
+                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+                }
+                \coordinate (hole) at (3, 0, 0);
 
-                % Image plane
-                \draw[thick, AccentColor] (2,-2) -- (2,2);
-                \node[right] at (2,2.3) {\textcolor{AccentColor}{Image Plane}};
+                \node[below] at (-3,-4,0) {\scriptsize Image Plane};
 
-                % Object
-                \draw[thick, ObjectColor] (-3,1) -- (-3,-1);
-                \node[left] at (-3,0) {\objectcolor{Object}};
+                \begin{scope}[canvas is zy plane at x=-3]
+                    % screen
+                    \fill[screen] (-3,-3) rectangle (3,3);
+                    \foreach \x in {-3,-2,...,3} {
+                            \draw[gray!60, thin] (\x,-3) -- (\x,3);
+                        }
+                    \foreach \z in {-3,-2,...,3} {
+                            \draw[gray!60, thin] (-3,\z) -- (3,\z);
+                        }
 
-                % Light rays
-                \draw[lightray] (-3,1) -- (0,0) -- (2,-0.5);
-                \draw[lightray] (-3,0) -- (0,0) -- (2,0);
-                \draw[lightray] (-3,-1) -- (0,0) -- (2,0.5);
+                    \foreach \x in {-2.5,-1.5,...,2.5} {
+                        \foreach \z in {-2.5,-1.5,...,2.5} {
+                                \coordinate (dir) at ($(hole)-(\x,\z)$);
+                                \draw[ray, thin, opacity=0.3] (\x,\z) -- (hole);
+                                \draw[red!40] (\x,\z) circle (1pt);
+                            }
+                        }
+                    \only<3->{
+                        \draw[AccentColor, fill=AccentColor!30, opacity=0.7] (2.5, 1.5) -- (-2.5, 2.5) -- (0.5, -2.5) -- cycle;
+                    }
+                    \draw[ray, thick, opacity=0.9] (-2.5,2.5) -- (hole);
+                    \draw[ray, thick, opacity=0.9] (0.5,-2.5) -- (hole);
+                \end{scope}
+                \draw[-, PrimaryColor] (-3,-3,-3) -- (3, -3, -3);
+                \draw[-, PrimaryColor] (-3,-3,3) -- (3, -3, 3);
+                \draw[-, PrimaryColor] (-3,3,-3) -- (3, 3, -3);
+                \draw[-, PrimaryColor] (-3,3,3) -- (3, 3, 3);
+                \begin{scope}[canvas is zy plane at x=3]
+                    \draw[black, fill=gray!60] (-3,-3) rectangle (3,3);
+                    \draw[PrimaryColor,fill=white] (0,0) circle (3pt) node[above] {\tiny Pinhole};
+                \end{scope}
+                \begin{scope}[canvas is zy plane at x=-3]
+                    \foreach \x in {-2.5,-1.5,...,2.5} {
+                        \foreach \z in {-2.5,-1.5,...,2.5} {
+                                \coordinate (dir) at ($(hole)-(\x,\z)$);
+                                \draw[ray, thin, opacity=0.3] (hole) -- ($(hole)+(dir)$);
+                            }
+                        }
+                    
+                    \coordinate (dir1) at ($(hole)-(-2.5,2.5)$);
+                    \coordinate (dir2) at ($(hole)-(0.5,-2.5)$);
+                    \draw[ray, thick, opacity=0.9] (hole) -- ($(hole)+(dir1)$);
+                    \draw[ray, thick, opacity=0.9] (hole) -- ($(hole)+(dir2)$);
+                \end{scope}
 
-                % Projected image
-                \draw[thick, SecondaryColor] (2,-0.5) -- (2,0.5);
-                \node[right] at (2,0) {\textcolor{SecondaryColor}{\tiny Inverted}};
-
-                % Focal length
-                \draw[<->, thin] (0,-2.5) -- (2,-2.5);
-                \node[below] at (1,-2.5) {$f$ (focal length)};
+                \draw[AccentColor, fill=AccentColor!30] (9, -2, 3) -- (8, 1.5, -3) -- (13, -3, 4) -- cycle;
+                \node[below] at (10,-4.5,0) {\scriptsize \textcolor{AccentColor}{Object}};
             \end{tikzpicture}
         \end{column}
     \end{columns}
-
-    \begin{conceptbox}{Physical Reality}
-        Real pinhole cameras exist! They create sharp images but require long exposure times due to tiny aperture.
-    \end{conceptbox}
+    \only<5->{
+        \begin{conceptbox}{Physical Reality}
+            \footnotesize
+            Real pinhole cameras exist! They create sharp images but require very long exposure times due to tiny aperture.
+        \end{conceptbox}
+    }
 \end{frame}
 
 \begin{frame}{Simplified Pinhole Camera}
     \begin{columns}
         \begin{column}{0.5\textwidth}
             \begin{mathbox}{Simplification}
-                \textbf{Problem:} Real pinhole creates inverted image
+                \footnotesize
+                Place image plane in front! \\ 
+                Equivalent to pinhole camera.
 
-                \textbf{Solution:} Place image plane in front!
-                \begin{align}
-                    \mathbf{pixel} & = \mathbf{eye} + d \cdot \mathbf{w} + u \cdot \mathbf{u} + v \cdot \mathbf{v}
-                \end{align}
-
-                where:
-                \begin{itemize}
-                    \item $d$ = distance to image plane
-                    \item $u, v$ = pixel coordinates
-                    \item $\mathbf{u}, \mathbf{v}, \mathbf{w}$ = camera basis
-                \end{itemize}
+                \only<2->{   
+                    \begin{itemize}
+                        \item Physically unrealizable
+                        \only<3->{
+                            \item Non-inverted image
+                        }
+                    \end{itemize}
+                }
+                \only<4->{
+                    \textbf{Ray Generation:}
+                        \begin{align*}
+                            \mathbf{R_o} & = \mathbf{eye}                  \\
+                            \mathbf{R_d} & = \frac{\mathbf{pixel} - \mathbf{eye}}{|\mathbf{pixel} - \mathbf{eye}|}
+                        \end{align*}
+                }
             \end{mathbox}
         \end{column}
         \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.9]
-                % Eye/Camera
-                \node[eye] (eye) at (0,0) {\faIcon{eye}};
-                \node[below] at (0,-0.5) {\textcolor{PrimaryColor}{Eye}};
-
-                % Image plane (in front)
-                \draw[thick, AccentColor] (2,-2) -- (2,2);
-                \node[right] at (2,2.3) {\textcolor{AccentColor}{Image Plane}};
-
-                % Pixel grid
-                \foreach \y in {-1.5,-1,-0.5,0,0.5,1,1.5} {
-                        \draw[thin, gray] (1.8,\y) -- (2.2,\y);
+            \centering
+            \begin{tikzpicture}[scale=0.5]
+                \tikzset{
+                    screen/.style={fill=blue!10, draw=blue!50, opacity=0.8},
+                    pixel/.style={fill=AccentColor!60, thick},
+                    primary ray/.style={->, very thick, red!90},
+                    object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+                }
+                \node[eye] (eye) at (0,0,0) {\faIcon{eye}};
+                \draw[AccentColor, fill=AccentColor!30] (7.5, -1, 3) -- (6.25, 2.25, -3) -- (11.5, -2, 4) -- cycle;
+                \node[below] at (8,-3,0) {\scriptsize \textcolor{AccentColor}{Object}};
+                \node[below] at (0,-0.8,0) {\scriptsize Eye};
+                \node[above] at (3.5,4,0) {\scriptsize Screen};
+                \begin{scope}[canvas is zy plane at x=3.5]
+                    \fill[screen] (-3,-3) rectangle (3,3);
+                    \foreach \x in {-3,-2,...,3} {
+                            \draw[gray!60, thin] (\x,-3) -- (\x,3);
+                        }
+                    \foreach \z in {-3,-2,...,3} {
+                            \draw[gray!60, thin] (-3,\z) -- (3,\z);
+                        }
+                    \foreach \x in {-2.5,-1.5,...,2.5} {
+                            \foreach \z in {-2.5,-1.5,...,2.5} {
+                                    \fill[red!40] (\x, \z) circle (2pt);
+                                    \coordinate (dir) at ($(\x,\z)-(eye.center)$);
+                                    \draw[ray, thin, opacity=0.3] (eye.center) -- (\x,\z);
+                                    \draw[ray, thin, opacity=0.3] (\x,\z) -- ($(\x,\z)+(dir)$);
+                                }
+                        }
+                    \only<3->{
+                        \draw[AccentColor, fill=AccentColor!30, opacity=0.7] (-0.5,1.5) -- (-1.5,-1.5) -- (1.5,-1.5) -- cycle;
                     }
-
-                % Object
-                \draw[thick, ObjectColor] (4,1.5) -- (4,-1.5);
-                \node[right] at (4,0) {\objectcolor{Object}};
-
-                % Rays through pixels
-                \draw[ray] (eye) -- (2,1.5) -- (4,1.5);
-                \draw[ray] (eye) -- (2,0) -- (4,0);
-                \draw[ray] (eye) -- (2,-1.5) -- (4,-1.5);
-
-                % Coordinate system
-                \draw[->, thin] (0,2.5) -- (0,0) -- (2.5,0);
-                \node[left] at (0,1.25) {$\mathbf{v}$};
-                \node[below] at (1.25,0) {$\mathbf{u}$};
-                \node[above right] at (1.5,1.5) {$\mathbf{w}$};
-
-                % Distance
-                \draw[<->, thin] (0,-2.5) -- (2,-2.5);
-                \node[below] at (1,-2.5) {$d$};
+                    \coordinate (p1) at (-0.5,1.5);
+                    \coordinate (dir1) at ($(p1)-(eye.center)$);
+                    \draw[ray, thick, opacity=0.9] (eye.center) -- ($(p1)+(dir1)$);
+                    \coordinate (p2) at (-0.5,-1.5);
+                    \coordinate (dir2) at ($(p2)-(eye.center)$);
+                    \draw[ray, thick, opacity=0.9] (eye.center) -- ($(p2)+(dir2)$);
+                \end{scope}
             \end{tikzpicture}
         \end{column}
     \end{columns}
-
-    \begin{conceptbox}{Advantage}
-        \textbf{Upright image}, easier ray generation, same perspective as real pinhole!
-    \end{conceptbox}
+    \vspace{-0.5cm}
+    \only<5->{
+        \begin{conceptbox}{Advantage}
+            \footnotesize
+            \textbf{Upright image}, simpler ray generation, equivalent to real pinhole!
+        \end{conceptbox}
+    }
 \end{frame}
+
+\endinput
 
 \begin{frame}{Orthographic Camera}
     \begin{columns}
@@ -287,7 +345,7 @@
                 \node[below] at (0,-2.8) {\textcolor{PrimaryColor}{Thin Lens}};
                 
                 % Object at distance z
-                \draw[thick, ObjectColor] (-3,-1.5) -- (-3,1.5);
+                \draw[thick, AccentColor] (-3,-1.5) -- (-3,1.5);
                 \node[left] at (-3,0) {\objectcolor{Object}};
                 \draw[<->, thin] (-3,-3) -- (0,-3);
                 \node[below] at (-1.5,-3) {$z$};
@@ -356,9 +414,9 @@
         \begin{column}{0.5\textwidth}
             \begin{tikzpicture}[scale=0.6]
                 % Three object planes at different distances
-                \draw[thick, ObjectColor] (-4,2) -- (-4,-2);
-                \draw[thick, ObjectColor] (-2.5,1.5) -- (-2.5,-1.5);
-                \draw[thick, ObjectColor] (-1,1) -- (-1,-1);
+                \draw[thick, AccentColor] (-4,2) -- (-4,-2);
+                \draw[thick, AccentColor] (-2.5,1.5) -- (-2.5,-1.5);
+                \draw[thick, AccentColor] (-1,1) -- (-1,-1);
                 
                 \node[left] at (-4,0) {\objectcolor{\tiny Far}};
                 \node[left] at (-2.5,0) {\objectcolor{\tiny Focus}};
@@ -417,9 +475,9 @@
             \node[left] at (-3.3,0) {\textcolor{blue}{\tiny Wide}};
             
             % Objects at different distances
-            \draw[thick, ObjectColor] (-5,0.5) -- (-5,-0.5);
-            \draw[thick, ObjectColor] (-4,1) -- (-4,-1);
-            \draw[thick, ObjectColor] (-3.5,1.5) -- (-3.5,-1.5);
+            \draw[thick, AccentColor] (-5,0.5) -- (-5,-0.5);
+            \draw[thick, AccentColor] (-4,1) -- (-4,-1);
+            \draw[thick, AccentColor] (-3.5,1.5) -- (-3.5,-1.5);
             
             % Image plane
             \draw[thick, gray] (-1,-2) -- (-1,2);
@@ -444,9 +502,9 @@
             \node[right] at (3.3,0) {\textcolor{blue}{\tiny Narrow}};
             
             % Objects at different distances
-            \draw[thick, ObjectColor] (1,0.5) -- (1,-0.5);
-            \draw[thick, ObjectColor] (2,1) -- (2,-1);
-            \draw[thick, ObjectColor] (2.5,1.5) -- (2.5,-1.5);
+            \draw[thick, AccentColor] (1,0.5) -- (1,-0.5);
+            \draw[thick, AccentColor] (2,1) -- (2,-1);
+            \draw[thick, AccentColor] (2.5,1.5) -- (2.5,-1.5);
             
             % Image plane
             \draw[thick, gray] (5,-2) -- (5,2);

@@ -1,4 +1,4 @@
-\subsubsection{Ray-AABB Intersection}
+\subsection{Ray-AABB Intersection}
 \begin{frame}{Ray-AABB Intersection: Overview}
     \begin{columns}
         \begin{column}{0.65\textwidth}
@@ -98,9 +98,11 @@
 \begin{frame}{Ray-AABB Intersection: Slab Method}
     \begin{columns}
         \begin{column}{0.55\textwidth}
+
+            \only<1-5>{
             \begin{mathbox}{Approach}
                 \only<1-2>{
-                    \textbf{Step 1:} Consider $z$ axis first. There are two planes:
+                    Consider $z$ axis first. There are two planes:
                     \alt<2>{
                         \begin{align*}
                             \underbrace{z}_{\mathbf{n}=(0,0,1)} \quad &\underbrace{- z_{\text{min}}}_{D=-z_{\text{min}}} &= 0 \\
@@ -112,9 +114,11 @@
                             z &= z_{\text{max}}
                         \end{align*}
                     }
+
+
                 }
                 \only<3>{
-                    \textbf{Step 2:} Compute intersection with ray:
+                    Compute intersection with ray:
                     \begin{align*}
                         t_{\text{min},z} &= - \frac{D + \mathbf{n}\cdot \mathbf{R_o}}{\mathbf{n}\cdot \mathbf{R_d}} \\
                                 &= - \frac{-z_{\text{min}} + R_{oz}}{R_{dz}} \\
@@ -126,7 +130,7 @@
                     \end{align*}
                 }
                 \only<4>{
-                    \textbf{Step 3:} Similarly for $y$ and $z$ axes:
+                    Similarly for $y$ and $z$ axes:
                     \begin{align*}
                         t_{\text{min},x} &= \frac{x_{\text{min}} - R_{ox}}{R_{dx}} \\
                         t_{\text{max},x} &= \frac{x_{\text{max}} - R_{ox}}{R_{dx}} \\
@@ -136,7 +140,7 @@
                 }
 
                 \only<5>{
-                    \textbf{Step 4:} Find the overlap of the intervals:
+                    Find the overlap of the intervals:
                     \begin{align*}
                         t_{\text{enter}} &= \max(t_{\text{min},x}, t_{\text{min},y}, t_{\text{min},z}) \\
                         t_{\text{exit}} &= \min(t_{\text{max},x}, t_{\text{max},y}, t_{\text{max},z})
@@ -166,24 +170,26 @@
                         \node[AccentColor, below] at (0.5,-1.5) {\footnotesize $t_{\text{enter}}$};
                         \node[AccentColor, below] at (1.3,-1.5) {\footnotesize $t_{\text{exit}}$};
                     \end{tikzpicture}
-                }
-                \only<6>{
-                    \textbf{Edge cases:}
-                    \begin{itemize}
-                        \item $R_{dx} = 0$ or $R_{dy} = 0$ or $R_{dz} = 0$: ray parallel to a faces \\
-                        Automatically handled by division by zero 
-                        \begin{itemize}
-                            \item  $t_{\min} = -\infty$ and $t_{\max} = +\infty$ if valid
-                            \item $t_{\min} = t_{\max} = \pm \infty$ if invalid 
-                        \end{itemize}
-                        \item $t_{\min} = t_{\max}$: 
-                        \begin{itemize}
-                            \item Just swap the values if $t_{\min} > t_{\max}$ \\
-                                $t_{\min} \leftrightarrow t_{\max}$
-                        \end{itemize}
-                    \end{itemize}
+                    If there is overlap, i.e. $t_{\text{enter}} \leq t_{\text{exit}}$, then the ray intersects the AABB.
                 }
             \end{mathbox}
+            }
+            \only<6->{
+                 \hypertarget{slab-algo}{}
+                \begin{conceptbox}{Algorithm}
+                    \textbf{Step 1:} Compute $t_{\text{min}}$ and $t_{\text{max}}$ for each axis \\ 
+                    \textbf{Step 2:} If $t_{\text{min}} > t_{\text{max}}$ for any axis, swap $t_{\min}$ and $t_{\max}$ \\
+                    \textbf{Step 3:} Find 
+                    \begin{align*}
+                        t_{\text{enter}} = \max_{i \in {x, y, z}} t_{\min, i} \\
+                        t_{\text{exit}} = \min_{i \in {x, y, z}} t_{\max, i}
+                    \end{align*}
+                    \textbf{Step 4:} There is an intersection if $t_{\text{enter}} \leq t_{\text{exit}}$ and 
+                    $t_{\text{exit}} \geq 0$
+                \end{conceptbox}
+
+            }
+
         \end{column}
         \begin{column}{0.45\textwidth}
             \small
@@ -212,7 +218,7 @@
                     \draw[red, fill=red!50, opacity=0.15] (0,0) rectangle (6,6);
                     \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
                     \only<1-2>{
-                        \node[red, below right ] at (6,0) {$z = z_{\text{max}}$};
+                        \node[red, below right ] at (6,0) {$z = z_{\text{min}}$};
                     }
                 \end{scope}
                 }
@@ -230,7 +236,7 @@
                     \draw[red, fill=red!50, opacity=0.15] (0,0) rectangle (6,6);
                     \draw[red, fill=red!20, opacity=0.6] (2,2) rectangle (4,4);
                     \only<1-2>{
-                        \node[red, below right ] at (6,0) {$z = z_{\text{min}}$};
+                        \node[red, below right ] at (6,0) {$z = z_{\text{max}}$};
                     }
                 \end{scope}
                 }
@@ -261,7 +267,7 @@
                     \fill[PrimaryColor!80] (Py2) circle (2pt)
                         node[below right] {$\mathbf{t_{\max,y}}$};
                     \fill[PrimaryColor!80] (Px1) circle (2pt)
-                        node[above left] {$\mathbf{t_{\min,x}}$};
+                        node[below right] {$\mathbf{t_{\min,x}}$};
                     \fill[PrimaryColor!80] (Px2) circle (2pt)
                         node[above left] {$\mathbf{t_{\max,x}}$};
                 }
@@ -272,131 +278,79 @@
             \end{tikzpicture}
         \end{column}
     \end{columns}
+
+    \only<3>{
+        \vspace{0.5cm}
+        \tiny
+        Well, actually $t_{\min,z}$ should be $t_{\max,z}$ and $t_{\max,z}$ should be $t_{\min,z}$ in the diagram. 
+        This is why we need the \textbf{swap} in \hyperlink{slab-algo}{step 2} of the algorithm.
+    }
 \end{frame}
 
-\endinput
-
-\begin{frame}{AABB Intersection: Final Algorithm}
+\begin{frame}{Ray-AABB Intersection: Slab Method}
     \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Ray-AABB Test}
-                \textbf{Step 1:} Compute all slab intersections
+        \begin{column}{0.65\textwidth}
+            \begin{mathbox}{Edge Case}
+                \small
+                \textbf{Ray parallel to an axis} \\
+                ($R_{dx} / R_{dy}/ R_{dz} = 0$) \\
+                \vspace*{0.1cm}
+
+                Automatically handled by division by zero. \\
+                For example, if $R_{dx} = 0$, then:
                 \begin{align*}
-                    t_{enter} &= \max(t_{min,x}, t_{min,y}, t_{min,z}) \\
-                    t_{exit} &= \min(t_{max,x}, t_{max,y}, t_{max,z})
+                    t_{\min/\max,x} &= \frac{x_{\min/\max} - R_{ox}}{0} = \pm \infty
                 \end{align*}
-                
-                \textbf{Step 2:} Check intersection conditions
-                \begin{itemize}
-                    \item \alert{Hit if:} $t_{enter} \leq t_{exit}$ and $t_{exit} \geq 0$
-                    \item \alert{Miss if:} $t_{enter} > t_{exit}$ or $t_{exit} < 0$
-                \end{itemize}
-                
-                \textbf{Step 3:} Return closest intersection
-                \begin{itemize}
-                    \item If $t_{enter} \geq 0$: return $t_{enter}$
-                    \item Else: return $t_{exit}$ (ray starts inside)
-                \end{itemize}
-            \end{mathbox}
+                \vspace*{-0.3cm}
+                \only<2->{
+                    \begin{itemize}
+                        \only<2>{
+                        \item If the ray is within the slab:
+                        \begin{align*}
+                            x_{\text{min}} \leq R_{ox} \leq x_{\text{max}}
+                        \end{align*}
+                        In this case, 
+                        \begin{align*}
+                            t_{\min,x} = - \infty \text{ and } t_{\max,x} = \infty
+                        \end{align*}
+                        }
+                        \only<3->{
+                        \item If ray is outside the slab:
+                            \begin{align*}
+                            R_{ox} < x_{\text{min}} \text{ or } x_{\text{max}} < R_{ox}
+                        \end{align*}
+                        Then:
+                        \begin{align*}
+                            t_{\min,x} &= t_{\max,x} = \infty \text{ or } \\
+                            t_{\min,x} &= t_{\max,x} = -\infty
+                        \end{align*}
+                        }
+                    \end{itemize}
+                }
+            \end{mathbox}            
         \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                % 3D AABB with detailed ray intersection
-                \begin{scope}[
-                    x={(1cm,0cm)},
-                    y={(0cm,1cm)},
-                    z={(-0.5cm,-0.5cm)}
-                ]
-                    % AABB faces with transparency
-                    \fill[ObjectColor!15, opacity=0.8] (1,1,1) -- (3,1,1) -- (3,3,1) -- (1,3,1) -- cycle;
-                    \fill[ObjectColor!15, opacity=0.8] (1,1,3) -- (3,1,3) -- (3,3,3) -- (1,3,3) -- cycle;
-                    \fill[ObjectColor!15, opacity=0.6] (1,1,1) -- (1,3,1) -- (1,3,3) -- (1,1,3) -- cycle;
-                    \fill[ObjectColor!15, opacity=0.6] (3,1,1) -- (3,3,1) -- (3,3,3) -- (3,1,3) -- cycle;
-                    \fill[ObjectColor!15, opacity=0.6] (1,1,1) -- (3,1,1) -- (3,1,3) -- (1,1,3) -- cycle;
-                    \fill[ObjectColor!15, opacity=0.6] (1,3,1) -- (3,3,1) -- (3,3,3) -- (1,3,3) -- cycle;
-                    
-                    % AABB wireframe
-                    \draw[ObjectColor, thick] (1,1,1) -- (3,1,1) -- (3,3,1) -- (1,3,1) -- cycle;
-                    \draw[ObjectColor, thick] (1,1,3) -- (3,1,3) -- (3,3,3) -- (1,3,3) -- cycle;
-                    \draw[ObjectColor, thick] (1,1,1) -- (1,1,3);
-                    \draw[ObjectColor, thick] (3,1,1) -- (3,1,3);
-                    \draw[ObjectColor, thick] (3,3,1) -- (3,3,3);
-                    \draw[ObjectColor, thick] (1,3,1) -- (1,3,3);
-                    
-                    % Ray
-                    \draw[ray, very thick] (0,0,0) -- (4,4,4);
-                    \fill[PrimaryColor] (0,0,0) circle (2pt);
-                    
-                    % Intersection points
-                    \fill[AccentColor] (1,1,1) circle (3pt);
-                    \fill[AccentColor] (3,3,3) circle (3pt);
-                    
-                    % Labels
-                    \node[below] at (1,1,1) {$t_{enter}$};
-                    \node[above] at (3,3,3) {$t_{exit}$};
-                \end{scope}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-\end{frame}
-
-\begin{frame}{AABB Implementation Optimizations}
-    \begin{columns}
-        \begin{column}{0.6\textwidth}
-            \begin{conceptbox}{Efficient Implementation}
-                \textbf{Early Exit Strategies:}
-                \begin{enumerate}
-                    \item Check each axis incrementally
-                    \item Exit immediately if $t_{enter} > t_{exit}$
-                    \item Use IEEE floating point properties
-                \end{enumerate}
-                
-                \vspace{0.3cm}
-                \textbf{Handle Edge Cases:}
-                \begin{itemize}
-                    \item $R_d = 0$: ray parallel to slab faces
-                    \item Negative ray direction: swap $t_{\text{min}}$ and $t_{\text{max}}$
-                    \item Ray starting inside AABB
-                \end{itemize}
-                
-                \vspace{0.3cm}
-                \textbf{Performance Notes:}
-                \begin{itemize}
-                    \item AABB test is \alert{much faster} than triangle test
-                    \item Enables BVH traversal with early pruning
-                    \item Critical for real-time ray tracing
-                \end{itemize}
-            \end{conceptbox}
-        \end{column}
-        \begin{column}{0.4\textwidth}
-            \begin{tikzpicture}[scale=0.6]
-                % BVH tree visualization
-                \node[draw, ObjectColor, thick] at (0,3) {AABB Root};
-                \node[draw, ObjectColor] at (-1.5,1.5) {AABB L};
-                \node[draw, ObjectColor] at (1.5,1.5) {AABB R};
-                \node[draw, SecondaryColor] at (-2.5,0) {Tri 1};
-                \node[draw, SecondaryColor] at (-0.5,0) {Tri 2};
-                \node[draw, SecondaryColor] at (0.5,0) {Tri 3};
-                \node[draw, SecondaryColor] at (2.5,0) {Tri 4};
-                
-                % Connections
-                \draw[thick] (0,3) -- (-1.5,1.5);
-                \draw[thick] (0,3) -- (1.5,1.5);
-                \draw[thick] (-1.5,1.5) -- (-2.5,0);
-                \draw[thick] (-1.5,1.5) -- (-0.5,0);
-                \draw[thick] (1.5,1.5) -- (0.5,0);
-                \draw[thick] (1.5,1.5) -- (2.5,0);
-                
-                % Ray traversal
-                \draw[ray, very thick] (-3,2) -- (3,2);
-                \fill[AccentColor] (0,2) circle (2pt);
-                \node[above] at (0,2.3) {\small Hit Root};
-                \fill[red] (1.5,2) circle (2pt);
-                \node[above] at (1.5,2.3) {\small Hit R};
-                \draw[red, thick, opacity=0.5] (-1.5,1.5) circle (0.3);
-                \node[below] at (-1.5,1) {\small \color{red} Miss L};
-                
-                \node[below] at (0,-1) {\small BVH Acceleration};
+        \begin{column}{0.35\textwidth}
+            \small
+            \centering
+            \begin{tikzpicture}[->, scale=0.35]
+                \draw[PrimaryColor, very thick] (-3,-2) rectangle (3, 2);
+                \draw[blue, dashed, -] (-3, -5) -- (-3, 5) node[above] {$x = x_{\min}$};
+                \draw[blue, dashed, -] (3,- 5) -- (3, 5) node[above] {$x = x_{\max}$};
+                \only<2>{
+                    \draw[ray] (0, -6) -- (0, 6);
+                    \draw[PrimaryColor, fill=PrimaryColor] (0, -6) circle (2pt) node[below] {$\mathbf{R}_o$};
+                    \draw[ray, red] (0, -6) -- (0, -4) node[midway, left] {$\mathbf{R}_d$};
+                }                
+                \only<3>{
+                    \draw[ray] (-5, -6) -- (-5, 6);
+                    \draw[PrimaryColor, fill=PrimaryColor] (-5, -6) circle (2pt) node[below] {$\mathbf{R}_o$};
+                    \draw[ray, red] (-5, -6) -- (-5, -4) node[midway, left] {$\mathbf{R}_d$};
+                }                
+                \only<4>{
+                    \draw[ray] (5, -6) -- (5, 6);
+                    \draw[PrimaryColor, fill=PrimaryColor] (5, -6) circle (2pt) node[below] {$\mathbf{R}_o$};
+                    \draw[ray, red] (5, -6) -- (5, -4) node[midway, left] {$\mathbf{R}_d$};
+                }
             \end{tikzpicture}
         \end{column}
     \end{columns}
