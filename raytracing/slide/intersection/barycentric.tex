@@ -1,264 +1,258 @@
 
 \begin{frame}{What Are Barycentric Coordinates?}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Barycentric Definition}
-                Any point P in the triangle's plane:
-                \begin{align*}
-                    \mathbf{P}(\alpha,\beta,\gamma) &= \alpha\mathbf{a} + \beta\mathbf{b} + \gamma\mathbf{c}
-                \end{align*}
-                where: $\alpha + \beta + \gamma = 1$
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Barycentric Definition}
+        Any point P in the triangle's plane:
+        \begin{align*}
+          \mathbf{P}(\alpha,\beta,\gamma) &= \alpha\mathbf{a} + \beta\mathbf{b} + \gamma\mathbf{c}
+        \end{align*}
+        where: $\alpha + \beta + \gamma = 1$
 
-                \vspace{0.3cm}
+        \vspace{0.3cm}
 
-                \pause
-                \textbf{Physical Interpretation:}
-                \begin{itemize}
-                    \item $\alpha$, $\beta$, $\gamma$ are \textit{weights}
-                    \item P is the \textit{center of mass}
-                    \item Also called \textit{barycenter}
-                \end{itemize}
-            \end{mathbox}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                \begin{scope}[canvas is xy plane at z=0]
-                    % Triangle
-                    \coordinate (A) at (0,0);
-                    \coordinate (B) at (4,0);
-                    \coordinate (C) at (2,3);
-                    
-                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
-                    
-                    % Vertices with weights
-                    \fill[ObjectColor] (A) circle (3pt);
-                    \fill[ObjectColor] (B) circle (3pt);
-                    \fill[ObjectColor] (C) circle (3pt);
-                    \node[below] at (A) {$\mathbf{a}$ ($\alpha=0.3$)};
-                    \node[below] at (B) {$\mathbf{b}$ ($\beta=0.5$)};
-                    \node[above] at (C) {$\mathbf{c}$ ($\gamma=0.2$)};
-                    
-                    % Point P
-                    \coordinate (P) at (2.2,1.2);
-                    \fill[AccentColor] (P) circle (3pt);
-                    \node[left] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
-                    
-                    % Sub-triangles for area interpretation
-                    \draw[thin, SecondaryColor, dashed] (P) -- (A);
-                    \draw[thin, SecondaryColor, dashed] (P) -- (B);
-                    \draw[thin, SecondaryColor, dashed] (P) -- (C);
-                    
-                    % Area labels
-                    \fill[red!15, opacity=0.5] (A) -- (B) -- (P) -- cycle;
-                    \fill[green!15, opacity=0.5] (C) -- (B) -- (P) -- cycle;
-                    \fill[blue!15, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+        \pause
+        \textbf{Physical Interpretation:}
+        \begin{itemize}
+          \item $\alpha$, $\beta$, $\gamma$ are \textit{weights}
+          \item P is the \textit{center of mass}
+          \item Also called \textit{barycenter}
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        \begin{scope}[canvas is xy plane at z=0]
+          % Triangle
+          \coordinate (A) at (0,0);
+          \coordinate (B) at (4,0);
+          \coordinate (C) at (2,3);
 
-                    \node[red] at (2.2,0.4) {$A_{\gamma}$};
-                    \node[green] at (2.6,1.7) {$A_{\alpha}$};
-                    \node[blue] at (1.6,1.7) {$A_{\beta}$};
+          \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
 
+          % Vertices with weights
+          \fill[ObjectColor] (A) circle (3pt);
+          \fill[ObjectColor] (B) circle (3pt);
+          \fill[ObjectColor] (C) circle (3pt);
+          \node[below] at (A) {$\mathbf{a}$ ($\alpha=0.3$)};
+          \node[below] at (B) {$\mathbf{b}$ ($\beta=0.5$)};
+          \node[above] at (C) {$\mathbf{c}$ ($\gamma=0.2$)};
 
-                \end{scope}
-            \end{tikzpicture}
-            \vspace{0.3cm}
-            \only<3->{
-                \begin{conceptbox}{Area Relationship}
-                    $\alpha = \frac{A_{\alpha}}{A_{\text{total}}}$, $\beta = \frac{A_{\beta}}{A_{\text{total}}}$, \\
-                    $\gamma = \frac{A_{\gamma}}{A_{\text{total}}}$
-                \end{conceptbox}
-            }
-        \end{column}
-    \end{columns}
-    \href{https://www.desmos.com/calculator/rb2zeav9og}{Check out the Desmos demo.}
+          % Point P
+          \coordinate (P) at (2.2,1.2);
+          \fill[AccentColor] (P) circle (3pt);
+          \node[left] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+
+          % Sub-triangles for area interpretation
+          \draw[thin, SecondaryColor, dashed] (P) -- (A);
+          \draw[thin, SecondaryColor, dashed] (P) -- (B);
+          \draw[thin, SecondaryColor, dashed] (P) -- (C);
+
+          % Area labels
+          \fill[red!15, opacity=0.5] (A) -- (B) -- (P) -- cycle;
+          \fill[green!15, opacity=0.5] (C) -- (B) -- (P) -- cycle;
+          \fill[blue!15, opacity=0.5] (A) -- (C) -- (P) -- cycle;
+
+          \node[red] at (2.2,0.4) {$A_{\gamma}$};
+          \node[green] at (2.6,1.7) {$A_{\alpha}$};
+          \node[blue] at (1.6,1.7) {$A_{\beta}$};
+
+        \end{scope}
+      \end{tikzpicture}
+      \vspace{0.3cm}
+      \only<3->{
+        \begin{conceptbox}{Area Relationship}
+          $\alpha = \frac{A_{\alpha}}{A_{\text{total}}}$, $\beta = \frac{A_{\beta}}{A_{\text{total}}}$, \\
+          $\gamma = \frac{A_{\gamma}}{A_{\text{total}}}$
+        \end{conceptbox}
+      }
+    \end{column}
+  \end{columns}
+  \href{https://www.desmos.com/calculator/rb2zeav9og}{Check out the Desmos demo.}
 \end{frame}
-
-
 
 \begin{frame}{Barycentric Coordinates: Inside vs Outside}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Triangle Interior Test}
-                Point P is \textbf{inside} triangle if:
-                \begin{align*}
-                    \alpha, \beta, \gamma &\geq 0
-                \end{align*}
-                
-                Since $\alpha + \beta + \gamma = 1$, we can rewrite as:
-                \begin{align*}
-                    \beta &\geq 0 \\
-                    \gamma &\geq 0 \\
-                    \alpha &\geq 0 \text{ or } \beta + \gamma \leq 1
-                \end{align*}
-            \end{mathbox}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.6]
-                \begin{scope}[canvas is xy plane at z=0]
-                    % Triangle
-                    \coordinate (A) at (0,0);
-                    \coordinate (B) at (4,0);
-                    \coordinate (C) at (2,3);
-                    
-                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
-                    
-                    % Vertices
-                    \fill[ObjectColor] (A) circle (2pt);
-                    \fill[ObjectColor] (B) circle (2pt);
-                    \fill[ObjectColor] (C) circle (2pt);
-                    \node[below] at (A) {$\mathbf{a}$};
-                    \node[below] at (B) {$\mathbf{b}$};
-                    \node[above] at (C) {$\mathbf{c}$};
-                    
-                    % Inside point
-                    \fill[AccentColor] (1.5,1) circle (2pt);
-                    \node[right, AccentColor] at (1.5,1) {Inside};
-                    \node[right, AccentColor] at (0.6,0.3) {\scriptsize $0\geq \beta,\gamma \geq 1$};
-                    
-                    % Outside points
-                    \fill[red] (-0.5,1) circle (2pt);
-                    \node[left, red] at (-0.5,1) {Outside};
-                    \node[left, red] at (-0.5,0.4) {$\beta<0$};
-                    
-                    \fill[red] (4,1.5) circle (2pt);
-                    \node[above, red] at (5.2,1.1) {Outside};
-                    \node[above, red] at (5,1.5) {$\alpha < 0, \beta+\gamma>1$};
-                    
-                    \fill[red] (1.5,-1.5) circle (2pt);
-                    \node[right, red] at (1.5,-1.5) {Outside};
-                    \node[right, red] at (1.5,-1) {$\gamma<0$};
-                \end{scope}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
-    \pause
-    \begin{conceptbox}{Insight}
-        Barycentric coordinates doesn't just tell us if a point is inside a triangle, but also it's position with respect to other vertices.
-    \end{conceptbox}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Triangle Interior Test}
+        Point P is \textbf{inside} triangle if:
+        \begin{align*}
+          \alpha, \beta, \gamma &\geq 0
+        \end{align*}
+
+        Since $\alpha + \beta + \gamma = 1$, we can rewrite as:
+        \begin{align*}
+          \beta &\geq 0 \\
+          \gamma &\geq 0 \\
+          \alpha &\geq 0 \text{ or } \beta + \gamma \leq 1
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        \begin{scope}[canvas is xy plane at z=0]
+          % Triangle
+          \coordinate (A) at (0,0);
+          \coordinate (B) at (4,0);
+          \coordinate (C) at (2,3);
+
+          \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+
+          % Vertices
+          \fill[ObjectColor] (A) circle (2pt);
+          \fill[ObjectColor] (B) circle (2pt);
+          \fill[ObjectColor] (C) circle (2pt);
+          \node[below] at (A) {$\mathbf{a}$};
+          \node[below] at (B) {$\mathbf{b}$};
+          \node[above] at (C) {$\mathbf{c}$};
+
+          % Inside point
+          \fill[AccentColor] (1.5,1) circle (2pt);
+          \node[right, AccentColor] at (1.5,1) {Inside};
+          \node[right, AccentColor] at (0.6,0.3) {\scriptsize $0\leq \beta,\gamma \leq 1$};
+
+          % Outside points
+          \fill[red] (-0.5,1) circle (2pt);
+          \node[left, red] at (-0.5,1) {Outside};
+          \node[left, red] at (-0.5,0.4) {$\beta<0$};
+
+          \fill[red] (4,1.5) circle (2pt);
+          \node[above, red] at (5.2,1.1) {Outside};
+          \node[above, red] at (5,1.5) {$\alpha < 0, \beta+\gamma>1$};
+
+          \fill[red] (1.5,-1.5) circle (2pt);
+          \node[right, red] at (1.5,-1.5) {Outside};
+          \node[right, red] at (1.5,-1) {$\gamma<0$};
+        \end{scope}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+  \pause
+  \begin{conceptbox}{Insight}
+    Barycentric coordinates doesn't just tell us if a point is inside a triangle, but also it's position with respect to other vertices.
+  \end{conceptbox}
 \end{frame}
 
 \begin{frame}{Barycentric Coordinates: Derivation}
-    \begin{columns}
-        \begin{column}{0.65\textwidth}
-            \begin{mathbox}{Key Idea}
-                \begin{itemize}
-                    \item  The sides
-                        $\mathbf{e_1} = \mathbf{b} - \mathbf{a}$ and $\mathbf{e_2} = \mathbf{c} - \mathbf{a}$ are linearly independent vectors on the triangle's plane.
-                    \pause
-                    \item Therefore, any vector in the triangle's plane (e.g. $\mathbf{P} - \mathbf{a}$) can be expressed as a linear combination of these vectors.
-                    \pause
-                    \item We can express $\mathbf{P}$ as:
-                        \begin{align*}
-                            \mathbf{P} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a}) \\
-                            &= \alpha \mathbf{a} + \beta \mathbf{b} + \gamma \mathbf{c}
-                        \end{align*}
-                        Where $\alpha = 1 - \beta - \gamma$.
-                \end{itemize}
-            \end{mathbox}
-           
-            
+  \begin{columns}
+    \begin{column}{0.65\textwidth}
+      \begin{mathbox}{Key Idea}
+        \begin{itemize}
+          \item  The sides
+            $\mathbf{e_1} = \mathbf{b} - \mathbf{a}$ and $\mathbf{e_2} = \mathbf{c} - \mathbf{a}$ are linearly independent vectors on the triangle's plane.
+            \pause
+          \item Therefore, any vector in the triangle's plane (e.g. $\mathbf{P} - \mathbf{a}$) can be expressed as a linear combination of these vectors.
+            \pause
+          \item We can express $\mathbf{P}$ as:
+            \begin{align*}
+              \mathbf{P} &= \mathbf{a} + \beta(\mathbf{b}-\mathbf{a}) + \gamma(\mathbf{c}-\mathbf{a}) \\
+              &= \alpha \mathbf{a} + \beta \mathbf{b} + \gamma \mathbf{c}
+            \end{align*}
+            Where $\alpha = 1 - \beta - \gamma$.
+        \end{itemize}
+      \end{mathbox}
 
-        \end{column}
-        \begin{column}{0.35\textwidth}
-            \begin{tikzpicture}[scale=0.7]
-                \begin{scope}[canvas is xy plane at z=0]
-                    % Triangle
-                    \coordinate (A) at (0,0);
-                    \coordinate (B) at (4,0);
-                    \coordinate (C) at (2,3);
-                    
-                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
-                    
-                    % Vertices with weights
-                    \fill[ObjectColor] (A) circle (3pt);
-                    \fill[ObjectColor] (B) circle (3pt);
-                    \fill[ObjectColor] (C) circle (3pt);
-                    \node[below] at (A) {$\mathbf{a}$};
-                    \node[below] at (B) {$\mathbf{b}$};
-                    \node[above] at (C) {$\mathbf{c}$};
 
-                    \draw[->, red, very thick] (A) -- (B) node[midway, below] {$\mathbf{e_1} = \mathbf{b}-\mathbf{a}$}; 
-                    \draw[->, blue, very thick] (A) -- (C) node[midway, left] {$\mathbf{e_2} = \mathbf{c}-\mathbf{a}$};
-                    
-                    % Point P
-                    \coordinate (P) at (2.2,1.2);
-                    \fill[AccentColor] (P) circle (3pt);
-                    \node[right] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
-                    \draw[->, thin, PrimaryColor, dashed] (A) -- (P);
-                \end{scope}
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
+
+    \end{column}
+    \begin{column}{0.35\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        \begin{scope}[canvas is xy plane at z=0]
+          % Triangle
+          \coordinate (A) at (0,0);
+          \coordinate (B) at (4,0);
+          \coordinate (C) at (2,3);
+
+          \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
+
+          % Vertices with weights
+          \fill[ObjectColor] (A) circle (3pt);
+          \fill[ObjectColor] (B) circle (3pt);
+          \fill[ObjectColor] (C) circle (3pt);
+          \node[below] at (A) {$\mathbf{a}$};
+          \node[below] at (B) {$\mathbf{b}$};
+          \node[above] at (C) {$\mathbf{c}$};
+
+          \draw[->, red, very thick] (A) -- (B) node[midway, below] {$\mathbf{e_1} = \mathbf{b}-\mathbf{a}$};
+          \draw[->, blue, very thick] (A) -- (C) node[midway, left] {$\mathbf{e_2} = \mathbf{c}-\mathbf{a}$};
+
+          % Point P
+          \coordinate (P) at (2.2,1.2);
+          \fill[AccentColor] (P) circle (3pt);
+          \node[right] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+          \draw[->, thin, PrimaryColor, dashed] (A) -- (P);
+        \end{scope}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
 \end{frame}
-
 
 \begin{frame}{Barycentric Coordinates: Derivation}
-    \begin{columns}
-        \begin{column}{0.65\textwidth}
-            \begin{mathbox}{Area Interpretation}
-                \begin{itemize}
-                    \small
-                    \item  Let $\hat{\mathbf{u}}$ be an unit vector in the direction of the altitude towards $C$. 
-                    \pause
-                    \item  The height of the triangle is $h = \hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a})$ (projection).
-                    \pause
-                    \item  The height of the shaded triangle is $h' = \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a})$.
-                    \pause
-                    \item  Hence, \begin{align*}
-                        A_{\gamma} &= \frac{1}{2} \cdot h' \cdot |\mathbf{b} - \mathbf{a}| \\
-                        &= \frac{1}{2} \cdot \left (\hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
-                        &= \frac{1}{2} \cdot \gamma \left (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
-                        &= \gamma \frac{1}{2} \cdot h \cdot |\mathbf{b} - \mathbf{a}| = \gamma A_{\text{total}}
-                    \end{align*}
-                \end{itemize}
-            \end{mathbox}    
-        \end{column}
-        \begin{column}{0.35\textwidth}
-            \begin{tikzpicture}[scale=0.7]
-                \begin{scope}[canvas is xy plane at z=0]
-                    % Triangle
-                    \coordinate (A) at (0,0);
-                    \coordinate (B) at (4,0);
-                    \coordinate (C) at (2,3);
-                    
-                    \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
-                    
-                    % Vertices with weights
-                    \fill[ObjectColor] (A) circle (3pt);
-                    \fill[ObjectColor] (B) circle (3pt);
-                    \fill[ObjectColor] (C) circle (3pt);
-                    \node[below] at (A) {$\mathbf{a}$};
-                    \node[below] at (B) {$\mathbf{b}$};
-                    \node[above] at (C) {$\mathbf{c}$};
+  \begin{columns}
+    \begin{column}{0.65\textwidth}
+      \begin{mathbox}{Area Interpretation}
+        \begin{itemize}
+            \small
+          \item  Let $\hat{\mathbf{u}}$ be an unit vector in the direction of the altitude towards $C$.
+            \pause
+          \item  The height of the triangle is $h = \hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a})$ (projection).
+            \pause
+          \item  The height of the shaded triangle is $h' = \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a})$.
+            \pause
+          \item  Hence,
+            \begin{align*}
+              A_{\gamma} &= \frac{1}{2} \cdot h' \cdot |\mathbf{b} - \mathbf{a}| \\
+              &= \frac{1}{2} \cdot \left (\hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
+              &= \frac{1}{2} \cdot \gamma \left (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}) \right ) \cdot |\mathbf{b} - \mathbf{a}|  \\
+              &= \gamma \frac{1}{2} \cdot h \cdot |\mathbf{b} - \mathbf{a}| = \gamma A_{\text{total}}
+            \end{align*}
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.35\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        \begin{scope}[canvas is xy plane at z=0]
+          % Triangle
+          \coordinate (A) at (0,0);
+          \coordinate (B) at (4,0);
+          \coordinate (C) at (2,3);
 
-                    \draw[->, red, very thick] (A) -- (B) node[midway, below] {$\mathbf{b}-\mathbf{a}$}; 
-                    
-                    % Point P
-                    \coordinate (P) at (1.7,1.6);
-                    \fill[AccentColor] (P) circle (3pt);
-                    \node[left] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
-                    \fill[red!60, opacity=0.2] (A) -- (P) -- (B) -- cycle;
-                    \draw[PrimaryColor, dashed, thin] (A) -- (P) -- (B);
+          \draw[thick, ObjectColor, fill=ObjectColor!15] (A) -- (B) -- (C) -- cycle;
 
-                    \draw[->, blue, thick] (2, 0) -- (2, 1) node[midway, right] {$\hat{\mathbf{u}}$};
-                    \draw[gray, thin] (2, 0) -- (2, 3) node[midway, right, yshift=0.3cm] {\small $h$};
-                    \draw[gray, thin] (1.7, 0) -- (1.7, 1.6) node[midway, left, xshift=0.1cm] {\small $h'$};
+          % Vertices with weights
+          \fill[ObjectColor] (A) circle (3pt);
+          \fill[ObjectColor] (B) circle (3pt);
+          \fill[ObjectColor] (C) circle (3pt);
+          \node[below] at (A) {$\mathbf{a}$};
+          \node[below] at (B) {$\mathbf{b}$};
+          \node[above] at (C) {$\mathbf{c}$};
 
+          \draw[->, red, very thick] (A) -- (B) node[midway, below] {$\mathbf{b}-\mathbf{a}$};
 
-                    \node[red] at (1,0.4) {$A_{\gamma}$};
-                \end{scope}
-            \end{tikzpicture}
-            \vspace{0.3cm}
-            \only<5->{
-            \footnotesize
-                Since, $\mathbf{P} = \mathbf{a} + \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a})$, 
-                \begin{align*}
-                    \mathbf{P} - \mathbf{a} = \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a}) \\
-                    \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) = \gamma (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}))
-                \end{align*}
-                Since $\hat{\mathbf{u}}$ is perpendicular to $\mathbf{b} - \mathbf{a}$.
-            }
-        \end{column}
-    \end{columns}
+          % Point P
+          \coordinate (P) at (1.7,1.6);
+          \fill[AccentColor] (P) circle (3pt);
+          \node[left] at (P) {\textcolor{AccentColor}{$\mathbf{P}$}};
+          \fill[red!60, opacity=0.2] (A) -- (P) -- (B) -- cycle;
+          \draw[PrimaryColor, dashed, thin] (A) -- (P) -- (B);
+
+          \draw[->, blue, thick] (2, 0) -- (2, 1) node[midway, right] {$\hat{\mathbf{u}}$};
+          \draw[gray, thin] (2, 0) -- (2, 3) node[midway, right, yshift=0.3cm] {\small $h$};
+          \draw[gray, thin] (1.7, 0) -- (1.7, 1.6) node[midway, left, xshift=0.1cm] {\small $h'$};
+
+          \node[red] at (1,0.4) {$A_{\gamma}$};
+        \end{scope}
+      \end{tikzpicture}
+      \vspace{0.3cm}
+      \only<5->{
+        \footnotesize
+        Since, $\mathbf{P} = \mathbf{a} + \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a})$,
+        \begin{align*}
+          \mathbf{P} - \mathbf{a} = \beta (\mathbf{b} - \mathbf{a}) + \gamma (\mathbf{c} - \mathbf{a}) \\
+          \hat{\mathbf{u}} \cdot (\mathbf{P} - \mathbf{a}) = \gamma (\hat{\mathbf{u}} \cdot (\mathbf{c} - \mathbf{a}))
+        \end{align*}
+        Since $\hat{\mathbf{u}}$ is perpendicular to $\mathbf{b} - \mathbf{a}$.
+      }
+    \end{column}
+  \end{columns}
 \end{frame}
-
-

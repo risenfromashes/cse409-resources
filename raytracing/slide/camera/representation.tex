@@ -2,7 +2,7 @@
 
 \begin{frame}{Camera Representation}
   \begin{center}
-    \begin{tikzpicture}[scale=0.5]
+    \begin{tikzpicture}[scale=0.6]
       \tikzset{
         camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
         image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
@@ -29,7 +29,7 @@
       \node[sphere, minimum size=0.8cm] (sphere2) at (7,-1,-1) {};
       \node[triangle, minimum size=1cm] (tri) at (9,0.5,0) {};
 
-      \draw[<->, thick, gray] (0, 2.5, 0) -- (4, 2.5, 0) node[midway, above] {\textcolor{gray}{$n$}};
+      \draw[<->, thick, gray] (0, 2.5, 0) -- (4, 2.5, 0) node[midway, above] {\textcolor{gray}{$d$}};
 
       \node[below] at (0, -0.5, 0) {\textcolor{PrimaryColor!80}{$\mathbf{e}$}};
 
@@ -54,7 +54,9 @@
 
       \begin{scope}[canvas is zy plane at x=4]
         \fill[image plane] (-2,-2) rectangle (2,2);
-        \node[right] at (2.2,-2.8) {\textcolor{AccentColor}{Image Plane}};
+        \only<1-6>{
+          \node[right] at (2.2,-2.8) {\textcolor{AccentColor}{Image Plane}};
+        }
 
         \foreach \y in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
           \draw[thin, gray!30] (-2,\y) -- (2,\y);
@@ -93,23 +95,23 @@
           \only<3>{
             Basis vectors defining the camera's orientation.
             Up direction $\mathbf{v}$, right direction $\mathbf{u}$, and forward direction $\mathbf{w}$.
+            The plane is perpendicular to $\mathbf{w}$.
           }
-
-          \textbf{Field of View} $fov$ \\
-          \only<4>{
-            $fov$ is the angle created by the screen at the camera's position.
-          }
-
         \end{column}
         \begin{column}{0.5\textwidth}%
+          \textbf{Field of View} $fov$ \\
+          \only<4>{
+            $fov$ is the angle created by the screen at the camera's position. It determines how big the image plane is.
+          }
+
           \textbf{Distance to image plane} $d$ \\
           \only<5>{
-            Distance to the plane where the image is formed.
+            Distance to the plane where the image is formed, along the $\mathbf{w}$ direction.
           }
 
           \textbf{Image dimension} $(w \times h)$ \\
           \only<6>{
-            The resolution of the image.
+            The resolution of the image. Determines the aspect ratio.
           }
         \end{column}
       \end{columns}
@@ -117,6 +119,7 @@
     \end{conceptbox}
   }
   \only<7->{
+    \vspace*{-0.3cm}
     \begin{mathbox}{Mathematical Representation}
       \footnotesize
       \only<7>{
@@ -127,9 +130,12 @@
       }
       \only<8>{
         Calculating the position of the pixel is a bit more involved. For pixel $(i, j)$:
-        \begin{align*}
-          \mathbf{pixel} & = \mathbf{e} + d \mathbf{w} + s \mathbf{u} + t \mathbf{v}
-        \end{align*}
+        {
+          \scriptsize
+          \begin{align*}
+            \mathbf{pixel} & = \mathbf{e} + d \mathbf{w} + s \mathbf{u} + t \mathbf{v}
+          \end{align*}
+        }
         Where $s$ and $t$ are:
         {
           \scriptsize
@@ -142,4 +148,209 @@
       }
     \end{mathbox}
   }
+\end{frame}
+
+\begin{frame}{Pixel Coordinate Formula}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \centering
+      \begin{tikzpicture}
+        \tikzset{
+          image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8}
+        }
+        \node[eye] (camera) at (0,0,0) {\faIcon{camera}};
+        \begin{scope}[canvas is zy plane at x=4]
+          \fill[image plane] (-2,-2) rectangle (2,2);
+
+          \foreach \y [count=\i] in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+            \draw[thin, gray!30] (-2,\y) -- (2,\y);
+          }
+
+          \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+            \draw[thin, gray!30] (\z,-2) -- (\z,2);
+          }
+
+          \only<1-2>{
+            \node[left] at (2, 0) {\tiny $\vdots$};
+            \node[below,anchor=west,shift={(-0.1,-0.1)}] at (0, -2) {\tiny $\dots$};
+          }
+
+          \only<1>{
+            \foreach \y [count=\i] in {-2, -1.5,-1,-0.5,0,0.5,1,1.5} {
+              \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5} {
+                \fill[red!60] ($(\z,\y)$) circle (1pt);
+              }
+            }
+            \foreach \y/\i in {-2/0, -1.5/1, -1/2, 0.5/$h-3$, 1/$h-2$, 1.5/$h-1$} {
+              \node[left,anchor=east] at (2,\y) {\tiny \i};
+            }
+
+            \foreach \z/\i in {-2/0, -1.5/1, -1/2, 0.5/$w-3$, 1/$w-2$, 1.5/$w-1$} {
+              \node[below,anchor=west,shift={(-0.1,-0.1)}] at (\z,-2) {\tiny \i};
+            }
+
+            \node at (0, -3.5) {$(i, j)$};
+          }
+
+          \only<2>{
+
+            \foreach \y [count=\i] in {-2, -1.5,-1,-0.5,0,0.5,1,1.5} {
+              \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5} {
+                \fill[red!60] ($(\z,\y)+(0.25,0.25)$) circle (1pt);
+              }
+            }
+
+            \foreach \y/\i in {-2/0.5, -1.5/1.5, -1/2.5, 0.5/$h-2.5$, 1/$h-1.5$, 1.5/$h-0.5$} {
+              \node[left,anchor=east] at ($(2,\y)+(0,0.25)$) {\tiny \i};
+            }
+
+            \foreach \z/\i in {-2/0.5, -1.5/1.5, -1/2.5, 0.5/$w-2.5$, 1/$w-1.5$, 1.5/$w-0.5$} {
+              \node[below,anchor=west,shift={(-0.1,-0.1)}] at ($(\z,-2)+(0.25,0)$) {\tiny \i};
+            }
+
+            \node at (0, -3.5) {$(i \textcolor{red}{+ 0.5}, j \textcolor{red}{+ 0.5})$};
+          }
+
+          \only<3>{
+            \node[below,anchor=east] at (2, -2) {\tiny $(w, 0)$};
+            \node[below,anchor=west] at (-2, -2) {\tiny $(0, 0)$};
+            \node[above,anchor=east] at (2, 2) {\tiny $(w, h)$};
+            \node[above,anchor=west] at (-2, 2) {\tiny $(0, h)$};
+            \node[above,anchor=west] at (0,0) {\tiny $\left(\frac{w}{2}, \frac{h}{2}\right)$};
+
+            \node at (0, -3.5) {$(i + 0.5, j + 0.5)$};
+          }
+
+          \only<4>{
+            \node[below,anchor=east] at (2, -2) {\tiny $(1, 0)$};
+            \node[below,anchor=west] at (-2, -2) {\tiny $(0, 0)$};
+            \node[above,anchor=east] at (2, 2) {\tiny $(1, 1)$};
+            \node[above,anchor=west] at (-2, 2) {\tiny $(0, 1)$};
+            \node[above,anchor=west] at (0,0) {\tiny $\left(\frac{1}{2}, \frac{1}{2}\right)$};
+
+            \node at (0, -3.5) {$\left (\textcolor{red}{\frac{\textcolor{black}{i + 0.5}}{w}}, \textcolor{red}{\frac{\textcolor{black}{j + 0.5}}{h}}\right )$};
+          }
+
+          \only<5>{
+            \node[below,anchor=east] at (2, -2) {\tiny $(1, -1)$};
+            \node[below,anchor=west] at (-2, -2) {\tiny $(-1, -1)$};
+            \node[above,anchor=east] at (2, 2) {\tiny $(1, 1)$};
+            \node[above,anchor=west] at (-2, 2) {\tiny $(-1, 1)$};
+            \node[above,anchor=west] at (0,0) {\tiny $(0,0)$};
+
+            \node at (0, -3.5) {$\left (\textcolor{red}{2\cdot} \frac{i + 0.5}{w} \textcolor{red}{- 1}, \textcolor{red}{2\cdot}\frac{j + 0.5}{h}\textcolor{red}{-1}\right )$};
+          }
+
+          \only<6-7>{
+            \node[below,anchor=east] at (2, -2) {\tiny $(X, -Y)$};
+            \node[below,anchor=west] at (-2, -2) {\tiny $(-X, -Y)$};
+            \node[above,anchor=east] at (2, 2) {\tiny $(X, Y)$};
+            \node[above,anchor=west] at (-2, 2) {\tiny $(-X, Y)$};
+            \node[above,anchor=west] at (0,0) {\tiny $(0,0)$};
+
+            \draw[<->] (2, 0) -- (0, 0) node[midway, below] {\scriptsize $X$};
+            \draw[<->] (0, 0) -- (0, 2) node[midway, right] {\scriptsize $Y$};
+
+            \node at (0, -3.5) {$\left (\left( 2\cdot\frac{i + 0.5}{w} - 1 \right) \textcolor{red}{\cdot X},
+            \left(2\cdot\frac{j + 0.5}{h}-1\right)\textcolor{red}{\cdot Y} \right )$};
+            \only<7>{
+              \node at (0, -4.5) {\small $X = d \tan\left(\frac{fov}{2}\right)$ and $Y = d \tan\left(\frac{fov}{2}\right) \cdot \frac{h}{w}$};
+            }
+          }
+
+          \only<8->{
+            \node[below,anchor=east] at (2, -2) {\tiny $(X, -Y)$};
+            \node[below,anchor=west] at (-2, -2) {\tiny $(-X, -Y)$};
+            \node[above,anchor=east] at (2, 2) {\tiny $(X, Y)$};
+            \node[above,anchor=west] at (-2, 2) {\tiny $(-X, Y)$};
+            \node[above,anchor=west] at (0,0) {\tiny $(0,0)$};
+
+            \draw[->, thick] (eye) -- (0, 0) node[midway, above] {\scriptsize $\textcolor{black}{d\mathbf{w}}$};
+            \draw[->, AccentColor, thick] (0, 0) -- (1, 0) node[midway, below] {\scriptsize $\textcolor{black}{\mathbf{u}}$};
+            \draw[->, AccentColor, thick] (0, 0) -- (0, 1) node[midway, right] {\scriptsize $\textcolor{black}{\mathbf{v}}$};
+
+            \fill[AccentColor!50] (1.5, 1.5) rectangle (2, 2);
+            \draw[<->, thin, gray] (1.75, 1.75) -- (0, 1.75) node[midway, right] {\scriptsize $\textcolor{black}{t}$};
+            \draw[<->, thin, gray] (1.75, 1.75) -- (1.75, 0) node[midway, below, shift={(0.1,0.2)}] {\scriptsize $\textcolor{black}{s}$};
+            \fill[red!60] (1.75, 1.75) circle (1pt);
+
+            \node at (0.5, -3.5) {\scriptsize $\left (\underbrace{\left( 2\cdot\frac{i + 0.5}{w} - 1 \right)\cdot X}_{s},
+            \underbrace{\left(2\cdot\frac{j + 0.5}{h}-1\right)\cdot Y}_{t} \right )$};
+
+            \node[below,yshift=-0.4cm] at (eye) {\scriptsize $\mathbf{e}$};
+          }
+
+          \only<3->{
+            \fill[PrimaryColor!60] (2,-2) circle (2pt);
+            \fill[PrimaryColor!60] (-2,2) circle (2pt);
+            \fill[PrimaryColor!60] (2,2) circle (2pt);
+            \fill[PrimaryColor!60] (-2,-2) circle (2pt);
+            \fill[PrimaryColor!60] (0,0) circle (2pt);
+          }
+        \end{scope}
+
+        \only<7>{
+          \begin{scope}[canvas is xz plane at y=0]
+            \fill[AccentColor!30, opacity=0.3] (eye.center) -- (4,0) -- (4,2) -- cycle;
+            \draw[-,AccentColor] (eye) -- (4,0);
+            \draw[-,AccentColor] (eye) -- (4,2);
+            \draw[-] (3.75, 0) --++ (0, 0.25) --++ (0.25, 0);
+            \draw[<->] (0, -1) -- (4, -1) node[midway, above] {\scriptsize $d$};
+            \draw[-] (1.25, 0) arc[start angle=0, end angle=26.565, radius=1.25] node[midway, right,shift={(0,-0.05)}] {\tiny $\frac{fov}{2}$};
+          \end{scope}
+        }
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{conceptbox}{Intuition}
+        \footnotesize
+        \only<1>{
+          Initially, we have a grid of pixels on the image plane. The pixels $(i, j)$ are in the range $(0, 0)$ to \\ $(w-1, h-1)$.
+        }
+        \only<2>{
+          The pixel center is at the midpoints.
+          Shift by $0.5$ to center the pixels.
+        }
+        \only<3>{
+          We are still in the pixel space. We need to find actual distances.
+        }
+        \only<4>{
+          We first normalize the pixel coordinates to the range $(-1, 1)$.
+        }
+        \only<5>{
+          The pixel coordinates are now in the range $(-1, -1)$ to $(1, 1)$.
+          This makes it easier to calculate the pixel position.
+        }
+        \only<6>{
+          Now if we multiply the pixel coordinates with the half-length and half-width of the image plane, we get the pixel position in the image plane in actual distances.
+        }
+        \only<7>{
+          $X$ can be found by noticing that in the right angle triangle shown, $\tan\left(\frac{fov}{2}\right) = \frac{X}{d}$. \\
+          $Y$ can calculated from $X$ because $\frac{h}{w} = \frac{Y}{X}$, as the aspect ratio is preserved.
+        }
+        \only<8->{
+          Now that we have the pixel position in the image plane $(s, t)$, we can calculate the pixel position in 3D space.
+
+          \only<9->{
+            \textbf{Step 1:} Go to the camera position $\mathbf{e}$.
+          }
+
+          \only<10->{
+            \textbf{Step 2:} Move along the forward direction $\mathbf{w}$ by $d$.
+          }
+
+          \only<11->{
+            \textbf{Step 3:} Move along the right direction $\mathbf{u}$ by $s$ and along the up direction $\mathbf{v}$ by $t$.
+          }
+
+          \only<12->{
+            Putting it all together, we have:
+            \begin{align*}
+              \mathbf{pixel} & = \mathbf{e} + d \mathbf{w} + s \mathbf{u} + t \mathbf{v}
+            \end{align*}
+          }
+        }
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
 \end{frame}
