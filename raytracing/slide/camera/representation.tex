@@ -1,0 +1,145 @@
+\subsection{Camera Representation}
+
+\begin{frame}{Camera Representation}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.5]
+      \tikzset{
+        camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+        image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
+        pixel/.style={fill=AccentColor!60, thick},
+        primary ray/.style={->, very thick, red!90},
+        object/.style={fill=orange!60, draw=orange!80, circle, minimum size=12pt}
+      }
+
+      \draw[<->, thick, PrimaryColor] (0,0,0) -- (1.5,0,0);
+      \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,1.5,0);
+      \draw[<->, thick, PrimaryColor] (0,0,0) -- (0,0,2);
+      \node[right] at (1.5,0,0) {\textcolor{PrimaryColor}{$\mathbf{w}$}};
+      \node[above] at (0,1.5,0) {\textcolor{PrimaryColor}{$\mathbf{v}$}};
+      \node[below] at (0,0,2) {\textcolor{PrimaryColor}{$\mathbf{u}$}};
+
+      \node[eye] (camera) at (0,0,0) {\faIcon{camera}};
+
+      \draw[thick, gray] (camera) -- (4,2,2);
+      \draw[thick, gray] (camera) -- (4,-2,2);
+      \draw[thick, gray] (camera) -- (4,2,-2);
+      \draw[thick, gray] (camera) -- (4,-2,-2);
+
+      \node[sphere, minimum size=1cm] (sphere1) at (8,1,2) {};
+      \node[sphere, minimum size=0.8cm] (sphere2) at (7,-1,-1) {};
+      \node[triangle, minimum size=1cm] (tri) at (9,0.5,0) {};
+
+      \draw[<->, thick, gray] (0, 2.5, 0) -- (4, 2.5, 0) node[midway, above] {\textcolor{gray}{$n$}};
+
+      \node[below] at (0, -0.5, 0) {\textcolor{PrimaryColor!80}{$\mathbf{e}$}};
+
+      \begin{scope}[
+          ->,
+          plane x={(0.8944,-0.4472, 0)},
+          plane y={(0,0,-1)},
+          canvas is plane,
+        ]
+        \fill[PrimaryColor!30, opacity=0.3]
+        (0,0)
+        -- (2,0)
+        arc[start angle=0, end angle=25, radius=2]
+        -- (0,0)
+        -- (2,0)
+        arc[start angle=0, end angle=-25, radius=2]
+        -- cycle;
+        \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=25, radius=2];
+        \draw[->, thick, PrimaryColor] (2,0) arc[start angle=0, end angle=-25, radius=2];
+        \node[below] at (2.2,0.3) {\textcolor{PrimaryColor}{$fov$}};
+      \end{scope}
+
+      \begin{scope}[canvas is zy plane at x=4]
+        \fill[image plane] (-2,-2) rectangle (2,2);
+        \node[right] at (2.2,-2.8) {\textcolor{AccentColor}{Image Plane}};
+
+        \foreach \y in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+          \draw[thin, gray!30] (-2,\y) -- (2,\y);
+        }
+        \foreach \z in {-2, -1.5,-1,-0.5,0,0.5,1,1.5, 2} {
+          \draw[thin, gray!30] (\z,-2) -- (\z,2);
+        }
+        \fill[pixel] (0.5,1) rectangle (1,1.5);
+
+        \fill[red!70] (0.75, 1.25) circle (0.08);
+
+        \only<7->{
+          \node[below]  at (0.75, 1.25) {\textcolor{red!70}{$(i, j)$}};
+        }
+
+        \draw[ray, very thick, opacity=0.5] (camera.center) -- (0.75, 1.25);
+        \draw[ray, dashed, thick] (0.75, 1.25) -- (sphere1);
+
+        \draw[<->, thin] (-2,-2.5) -- (2,-2.5) node[midway, below] {\textcolor{gray}{$w$}};
+        \draw[<->, thin] (-2.5,-2) -- (-2.5,2) node[midway, right] {\textcolor{gray}{$h$}};
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+
+  \only<1-6>{
+    \begin{conceptbox}{Camera Description}
+      \footnotesize
+      \begin{columns}
+        \begin{column}{0.5\textwidth}
+          \textbf{Camera position} $\mathbf{e}$ \\
+          \only<2>{
+            Position of the camera in 3D space.
+          }
+
+          \textbf{Orthobasis} $\{\mathbf{u}, \mathbf{v}, \mathbf{w}\}$ \\
+          \only<3>{
+            Basis vectors defining the camera's orientation.
+            Up direction $\mathbf{v}$, right direction $\mathbf{u}$, and forward direction $\mathbf{w}$.
+          }
+
+          \textbf{Field of View} $fov$ \\
+          \only<4>{
+            $fov$ is the angle created by the screen at the camera's position.
+          }
+
+        \end{column}
+        \begin{column}{0.5\textwidth}%
+          \textbf{Distance to image plane} $d$ \\
+          \only<5>{
+            Distance to the plane where the image is formed.
+          }
+
+          \textbf{Image dimension} $(w \times h)$ \\
+          \only<6>{
+            The resolution of the image.
+          }
+        \end{column}
+      \end{columns}
+
+    \end{conceptbox}
+  }
+  \only<7->{
+    \begin{mathbox}{Mathematical Representation}
+      \footnotesize
+      \only<7>{
+        Position of the camera is directly given by $\mathbf{e}$.
+        \begin{align*}
+          \mathbf{eye} & = \mathbf{e}
+        \end{align*}
+      }
+      \only<8>{
+        Calculating the position of the pixel is a bit more involved. For pixel $(i, j)$:
+        \begin{align*}
+          \mathbf{pixel} & = \mathbf{e} + d \mathbf{w} + s \mathbf{u} + t \mathbf{v}
+        \end{align*}
+        Where $s$ and $t$ are:
+        {
+          \scriptsize
+          \begin{align*}
+            s = \left(2\cdot\frac{i + 0.5}{w} -1 \right) \cdot d \tan \left( \frac{fov}{2} \right) \text{ and }
+            t = \left(2\cdot\frac{j + 0.5}{h} -1 \right) \cdot d \tan \left( \frac{fov}{2} \right) \cdot \frac{h}{w}
+          \end{align*}
+        }
+        Assuming $i \in [0, w-1]$ and $j \in [0, h-1]$.
+      }
+    \end{mathbox}
+  }
+\end{frame}

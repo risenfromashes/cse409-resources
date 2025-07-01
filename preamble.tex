@@ -20,8 +20,6 @@
 \definecolor{ObjectColor}{RGB}{128,101,160}       % Muted violet (adjusted purple to match cool palette)
 \definecolor{LightColor}{RGB}{235,200,100}        % Soft golden yellow (to complement cool blues)
 
-
-
 % --- Theme Customization ---
 \setbeamercolor{background canvas}{bg=BackgroundColor}
 \setbeamercolor{normal text}{fg=TextColor}
@@ -86,58 +84,58 @@
 
 % --- Custom environments ---
 \newtcolorbox{raybox}[1]{
-    colback=RayColor!10,
-    colframe=RayColor,
-    title=#1,
-    fonttitle=\bfseries,
-    sharp corners
+  colback=RayColor!10,
+  colframe=RayColor,
+  title=#1,
+  fonttitle=\bfseries,
+  sharp corners
 }
 
 \newtcolorbox{conceptbox}[1]{
-    colback=PrimaryColor!10,
-    colframe=PrimaryColor,
-    title=#1,
-    fonttitle=\bfseries,
-    rounded corners
+  colback=PrimaryColor!10,
+  colframe=PrimaryColor,
+  title=#1,
+  fonttitle=\bfseries,
+  rounded corners
 }
 
 \newtcolorbox{mathbox}[1]{
-    colback=SecondaryColor!10,
-    colframe=SecondaryColor,
-    title=#1,
-    fonttitle=\bfseries,
-    rounded corners
+  colback=SecondaryColor!10,
+  colframe=SecondaryColor,
+  title=#1,
+  fonttitle=\bfseries,
+  rounded corners
 }
 
 \tikzset{
-    camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
-    image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
-    pixel/.style={fill=AccentColor!60, thick},
-    primary ray/.style={->, very thick, red!90},
-    object/.style={fill=ObjectColor!60, draw=ObjectColor!80, circle, minimum size=12pt},
-    fovangle/.style={<->, thick, PrimaryColor, dashed}
+  camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
+  image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},
+  pixel/.style={fill=AccentColor!60, thick},
+  primary ray/.style={->, very thick, red!90},
+  object/.style={fill=ObjectColor!60, draw=ObjectColor!80, circle, minimum size=12pt},
+  fovangle/.style={<->, thick, PrimaryColor, dashed}
 }
 
 \tikzset{
-    lens/.style={thick, PrimaryColor, line width=3pt},
-    focal plane/.style={thick, AccentColor},
-    object ray/.style={->, thick, ObjectColor},
-    image ray/.style={->, thick, SecondaryColor},
-    optical axis/.style={dashed, gray}
+  lens/.style={thick, PrimaryColor, line width=3pt},
+  focal plane/.style={thick, AccentColor},
+  object ray/.style={->, thick, ObjectColor},
+  image ray/.style={->, thick, SecondaryColor},
+  optical axis/.style={dashed, gray}
 }
 
 \newcommand{\lens}[3]{%
   \begingroup
-    % half‐dimensions
-    \pgfmathsetlengthmacro{\a}{#2}%
-    \pgfmathsetlengthmacro{\b}{#3}%
-    \pgfmathsetlengthmacro{\c}{#3/2}%
-    \begin{scope}[shift={#1}]
-      \draw[line join=round, fill=blue!15]
-        (0,-{\c})
-          arc(-30:30:{\a} and {\b})
-          arc(150:210:{\a} and {\b})
-      ;
-    \end{scope}
+  % half‐dimensions
+  \pgfmathsetlengthmacro{\a}{#2}%
+  \pgfmathsetlengthmacro{\b}{#3}%
+  \pgfmathsetlengthmacro{\c}{#3/2}%
+  \begin{scope}[shift={#1}]
+    \draw[line join=round, fill=blue!15]
+    (0,-{\c})
+    arc(-30:30:{\a} and {\b})
+    arc(150:210:{\a} and {\b})
+    ;
+  \end{scope}
   \endgroup
 }

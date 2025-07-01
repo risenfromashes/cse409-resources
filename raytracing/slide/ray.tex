@@ -1,94 +1,92 @@
 \section{Mathematics of Rays}
 \begin{frame}{What is a Ray?}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{mathbox}{Ray Representation}
-                A ray is defined by:
-                \begin{align}
-                    \mathbf{P}(t) & = \mathbf{R_o} + t \cdot \mathbf{R_d}
-                \end{align}
-                where:
-                \begin{itemize}
-                    \item $\mathbf{R_o}$ = Origin point
-                    \item $\mathbf{R_d}$ = Direction vector
-                    \item $t$ = Parameter ($t \geq 0$)
-                \end{itemize}
-            \end{mathbox}
-            \vspace{0.3cm}
-            \href{https://www.desmos.com/calculator/0tloiudmdt}{Check out here on desmos.}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                % Origin
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Ray Representation}
+        A ray is defined by:
+        \begin{align}
+          \mathbf{P}(t) & = \mathbf{R_o} + t \cdot \mathbf{R_d}
+        \end{align}
+        where:
+        \begin{itemize}
+          \item $\mathbf{R_o}$ = Origin point
+          \item $\mathbf{R_d}$ = Direction vector
+          \item $t$ = Parameter ($t \geq 0$)
+        \end{itemize}
+      \end{mathbox}
+      \vspace{0.3cm}
+      \href{https://www.desmos.com/calculator/0tloiudmdt}{Check out here on desmos.}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Origin
 
-                % Points on ray
-                \fill[SecondaryColor] (2,1.5) circle (3pt);
-                \node[below] at (2,1) {$\mathbf{P}(t_1)$};
-                \fill[SecondaryColor] (4,3) circle (3pt);
-                \node[below] at (4,2.75) {$\mathbf{P}(t_2)$};
+        % Points on ray
+        \fill[SecondaryColor] (2,1.5) circle (3pt);
+        \node[below] at (2,1) {$\mathbf{P}(t_1)$};
+        \fill[SecondaryColor] (4,3) circle (3pt);
+        \node[below] at (4,2.75) {$\mathbf{P}(t_2)$};
 
+        % Direction vector
+        \draw[->, very thick, red] (0,0) -- (2,1.5);
+        \node[above] at (0.8,0.9) {$\mathbf{R_d}$};
 
-                % Direction vector
-                \draw[->, very thick, red] (0,0) -- (2,1.5);
-                \node[above] at (0.8,0.9) {$\mathbf{R_d}$};
+        % Ray continuation
+        \draw[ray, dashed] (2,1.5) -- (5,3.75);
 
-                % Ray continuation
-                \draw[ray, dashed] (2,1.5) -- (5,3.75);
+        \fill[PrimaryColor] (0,0) circle (3pt);
+        \node[below left] at (0,0) {$\mathbf{R_o}$};
 
-                \fill[PrimaryColor] (0,0) circle (3pt);
-                \node[below left] at (0,0) {$\mathbf{R_o}$};
-
-                % Parameter illustration
-                \draw[<->, thin] (0,-1) -- (2,-1);
-                \node[below] at (1,-1) {$t_1=1$};
-                \draw[<->, thin] (0,-2) -- (4,-2);
-                \node[below] at (2,-2) {$t_2$};
-            \end{tikzpicture}
-        \end{column}
-    \end{columns}
+        % Parameter illustration
+        \draw[<->, thin] (0,-1) -- (2,-1);
+        \node[below] at (1,-1) {$t_1=1$};
+        \draw[<->, thin] (0,-2) -- (4,-2);
+        \node[below] at (2,-2) {$t_2$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
 \end{frame}
 
-
 \begin{frame}{The Heart of Ray Tracing}
-    \begin{center}
-        \huge \textcolor{PrimaryColor}{Finding Intersections}
-    \end{center}
+  \begin{center}
+    \huge \textcolor{PrimaryColor}{Finding Intersections}
+  \end{center}
 
-    \vspace{0.5cm}
-    \begin{columns}
-        \begin{column}{0.5\textwidth}
-            \begin{tikzpicture}[scale=0.8]
-                % Ray
-                \draw[ray, very thick] (1.5,0.75) -- (4, 2);
+  \vspace{0.5cm}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Ray
+        \draw[ray, very thick] (1.5,0.75) -- (4, 2);
 
-                % Various objects
-                \node[sphere] (sphere) at (2,1) {};
-                \node[plane, rotate=30] (plane) at (3,0.5) {};
-                \node[triangle] (tri) at (1,2) {};
+        % Various objects
+        \node[sphere] (sphere) at (2,1) {};
+        \node[plane, rotate=30] (plane) at (3,0.5) {};
+        \node[triangle] (tri) at (1,2) {};
 
-                % Intersection points
-                \fill[AccentColor] (1.5,0.75) circle (2pt);
-                \fill[AccentColor] (2.5,1.25) circle (2pt);
+        % Intersection points
+        \fill[AccentColor] (1.5,0.75) circle (2pt);
+        \fill[AccentColor] (2.5,1.25) circle (2pt);
 
-                \draw[RayColor, very thick] (0,0) -- (1.5,0.75);
-                \draw[RayColor, very thick, opacity=0.3] (1.5,0.75) -- (2.85,1.425);
-                \node[below] at (0,0) {\raycolor{Ray}};
+        \draw[RayColor, very thick] (0,0) -- (1.5,0.75);
+        \draw[RayColor, very thick, opacity=0.3] (1.5,0.75) -- (2.85,1.425);
+        \node[below] at (0,0) {\raycolor{Ray}};
 
-            \end{tikzpicture}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-            \textbf{Key Objects:}
-            \begin{itemize}
-                \item \objectcolor{Planes}
-                \item \objectcolor{Spheres}
-                \item \objectcolor{Triangles}
-                \item \objectcolor{AABB (Bounding Boxes)}
-                \item \objectcolor{General Quadrics}
-            \end{itemize}
-            \vspace{0.5cm}
-            \alert{Challenge:} Find the \textbf{closest} intersection efficiently!
-        \end{column}
-    \end{columns}
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Key Objects:}
+      \begin{itemize}
+        \item \objectcolor{Planes}
+        \item \objectcolor{Spheres}
+        \item \objectcolor{Triangles}
+        \item \objectcolor{AABB (Bounding Boxes)}
+        \item \objectcolor{General Quadrics}
+      \end{itemize}
+      \vspace{0.5cm}
+      \alert{Challenge:} Find the \textbf{closest} intersection efficiently!
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \input{intersection/plane.tex}

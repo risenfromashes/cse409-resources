@@ -1,0 +1,399 @@
+\subsection{Thin Lens Camera}
+
+\begin{frame}{Thin Lens Camera: Fundamentals}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Gaussian Lens Equation}
+        \textbf{Fundamental relationship:}
+        \begin{align}
+          \frac{1}{f} = \frac{1}{z} + \frac{1}{z'}
+        \end{align}
+
+        \textbf{Where:}
+        \begin{itemize}
+          \item $f$ = focal length of lens
+          \item $z$ = object distance from lens
+          \item $z'$ = image distance from lens
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Key Properties:}
+        \begin{itemize}
+          \item Objects at focal plane are in perfect focus
+          \item Other distances create blur (circle of confusion)
+          \item Aperture size controls depth of field
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Define styles for thin lens
+        % Optical axis
+        \draw[optical axis] (-4,0) -- (6,0);
+
+        % Thin lens at origin
+        \lens{(0,0)}{2cm}{5cm};
+        \node[below] at (0,-2.8) {\textcolor{PrimaryColor}{Thin Lens}};
+
+        % Object at distance z
+        \draw[thick, AccentColor] (-3,-1.5) -- (-3,1.5);
+        \node[left] at (-3,0) {\objectcolor{Object}};
+        \draw[<->, thin] (-3,-3) -- (0,-3);
+        \node[below] at (-1.5,-3) {$z$};
+
+        % Image at distance z'
+        \draw[thick, SecondaryColor] (4,-1) -- (4,1);
+        \node[right] at (4,0) {\textcolor{SecondaryColor}{Image}};
+        \draw[<->, thin] (0,-3.5) -- (4,-3.5);
+        \node[below] at (2,-3.5) {$z'$};
+
+        % Focal points
+        \fill[AccentColor] (-2,0) circle (2pt);
+        \fill[AccentColor] (2,0) circle (2pt);
+        \node[below] at (-2,-0.3) {\textcolor{AccentColor}{$F$}};
+        \node[below] at (2,-0.3) {\textcolor{AccentColor}{$F'$}};
+
+        % Focal length markers
+        \draw[<->, thin] (-2,2.8) -- (0,2.8);
+        \node[above] at (-1,2.8) {$f$};
+        \draw[<->, thin] (0,3.2) -- (2,3.2);
+        \node[above] at (1,3.2) {$f$};
+
+        % Principal rays
+        \draw[object ray] (-3,1.5) -- (0,1.5) -- (4,-1);
+        \draw[object ray] (-3,1.5) -- (0,0.75) -- (4,-1);
+        \draw[object ray] (-3,0) -- (0,0) -- (4,0);
+
+        % Ray labels
+        \node[above] at (-1.5,1.5) {\objectcolor{\tiny Parallel ray}};
+        \node[above] at (2,0.7) {\textcolor{SecondaryColor}{\tiny Through focus}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{conceptbox}{Real Camera Behavior}
+    Unlike pinhole cameras, thin lens cameras exhibit \textbf{depth of field} - only objects at the focal distance are perfectly sharp.
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Depth of Field and Circle of Confusion}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Circle of Confusion}
+        \textbf{For objects not at focal distance:}
+        \begin{align}
+          c = \frac{A}{z'} \left| z'_{focus} - z' \right|
+        \end{align}
+
+        \textbf{Where:}
+        \begin{itemize}
+          \item $c$ = circle of confusion diameter
+          \item $A$ = aperture diameter
+          \item $z'$ = image distance for object
+          \item $z'_{focus}$ = image distance for focus
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Depth of Field:}
+        \begin{itemize}
+          \item Region where $c < $ acceptable limit
+          \item Larger aperture $\rightarrow$ shallower DOF
+          \item Smaller aperture $\rightarrow$ deeper DOF
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Three object planes at different distances
+        \draw[thick, AccentColor] (-4,2) -- (-4,-2);
+        \draw[thick, AccentColor] (-2.5,1.5) -- (-2.5,-1.5);
+        \draw[thick, AccentColor] (-1,1) -- (-1,-1);
+
+        \node[left] at (-4,0) {\objectcolor{\tiny Far}};
+        \node[left] at (-2.5,0) {\objectcolor{\tiny Focus}};
+        \node[left] at (-1,0) {\objectcolor{\tiny Near}};
+
+        % Lens
+        \lens{(0,0)}{2cm}{6cm};
+        \node[below] at (0,-3.3) {\textcolor{PrimaryColor}{Lens}};
+
+        % Image plane
+        \draw[thick, gray] (3,-3) -- (3,3);
+        \node[right] at (3,3.3) {\textcolor{gray}{Image Plane}};
+
+        % Rays from far object (out of focus)
+        \draw[object ray, opacity=0.7] (-4,1) -- (0,0.3) -- (3,-0.8);
+        \draw[object ray, opacity=0.7] (-4,-1) -- (0,-0.3) -- (3,0.8);
+        \fill[red, opacity=0.6] (3,0) circle (8pt);
+        \node[right] at (3.3,0.5) {\textcolor{red}{\tiny Large blur}};
+
+        % Rays from focus object (sharp)
+        \draw[object ray] (-2.5,0.75) -- (0,0.3) -- (3,-0.6);
+        \draw[object ray] (-2.5,-0.75) -- (0,-0.3) -- (3,0.6);
+        \fill[green!80!black] (3,0) circle (2pt);
+        \node[right] at (3.3,-0.5) {\textcolor{green!80!black}{\tiny Sharp}};
+
+        % Rays from near object (out of focus)
+        \draw[object ray, opacity=0.7] (-1,0.5) -- (0,0.25) -- (3,-0.4);
+        \draw[object ray, opacity=0.7] (-1,-0.5) -- (0,-0.25) -- (3,0.4);
+        \fill[orange, opacity=0.6] (3,0) circle (5pt);
+        \node[right] at (3.3,-1) {\textcolor{orange}{\tiny Medium blur}};
+
+        % Aperture indication
+        \draw[thick, blue] (-0.2,-1.5) -- (0.2,-1.5);
+        \draw[thick, blue] (-0.2,1.5) -- (0.2,1.5);
+        \node[right] at (0.3,0) {\textcolor{blue}{\tiny Aperture}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{conceptbox}{Artistic Control}
+    \textbf{Shallow DOF}: Subject isolation, portrait photography\\
+    \textbf{Deep DOF}: Landscape photography, technical documentation
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Aperture Effects on Depth of Field}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      % Large aperture scene
+      \node[above] at (-3,3) {\textbf{Large Aperture (f/1.4)}};
+
+      % Lens with large aperture
+      \lens{(-3,0)}{2cm}{4cm};
+      \draw[thick, blue] (-3.1,-1.5) -- (-2.9,-1.5);
+      \draw[thick, blue] (-3.1,1.5) -- (-2.9,1.5);
+      \node[left] at (-3.3,0) {\textcolor{blue}{\tiny Wide}};
+
+      % Objects at different distances
+      \draw[thick, AccentColor] (-5,0.5) -- (-5,-0.5);
+      \draw[thick, AccentColor] (-4,1) -- (-4,-1);
+      \draw[thick, AccentColor] (-3.5,1.5) -- (-3.5,-1.5);
+
+      % Image plane
+      \draw[thick, gray] (-1,-2) -- (-1,2);
+
+      % Blur circles (large aperture = shallow DOF)
+      \fill[red, opacity=0.4] (-1,0) circle (10pt);
+      \fill[green!80!black] (-1,0) circle (3pt);
+      \fill[orange, opacity=0.4] (-1,0) circle (7pt);
+
+      \node[below] at (-3,-2.5) {\textcolor{red}{\tiny Shallow DOF}};
+
+      % vs divider
+      \node at (0,0) {\huge \textcolor{AccentColor}{vs}};
+
+      % Small aperture scene
+      \node[above] at (3,3) {\textbf{Small Aperture (f/11)}};
+
+      % Lens with small aperture
+      \lens{(3,0)}{2cm}{4cm};
+      \draw[thick, blue] (2.95,-0.5) -- (3.05,-0.5);
+      \draw[thick, blue] (2.95,0.5) -- (3.05,0.5);
+      \node[right] at (3.3,0) {\textcolor{blue}{\tiny Narrow}};
+
+      % Objects at different distances
+      \draw[thick, AccentColor] (1,0.5) -- (1,-0.5);
+      \draw[thick, AccentColor] (2,1) -- (2,-1);
+      \draw[thick, AccentColor] (2.5,1.5) -- (2.5,-1.5);
+
+      % Image plane
+      \draw[thick, gray] (5,-2) -- (5,2);
+
+      % Blur circles (small aperture = deep DOF)
+      \fill[green!80!black] (5,0) circle (3pt);
+      \fill[green!80!black] (5,0) circle (3pt);
+      \fill[green!80!black] (5,0) circle (3pt);
+
+      \node[below] at (3,-2.5) {\textcolor{green!80!black}{\tiny Deep DOF}};
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.5cm}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Large Aperture}
+        \begin{itemize}
+          \item More light gathering
+          \item Faster shutter speeds
+          \item Shallow depth of field
+          \item Background blur (bokeh)
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Small Aperture}
+        \begin{itemize}
+          \item Less light gathering
+          \item Slower shutter speeds
+          \item Deep depth of field
+          \item Everything in focus
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Thin Lens Ray Generation}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Ray Sampling Process}
+        \textbf{1. Sample pixel position} $(x, y)$
+
+        \textbf{2. Sample lens position:}
+        \begin{align}
+          (u, v) &\sim \text{Uniform disk}\\
+          \mathbf{p}_{lens} &= (u \cdot r, v \cdot r, 0)
+        \end{align}
+
+        \textbf{3. Compute focal point:}
+        \begin{align}
+          \mathbf{p}_{focus} &= \mathbf{p}_{pixel} \cdot \frac{f_{dist}}{n}
+        \end{align}
+
+        \textbf{4. Ray from lens to focal point:}
+        \begin{align}
+          \mathbf{R_o} &= \mathbf{p}_{lens}\\
+          \mathbf{R_d} &= \mathbf{p}_{focus} - \mathbf{p}_{lens}
+        \end{align}
+
+        where $r$ = aperture radius, $f_{dist}$ = focus distance
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Define styles for ray generation
+        \tikzset{
+          lens disk/.style={fill=PrimaryColor!30, draw=PrimaryColor!80},
+          sample point/.style={fill=red!80, circle, inner sep=1pt},
+          focal point/.style={fill=AccentColor!80, circle, inner sep=1.5pt},
+          sample ray/.style={->, thick, red!70},
+          focal plane/.style={dashed, AccentColor}
+        }
+
+        % Image plane
+        \draw[thick, gray] (-3,-2) -- (-3,2);
+        \node[left] at (-3,2.3) {\textcolor{gray}{Image Plane}};
+
+        % Pixel grid
+        \foreach \y in {-1.5,-1,-0.5,0,0.5,1,1.5} {
+          \draw[thin, gray!50] (-3.2,\y) -- (-2.8,\y);
+        }
+
+        % Sample pixel
+        \fill[AccentColor!60] (-3,1) rectangle (-2.8,1.2);
+        \fill[red!70] (-2.9,1.1) circle (1.5pt);
+        \node[left] at (-3.3,1.1) {\textcolor{red!70}{\tiny Sample}};
+
+        % Lens disk
+        \fill[lens disk] (0,0) circle (1);
+        \draw[thick, PrimaryColor] (0,-1) -- (0,1);
+        \node[below] at (0,-1.3) {\textcolor{PrimaryColor}{Lens}};
+
+        % Sample points on lens
+        \node[sample point] at (0.3,0.4) {};
+        \node[sample point] at (-0.5,-0.2) {};
+        \node[sample point] at (0.1,-0.7) {};
+        \node[sample point] at (-0.3,0.6) {};
+
+        % Focal plane
+        \draw[focal plane] (3,-2) -- (3,2);
+        \node[right] at (3,2.3) {\textcolor{AccentColor}{Focal Plane}};
+
+        % Focal point (where pixel ray hits focal plane)
+        \fill[focal point] (3,0.55) circle (2pt);
+        \node[right] at (3.2,0.55) {\textcolor{AccentColor}{\tiny Focus}};
+
+        % Sample rays from lens points to focal point
+        \draw[sample ray] (0.3,0.4) -- (3,0.55);
+        \draw[sample ray] (-0.5,-0.2) -- (3,0.55);
+        \draw[sample ray] (0.1,-0.7) -- (3,0.55);
+        \draw[sample ray] (-0.3,0.6) -- (3,0.55);
+
+        % Central ray (through lens center)
+        \draw[dashed, gray] (-2.9,1.1) -- (0,0) -- (3,0.55);
+
+        % Distance markers
+        \draw[<->, thin] (-3,-2.7) -- (0,-2.7);
+        \node[below] at (-1.5,-2.7) {$n$};
+        \draw[<->, thin] (0,-2.7) -- (3,-2.7);
+        \node[below] at (1.5,-2.7) {$f_{dist}$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{conceptbox}{Monte Carlo Integration}
+    Multiple samples per pixel with different lens positions create realistic \textbf{depth of field blur}
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Other Camera Types}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Fish-eye Camera}
+        \begin{itemize}
+          \item Very wide field of view (>180°)
+          \item Non-linear distortion
+          \item Curved ray paths
+          \item Surveillance, VR applications
+        \end{itemize}
+      \end{conceptbox}
+
+      \vspace{0.3cm}
+      \begin{conceptbox}{Environment Camera}
+        \begin{itemize}
+          \item 360° panoramic view
+          \item Spherical or cylindrical
+          \item HDRI environment maps
+          \item VR content creation
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Fish-eye illustration
+        \node[above] at (0,3) {\textbf{Fish-eye FOV}};
+        \node[eye] (fisheye) at (0,2) {\faIcon{eye}};
+        \draw[ray, bend left=30] (fisheye) to (2,3);
+        \draw[ray] (fisheye) -- (2,2);
+        \draw[ray, bend right=30] (fisheye) to (2,1);
+        \draw[ray, bend left=60] (fisheye) to (1,3.5);
+        \draw[ray, bend right=60] (fisheye) to (1,0.5);
+        \node[right] at (2.2,2) {\tiny Wide FOV};
+
+        % Motion blur illustration
+        \node[above] at (0,0.5) {\textbf{Motion Blur}};
+        \draw[thick, gray] (-1,-1) -- (1,-1);
+        \node[left] at (-1,-1) {\textcolor{gray}{\tiny Image plane}};
+        \draw[ray, opacity=0.3] (-0.5,-0.5) -- (0.5,-1);
+        \draw[ray, opacity=0.5] (-0.3,-0.5) -- (0.3,-1);
+        \draw[ray, opacity=0.7] (-0.1,-0.5) -- (0.1,-1);
+        \draw[ray] (0.1,-0.5) -- (-0.1,-1);
+        \node[right] at (1.2,-1) {\tiny Multiple samples};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Environment Camera}
+        \begin{itemize}
+          \item 360° panoramic view
+          \item Spherical or cylindrical
+          \item HDRI environment maps
+          \item VR content creation
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Motion Blur Camera}
+        \begin{itemize}
+          \item Simulates camera/object motion
+          \item Multiple time samples
+          \item Temporal anti-aliasing
+          \item Dynamic scene rendering
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
