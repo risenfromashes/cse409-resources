@@ -1,0 +1,153 @@
+\section{Motivation}
+
+\begin{frame}{Why Lighting Matters}
+  \vspace{0.5cm}
+  \pause
+  \begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/flat.png}
+    \captionof*{figure}{Without Lighting and Shading}
+  \end{minipage}%
+  \hfill
+  \pause
+  \begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/rtx.png}
+    \captionof*{figure}{With Lighting and Shading}
+  \end{minipage}
+
+  \begin{itemize}
+    \item<3-> \textbf{Depth perception} - Lighting reveals 3D shape and form
+    \item<4-> \textbf{Material properties} - Distinguishes between plastic, metal, wood
+    \item<5-> \textbf{Realism} - Makes computer graphics believable and immersive
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The Challenge: From Reality to Code}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+
+        \begin{scope}[plane x={(0.866,0.5,0)}, plane y={(0, 0.5, -0.866)}, canvas is plane]
+          \draw[ObjectColor, fill=ObjectColor!20] (1.5,-2) rectangle (5, 1);
+          \node[below] at (3,-2.5) {\small \objectcolor{Surface}};
+        \end{scope}
+
+        \node[circle, fill=LightColor, minimum size=1cm] (sun) at (0,3) {\faIcon{sun}};
+        \node[below] at (0,4.25) {\small \textcolor{LightColor}{Light Source}};
+
+        \draw[lightray] (sun) -- (2,1.5);
+        \draw[lightray] (sun) -- (2.5,1);
+        \draw[lightray] (sun) -- (3,1.5);
+        \draw[lightray] (sun) -- (3.5,1);
+
+        \draw[reflectray] (2,1.5) -- (1,3);
+        \draw[reflectray] (2.5,1) -- (1.5,3);
+        \draw[reflectray] (3,1.5) -- (2,3);
+        \draw[reflectray] (3.5,1) -- (2.5,3);
+
+        \node[eye] (eye) at (5,2) {\faIcon{eye}};
+        \node[below] at (5,1.5) {\small Observer};
+      \end{tikzpicture}
+    \end{column}
+    \pause
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Reality vs Computation}
+        \textbf{Physical World:}
+        \begin{itemize}
+            \footnotesize
+          \item Millions of photons per surface point
+          \item Complex wave interactions
+          \item Multiple scattering events
+          \item Continuous spectrum
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Computer Graphics:}
+        \begin{itemize}
+            \footnotesize
+          \item Discrete RGB values
+          \item Simplified mathematical models
+          \item Local illumination approximations
+          \item Real-time constraints
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Our Journey}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.9]
+      % Journey path
+      \only<2->{
+        \node[process] (lights) at (0,2) {\small Light Sources};
+      }
+      \only<3->{
+        \node[process] (materials) at (3,2) {\small Surface Materials};
+      }
+      \only<4->{
+        \node[process] (phong) at (6,2) {\small Phong Model};
+      }
+      \only<5->{
+        \node[process] (impl) at (9,2) {\small Implementation};
+      }
+      \only<3->{
+        \draw[arrow] (lights) -- (materials);
+      }
+      \only<4->{
+        \draw[arrow] (materials) -- (phong);
+      }
+      \only<5->{
+        \draw[arrow] (phong) -- (impl);
+      }
+      \only<2->{
+        % Details below
+        \node[below] at (0,1) {
+          \begin{minipage}{2.5cm}
+            \centering
+            \footnotesize
+            • Point lights\\
+            • Directional\\
+            • Spotlights\\
+            • Attenuation
+          \end{minipage}
+        };
+      }
+      \only<3->{
+        \node[below] at (3,1) {
+          \begin{minipage}{2.5cm}
+            \centering
+            \footnotesize
+            • Reflection types\\
+            • Surface normals\\
+            • Materials
+          \end{minipage}
+        };
+      }
+      \only<4->{
+        \node[below] at (6,1) {
+          \begin{minipage}{2.5cm}
+            \centering
+            \footnotesize
+            • Ambient\\
+            • Diffuse\\
+            • Specular\\
+            • Mathematics
+          \end{minipage}
+        };
+      }
+      \only<5->{
+        \node[below] at (9,1) {
+          \begin{minipage}{2.5cm}
+            \centering
+            \footnotesize
+            • Code structure\\
+            • Optimizations\\
+            • Edge cases\\
+          \end{minipage}
+        };
+      }
+    \end{tikzpicture}
+  \end{center}
+\end{frame}

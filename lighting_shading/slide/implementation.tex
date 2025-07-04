@@ -1,0 +1,308 @@
+\section{Implementation \& Practical Considerations}
+
+\begin{frame}{Vector Operations in Practice}
+    \begin{mathbox}{Essential Vector Operations}
+        \textbf{Vector normalization:}
+        \begin{align}
+            \hat{\mathbf{v}} = \frac{\mathbf{v}}{|\mathbf{v}|} = \frac{\mathbf{v}}{\sqrt{v_x^2 + v_y^2 + v_z^2}}
+        \end{align}
+        
+        \textbf{Dot product:}
+        \begin{align}
+            \mathbf{a} \cdot \mathbf{b} = a_x b_x + a_y b_y + a_z b_z = |\mathbf{a}||\mathbf{b}|\cos(\theta)
+        \end{align>
+        
+        \pause
+        \textbf{Reflection vector:}
+        \begin{align}
+            \mathbf{R} = 2(\mathbf{N} \cdot \mathbf{L})\mathbf{N} - \mathbf{L}
+        \end{align}
+        
+        \textbf{Half vector:}
+        \begin{align}
+            \mathbf{H} = \frac{\mathbf{L} + \mathbf{V}}{|\mathbf{L} + \mathbf{V}|}
+        \end{align>
+    \end{mathbox>
+    
+    \vspace{0.3cm}
+    \pause
+    \begin{conceptbox}{Implementation Tips}
+        \begin{itemize}
+            \item Always normalize direction vectors before use
+            \item Store normalized normals in your data structures
+            \item Use fast square root approximations when possible
+            \item Consider SIMD operations for vector math
+        \end{itemize}
+    \end{conceptbox}
+\end{frame>
+
+\begin{frame}{Handling Edge Cases}
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{mathbox}{Common Edge Cases}
+                \textbf{1. Negative dot products:}
+                \begin{verbatim}
+                float NdotL = max(0.0f, dot(N, L));
+                float RdotV = max(0.0f, dot(R, V));
+                \end{verbatim}
+                
+                \pause
+                \textbf{2. Zero-length vectors:}
+                \begin{verbatim}
+                Vector normalize(Vector v) {
+                    float len = length(v);
+                    if (len < EPSILON) 
+                        return Vector(0, 1, 0);  // default
+                    return v / len;
+                }
+                \end{verbatim}
+                
+                \pause
+                \textbf{3. Light behind surface:}
+                \begin{verbatim}
+                if (dot(N, L) <= 0.0f) {
+                    // Skip diffuse and specular
+                    return ambientColor;
+                }
+                \end{verbatim}
+            \end{mathbox}
+        \end{column>
+        \begin{column>{0.4\textwidth>
+            \begin{raybox>{Common Bugs}
+                \footnotesize
+                \textbf{Negative lighting:}
+                \begin{itemize>
+                    \item Forgetting to clamp dot products
+                    \item Incorrect normal direction
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Numerical instability:}
+                \begin{itemize>
+                    \item Division by zero in normalization
+                    \item Floating point precision errors
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Performance issues:}
+                \begin{itemize>
+                    \item Unnecessary sqrt() calls
+                    \item Computing same vectors multiple times
+                \end{itemize>
+            \end{raybox>
+        \end{column>
+    \end{columns>
+    
+    \vspace{0.3cm>
+    \pause
+    % IMAGE: Edge case examples
+    % Show renders with and without proper edge case handling
+    % \includegraphics[width=\linewidth]{images/edge_case_examples.jpg}
+    \textcolor{gray>{[Examples of edge case handling]}
+\end{frame>
+
+\begin{frame}{Color Representation and Clamping}
+    \begin{columns>
+        \begin{column>{0.6\textwidth>
+            \begin{mathbox>{Color Mathematics}
+                \textbf{RGB representation:} Each channel in range $[0, 1]$ or $[0, 255]$
+                
+                \vspace{0.3cm>
+                \textbf{Color addition:}
+                \begin{align>
+                    \mathbf{C}_{\text{final}} = \mathbf{C}_{\text{ambient}} + \mathbf{C}_{\text{diffuse}} + \mathbf{C}_{\text{specular}}
+                \end{align>
+                
+                \pause
+                \textbf{Component-wise multiplication:}
+                \begin{align>
+                    \mathbf{C}_{\text{result}} = \mathbf{C}_{\text{material}} \odot \mathbf{C}_{\text{light}}
+                \end{align>
+                
+                \pause
+                \textbf{Clamping to valid range:}
+                \begin{align>
+                    C_{\text{clamped}} = \min(1.0, \max(0.0, C_{\text{computed}}))
+                \end{align>
+                
+                \pause
+                \textbf{Gamma correction (basic):}
+                \begin{align>
+                    C_{\text{display}} = C_{\text{linear}}^{1/2.2}
+                \end{align>
+            \end{mathbox>
+        \end{column>
+        \begin{column>{0.4\textwidth>
+            % IMAGE: Color clamping effects
+            % Show scene with and without proper color clamping
+            % \includegraphics[width=\linewidth]{images/color_clamping.jpg}
+            \vspace{1.5cm>
+            \textcolor{gray>{[Color clamping effects]}
+            
+            \vspace{0.5cm>
+            \begin{conceptbox>{Best Practices}
+                \footnotesize
+                • Work in linear color space
+                
+                • Clamp after all lighting calculations
+                
+                • Consider HDR for better quality
+                
+                • Apply gamma correction at display
+            \end{conceptbox>
+        \end{column>
+    \end{columns>
+\end{frame>
+
+\begin{frame}{Performance Optimizations}
+    \begin{columns>
+        \begin{column>{0.6\textwidth>
+            \begin{mathbox>{Optimization Strategies}
+                \textbf{1. Precompute constant values:}
+                \begin{verbatim>
+                // Outside lighting loop
+                Vector normalizedNormal = normalize(surfaceNormal);
+                Vector normalizedView = normalize(viewDirection);
+                \end{verbatim>
+                
+                \pause
+                \textbf{2. Fast square root:}
+                \begin{verbatim>
+                // Use hardware intrinsics or lookup tables
+                float fastSqrt(float x) {
+                    return _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(x)));
+                }
+                \end{verbatim>
+                
+                \pause
+                \textbf{3. Avoid redundant calculations:}
+                \begin{verbatim>
+                float NdotL = dot(N, L);
+                if (NdotL > 0) {
+                    // Use NdotL for both diffuse and reflection calc
+                    Vector R = 2 * NdotL * N - L;
+                }
+                \end{verbatim>
+            \end{mathbox>
+        \end{column>
+        \begin{column>{0.4\textwidth>
+            \begin{raybox>{Advanced Optimizations}
+                \footnotesize
+                \textbf{SIMD operations:}
+                \begin{itemize>
+                    \item Process multiple vectors at once
+                    \item Use SSE/AVX instructions
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Lookup tables:}
+                \begin{itemize>
+                    \item Power function approximation
+                    \item Trigonometric functions
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Level-of-detail:}
+                \begin{itemize>
+                    \item Fewer lights for distant objects
+                    \item Simplified shading models
+                \end{itemize>
+            \end{raybox>
+        \end{column>
+    \end{columns>
+    
+    \vspace{0.3cm>
+    \pause
+    % IMAGE: Performance benchmarks
+    % Show performance comparison of different optimization techniques
+    % \includegraphics[width=\linewidth]{images/performance_benchmarks.jpg}
+    \textcolor{gray>{[Performance optimization benchmarks]}
+\end{frame>
+
+\begin{frame}{Multiple Light Sources}
+    \begin{mathbox>{Accumulating Light Contributions}
+        \textbf{Basic accumulation:}
+        \begin{verbatim>
+        Color totalColor = material.ka * ambientLight;
+        
+        for (int i = 0; i < numLights; i++) {
+            Vector L = calculateLightDirection(lights[i], surfacePoint);
+            float attenuation = calculateAttenuation(lights[i], surfacePoint);
+            
+            // Diffuse
+            float NdotL = max(0.0f, dot(normal, L));
+            totalColor += material.kd * lights[i].color * NdotL * attenuation;
+            
+            // Specular (Blinn-Phong)
+            if (NdotL > 0.0f) {
+                Vector H = normalize(L + viewDir);
+                float NdotH = max(0.0f, dot(normal, H));
+                totalColor += material.ks * lights[i].color * 
+                             pow(NdotH, material.shininess) * attenuation;
+            }
+        }
+        
+        // Clamp final result
+        totalColor = clamp(totalColor, 0.0f, 1.0f);
+        \end{verbatim}
+    \end{mathbox>
+\end{frame>
+
+\begin{frame}{Debugging Lighting Code}
+    \begin{columns>
+        \begin{column>{0.5\textwidth>
+            \begin{conceptbox>{Debugging Strategies}
+                \textbf{1. Visualize components separately:}
+                \begin{itemize>
+                    \footnotesize
+                    \item Render only ambient
+                    \item Render only diffuse
+                    \item Render only specular
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{2. Visualize vectors:}
+                \begin{itemize>
+                    \footnotesize
+                    \item Normal vectors as colors
+                    \item Light directions as colors
+                    \item Reflection vectors as colors
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{3. Test with simple scenes:}
+                \begin{itemize>
+                    \footnotesize
+                    \item Single light, single object
+                    \item Known material properties
+                    \item Predictable results
+                \end{itemize>
+            \end{conceptbox>
+        \end{column>
+        \begin{column>{0.5\textwidth>
+            % IMAGE: Debugging visualizations
+            % Show debug renders: normals as colors, component separation
+            % \includegraphics[width=\linewidth]{images/debug_visualizations.jpg}
+            \vspace{2cm>
+            \textcolor{gray>{[Debug visualization examples]}
+            
+            \vspace{0.3cm>
+            \begin{raybox>{Common Issues}
+                \footnotesize
+                \textbf{Black objects:}
+                \begin{itemize>
+                    \item Check normal directions
+                    \item Verify light positions
+                    \item Confirm material coefficients
+                \end{itemize>
+                
+                \textbf{Too bright/dark:}
+                \begin{itemize>
+                    \item Scale light intensities
+                    \item Check attenuation functions
+                    \item Verify color clamping
+                \end{itemize>
+            \end{raybox>
+        \end{column>
+    \end{columns>
+\end{frame>

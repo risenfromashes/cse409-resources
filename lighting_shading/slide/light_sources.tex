@@ -1,0 +1,52 @@
+\section{Light Sources}
+
+\begin{frame}{Light in Nature}
+  \begin{columns}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        \node[circle, fill=LightColor, minimum size=1.5cm] (sun) at (2,4) {\Large\faIcon{sun}};
+        \node[above] at (2,6) {\small \textcolor{LightColor}{Electromagnetic Radiation}};
+
+        \foreach \angle in {0,30,60,90,120,150,180,210,240,270,300,330} {
+          \draw[lightray, opacity=0.6] (sun) -- +(\angle:2);
+        }
+
+        \draw[ObjectColor, very thick] (0,0) -- (4,0);
+        \node[below] at (2,-0.3) {\objectcolor{Surface}};
+
+        \draw[reflectray] (1.5,0) -- (1,1.5);
+        \draw[reflectray] (2.5,0) -- (2,1.5);
+        \node[right] at (2.5,0.7) {\footnotesize Reflected};
+
+        \node[red, below] at (2,-0.8) {\footnotesize Absorbed → Heat};
+      \end{tikzpicture}
+    \end{column}
+    \pause
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Physical Properties}
+        \textbf{Light is electromagnetic radiation:}
+        \begin{itemize}
+            \footnotesize
+          \item Wavelength determines color
+          \item Intensity determines brightness
+          \item Travels at speed of light ($c$)
+          \item Behaves as waves and particles
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Surface interactions:}
+        \begin{itemize}
+            \footnotesize
+          \item \textbf{Reflection} (bounces off)
+          \item Absorption (converts to heat)
+          \item Transmission (passes through)
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\input{lights/point.tex}
+\input{lights/directional.tex}
+\input{lights/spot.tex}
+\input{lights/ambient.tex}
