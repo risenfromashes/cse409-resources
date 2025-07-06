@@ -1,3 +1,4 @@
+\subsection{Spot Lights}
 
 \begin{frame}{Spot Lights - Introduction}
   \begin{columns}
@@ -20,7 +21,7 @@
         \begin{center}
           \begin{figure}
             \includegraphics[width=\linewidth]{images/spot.png}
-            \caption{Spot Light ft. Suzanne the monkey}
+            \caption*{Spot Light ft. Suzanne the monkey}
           \end{figure}
         \end{center}
       }
@@ -33,13 +34,14 @@
 
         \draw[lightray, thick] (light) -- (0,0);
         \draw[lightray, thick] (light) -- (2,0);
-        \draw[lightray, fill=LightColor, opacity=0.2] (light) -- (0,0) -- (2,0) -- cycle;
+        \draw[lightray, fill=LightColor, opacity=0.2] (light.center) -- (0,0) -- (2,0) -- cycle;
 
         \draw[->, red, very thick] (light) -- (1,1.5);
         \node[right] at (1.2,2.2) {\footnotesize Direction};
 
+        \draw[-] (1, 1.25) arc [start angle=-90, end angle=-71, radius=1.75] node[midway, below] {\footnotesize $\theta$};
+
         \draw[dashed] (light) -- (1,0);
-        \node[right] at (1.5,1) {\footnotesize $\theta$};
 
         \node[sphere, minimum size=0.6cm] (obj1) at (0.7,-0.5) {};
         \node[sphere, minimum size=0.6cm,fill=ObjectColor!60] (obj2) at (3,-0.5) {};
@@ -57,11 +59,13 @@
       \begin{mathbox}{Spot Light Parameters}
         \textbf{Position:} $\mathbf{P}_{\text{light}}$
 
-        \textbf{Direction:} $\mathbf{D}_{\text{spot}}$ (where spotlight points)
+        \textbf{Direction:} $\mathbf{D}_{\text{spot}}$
 
-        \textbf{Cone angle:} $\theta_{\text{cutoff}}$ (half-angle of cone)
+        \textbf{Color:} $\mathbf{C}_{\text{light}} = (r, g, b)$
 
-        \textbf{Falloff exponent:} $e$ (controls edge softness)
+        \textbf{Cone angle:} $\theta_{\text{cutoff}}$
+
+        \textbf{Falloff exponent:} $e$
 
         \vspace{0.3cm}
         \pause
@@ -74,37 +78,42 @@
 
         \pause
         \textbf{Step 2 - Check if inside cone:}
-        \begin{align}
+        \begin{align*}
           \text{if } \cos(\alpha) > \cos(\theta_{\text{cutoff}}) \text{ then illuminate}
-        \end{align}
+        \end{align*}
       \end{mathbox}
     \end{column}
     \begin{column}{0.3\textwidth}
       \begin{tikzpicture}[scale=0.8]
-        % Spotlight
-        \node[circle, fill=LightColor, minimum size=0.6cm] (light) at (2,3) {};
+        \node[circle, fill=LightColor, minimum size=0.6cm] (light) at (3,3) {\footnotesize S};
 
-        % Spotlight direction
-        \draw[->, red, very thick] (light) -- (2,1.5);
-        \node[right] at (2.2,2.2) {\footnotesize $\mathbf{D}_{\text{spot}}$};
+        \begin{scope}[plane origin={(1,1,0)},
+            plane x={(0.293,1.707,0)},
+            plane y={(1,1,1)},
+          canvas is plane]
+          \draw[ObjectColor, fill=ObjectColor!20, opacity=0.6] (0,0) circle (1);
+        \end{scope}
 
-        % Surface point
-        \fill[ObjectColor] (1,1) circle (3pt);
-        \node[below] at (1,0.7) {\footnotesize Surface};
+        \coordinate (surface) at (1,1);
+        \fill[ObjectColor] (1,1) circle (2pt);
+        \node[below] at (1,1) {\footnotesize $\mathbf{P}_{\text{surface}}$};
 
-        % Vector to surface
-        \draw[->, blue, thick] (light) -- (1,1);
-        \node[left] at (1.3,2) {\footnotesize $\mathbf{L}$};
+        \begin{scope}[shift={(3,3)}]
 
-        % Angle between them
-        \draw[dashed] (2,3) -- (2,1.5);
-        \draw[dashed] (2,3) -- (1,1);
-        \node[AccentColor] at (1.7,2.3) {\footnotesize $\alpha$};
+          \draw[->, blue, thick] (light) -- ($(light)+0.5*(surface)-0.5*(light)$) node[midway, above, anchor=south, black] {\footnotesize $\hat{\mathbf{L}}$};
 
-        % Cone edges
-        \draw[lightray, dashed] (light) -- (1.2,0.5);
-        \draw[lightray, dashed] (light) -- (2.8,0.5);
-        \node[below] at (2,0.2) {\footnotesize $\theta_{\text{cutoff}}$};
+          \draw[dashed] (light) -- (surface);
+          \draw[dashed] (light) -- (-90:5);
+
+          \draw[-] (0,-1) arc [start angle=-90, end angle=-135, radius=1] node[midway, below] {\footnotesize $\alpha$};
+          \draw[-] (0,-2.5) arc [start angle=-90, end angle=-110, radius=2.5] node[midway, below] {\footnotesize $\theta_{\text{cutoff}}$};
+
+          \draw[lightray, dashed] (light) -- (-70:4);
+          \draw[lightray, dashed] (light) -- (-110:4);
+
+          \draw[->, red, very thick] (light) -- (0,-2) node[midway, right, anchor=west, black] {\footnotesize $\mathbf{D}_{\text{spot}}$};
+        \end{scope}
+
       \end{tikzpicture}
     \end{column}
   \end{columns}
@@ -112,34 +121,63 @@
 
 \begin{frame}{Spot Light Attenuation}
   \begin{mathbox}{Complete Spot Light Formula}
+    \small
     \textbf{Angular attenuation:}
-    \begin{align}
+    \begin{align*}
       \text{spot\_factor} =
       \begin{cases}
         (\cos(\alpha))^e & \text{if } \cos(\alpha) > \cos(\theta_{\text{cutoff}}) \\
         0 & \text{otherwise}
       \end{cases}
-    \end{align}
+    \end{align*}
+    \only<2>{
+      The $e$ exponent controls how much brighter the light is at the center of the cone compared to the edges.
+    }
 
-    \pause
-    \textbf{Distance attenuation (same as point light):}
-    \begin{align}
-      \text{distance\_attenuation} = \frac{1}{a + b \cdot d + c \cdot d^2}
-    \end{align}
+    \only<3->{
+      \textbf{Distance attenuation} (same as point light):
+      \begin{align*}
+        \text{distance\_attenuation} = \frac{1}{\epsilon + d^2}
+      \end{align*}
+    }
 
-    \pause
-    \textbf{Final intensity:}
-    \begin{align}
-      I_{\text{final}} = I_{\text{light}} \cdot \text{spot\_factor} \cdot \text{distance\_attenuation}
-    \end{align}
+    \only<4->{
+      \textbf{Final intensity:}
+      \begin{align*}
+        I_{\text{final}} =
+        \begin{cases}
+          I_{\text{light}} \cdot (\cos(\alpha))^e \cdot \frac{1}{\epsilon + d^2} & \text{if } \cos(\alpha) > \cos(\theta_{\text{cutoff}}) \\
+          0 & \text{otherwise}
+        \end{cases}
+      \end{align*}
+    }
   \end{mathbox}
-
-  \vspace{0.3cm}
-  \pause
-  \begin{center}
-    % IMAGE: Spotlight falloff demonstration
-    % Show effect of different exponent values on spotlight edge softness
-    % \includegraphics[width=0.8\linewidth]{images/spotlight_falloff.jpg}
-    \textcolor{gray}{[Spotlight falloff with different exponents]}
-  \end{center}
+  \only<2>{
+    \begin{figure}
+      \centering
+      \begin{columns}
+        \begin{column}{0.25\textwidth}
+          \includegraphics[width=\linewidth]{images/spot_e_0.png}
+          \centering
+          {\footnotesize $e=0$}
+        \end{column}
+        \begin{column}{0.25\textwidth}
+          \includegraphics[width=\linewidth]{images/spot_e_10.png}
+          \centering
+          {\footnotesize $e=10$}
+        \end{column}
+        \begin{column}{0.25\textwidth}
+          \includegraphics[width=\linewidth]{images/spot_e_20.png}
+          \centering
+          {\footnotesize $e=20$}
+        \end{column}
+        \begin{column}{0.25\textwidth}
+          \includegraphics[width=\linewidth]{images/spot_e_30.png}
+          \centering
+          {\footnotesize $e=30$}
+        \end{column}
+      \end{columns}
+      \caption*{Spot lights for different values of $e$}
+    \end{figure}
+  }
 \end{frame}
