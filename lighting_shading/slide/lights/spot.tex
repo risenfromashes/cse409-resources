@@ -57,11 +57,11 @@
   \begin{columns}
     \begin{column}{0.7\textwidth}
       \begin{mathbox}{Spot Light Parameters}
-        \textbf{Position:} $\mathbf{P}_{\text{light}}$
+        \textbf{Position:} $\mathbf{P}_l$
+
+        \textbf{Intensity:} $\mathbf{I}_l$
 
         \textbf{Direction:} $\mathbf{D}_{\text{spot}}$
-
-        \textbf{Color:} $\mathbf{C}_{\text{light}} = (r, g, b)$
 
         \textbf{Cone angle:} $\theta_{\text{cutoff}}$
 
@@ -71,8 +71,8 @@
         \pause
         \textbf{Step 1 - Calculate angle to surface:}
         \begin{align*}
-          \hat{\mathbf{L}} &= \frac{\mathbf{P}_{\text{light}} - \mathbf{P}_{\text{surface}}}
-          {|\mathbf{P}_{\text{light}} - \mathbf{P}_{\text{surface}}|} \\
+          \hat{\mathbf{L}} &= \frac{\mathbf{P}_l - \mathbf{P}_{\text{surface}}}
+          {|\mathbf{P}_l - \mathbf{P}_{\text{surface}}|} \\
           \cos(\alpha) &=  \mathbf{D}_{\text{spot}} \cdot (- \hat{\mathbf{L}})
         \end{align*}
 
@@ -100,7 +100,7 @@
 
         \begin{scope}[shift={(3,3)}]
 
-          \draw[->, blue, thick] (light) -- ($(light)+0.5*(surface)-0.5*(light)$) node[midway, above, anchor=south, black] {\footnotesize $\hat{\mathbf{L}}$};
+          \draw[->, blue, thick] (light) -- ($(light)+0.5*(surface)-0.5*(light)$) node[midway, above, anchor=south, black, xshift=-0.1cm] {\footnotesize $-\hat{\mathbf{L}}$};
 
           \draw[dashed] (light) -- (surface);
           \draw[dashed] (light) -- (-90:5);
@@ -146,7 +146,7 @@
       \begin{align*}
         I_{\text{final}} =
         \begin{cases}
-          I_{\text{light}} \cdot (\cos(\alpha))^e \cdot \frac{1}{\epsilon + d^2} & \text{if } \cos(\alpha) > \cos(\theta_{\text{cutoff}}) \\
+          \mathbf{I}_l \cdot (\cos(\alpha))^e \cdot \frac{1}{\epsilon + d^2} & \text{if } \cos(\alpha) > \cos(\theta_{\text{cutoff}}) \\
           0 & \text{otherwise}
         \end{cases}
       \end{align*}

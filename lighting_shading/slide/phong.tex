@@ -1,0 +1,232 @@
+\section{The Phong Illumination Model}
+
+\begin{frame}{Phong Model: History}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \small
+      \begin{conceptbox}{Historical Context}
+        Developed by \textbf{Bui Tuong Phong} as his PhD dissertation at the University of Utah in 1973.
+
+        \textbf{Goal:} Fast, realistic-looking lighting
+      \end{conceptbox}
+      In Phong's words:
+
+      \begin{quote}
+        \footnotesize
+        "We do not expect to be able to display the object exactly as it would appear in reality, with texture, overcast shadows, etc. We hope only to display an image that approximates the real object closely enough to provide a certain degree of realism."
+      \end{quote}
+      {\small
+        Phong completed his PhD in only \textbf{two years}, a record at the time. Yet tragically, he died of cancer only two years later.
+      }
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{images/phong.jpg}
+        \caption*{Bui Tuong Phong (1942-1975)}
+      \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Phong Model Overview}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{mathbox}{Phong Formula}
+        \small
+        Break lighting into three components that can be computed independently
+        \begin{align*}
+          I &= I_{\text{ambient}} + I_{\text{diffuse}} + I_{\text{specular}} \\
+          &= k_a I_a + k_d \mathbf{I}_l (\mathbf{N} \cdot \mathbf{L}) + k_s \mathbf{I}_l (\mathbf{R} \cdot \mathbf{V})^n
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Surface
+        \draw[ObjectColor, very thick] (-2,0) -- (2,0);
+        \fill[ObjectColor] (0,0) circle (3pt);
+
+        \node[eye] (eye) at (3, 1.5) {\faIcon{eye}};
+        \node[circle, fill=LightColor, minimum size=0.5cm] (light) at (-2,2) {\footnotesize \faIcon{lightbulb}};
+
+        \draw[->, PrimaryColor, thick] (0,0) -- (0,1.5) node[above, anchor=south] {\footnotesize $\mathbf{N}$};
+
+        \draw[->, lightray, thick] (0,0) -- (-1.2,1.2) node[above, anchor=south] {\footnotesize $\mathbf{L}$};
+
+        \draw[->, AccentColor, thick] (0,0) -- ($0.5*(eye)$) node[above, anchor=south] {\footnotesize $\mathbf{V}$};
+
+        % Reflection vector
+        \draw[->, reflectray, thick] (0,0) -- (1.2,1.2);
+        \node[above right] at (1,1.4) {\footnotesize $\mathbf{R}$};
+
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.3cm}
+  \only<2>{
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.9\linewidth]{images/phong_components.png}
+      \caption*{Phong model components}
+    \end{figure}
+  }
+\end{frame}
+
+\begin{frame}{Types of Reflection}
+  \begin{columns}
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        \draw[ObjectColor, very thick] (-2,2) -- (2,2);
+        \node[above] at (0,3.5) {\scriptsize Smooth Surface};
+
+        \draw[lightray] (-1.5,3.5) -- (-0.5,2);
+        \draw[lightray] (-0.5,3.5) -- (0.5,2);
+        \draw[lightray] (0.5,3.5) -- (1.5,2);
+
+        \draw[reflectray] (-0.5,2) -- (-1.5,0.5);
+        \draw[reflectray] (0.5,2) -- (-0.5,0.5);
+        \draw[reflectray] (1.5,2) -- (0.5,0.5);
+
+        \node[below] at (0,0.6) {\scriptsize Specular Reflection};
+        \node[below] at (0,0.4) {\scriptsize (Mirror-like)};
+
+        \only<2->{
+          \begin{scope}[shift={(0, -2)}]
+            \draw[ObjectColor, very thick, decoration={snake, amplitude=1pt}, decorate] (-2,-0.5) -- (2,-0.5);
+            \node[above] at (0,1) {\scriptsize Rough Surface};
+
+            \draw[lightray] (-1.5,1) -- (-0.5,-0.5);
+            \draw[lightray] (-0.5,1) -- (0.5,-0.5);
+            \draw[lightray] (0.5,1) -- (1.5,-0.5);
+
+            \draw[reflectray] (-0.5,-0.5) -- (-1.2,-2);
+            \draw[reflectray] (-0.5,-0.5) -- (-0.8,-2);
+            \draw[reflectray] (0.5,-0.5) -- (0.2,-2);
+            \draw[reflectray] (0.5,-0.5) -- (0.8,-2);
+            \draw[reflectray] (1.5,-0.5) -- (1.2,-2);
+            \draw[reflectray] (1.5,-0.5) -- (1.8,-2);
+
+            \node[below] at (0,-2.1) {\scriptsize Diffuse Reflection};
+            \node[below] at (0,-2.3) {\scriptsize (Matte)};
+          \end{scope}
+        }
+      \end{tikzpicture}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \begin{raybox}{Reflection Types}
+        \footnotesize
+        \textbf{Specular Reflection:}
+        \begin{itemize}
+            \footnotesize
+          \item Smooth surfaces (mirrors, metals)
+          \item Preserves light direction
+          \item Creates sharp highlights
+          \item View-dependent
+        \end{itemize}
+
+        \only<2->{
+          \textbf{Diffuse Reflection:}
+          \begin{itemize}
+              \footnotesize
+            \item Rough surfaces (paper, clay, fabric)
+            \item Scatters light uniformly
+            \item View-independent
+            \item Lambertian behavior
+          \end{itemize}
+        }
+        \only<3->{
+          % ambient reflection
+          \textbf{Ambient Reflection:}
+          \begin{itemize}
+              \footnotesize
+            \item Approximation of indirect light
+            \item View-independent
+          \end{itemize}
+        }
+        \only<4->{
+          \textbf{Real surfaces:} Combination of three types
+        }
+      \end{raybox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \begin{frame}{Material Properties}
+%   \begin{columns}
+%     \begin{column}{0.6\textwidth}
+%       \begin{mathbox}{Material Coefficients}
+%         \textbf{Ambient coefficient:} $k_a$
+%         \begin{itemize}
+%             \footnotesize
+%           \item Controls response to ambient light
+%           \item Range: $[0, 1]$
+%           \item Usually small (0.1 - 0.3)
+%         \end{itemize}
+
+%         \vspace{0.3cm}
+%         \textbf{Diffuse coefficient:} $k_d$
+%         \begin{itemize}
+%             \footnotesize
+%           \item Controls Lambertian reflection
+%           \item Range: $[0, 1]$
+%           \item Represents surface color
+%         \end{itemize}
+
+%         \vspace{0.3cm}
+%         \textbf{Specular coefficient:} $k_s$
+%         \begin{itemize}
+%             \footnotesize
+%           \item Controls shiny highlights
+%           \item Range: $[0, 1]$
+%           \item Higher for metallic surfaces
+%         \end{itemize}
+
+%         \vspace{0.3cm}
+%         \textbf{Shininess:} $n$
+%         \begin{itemize}
+%             \footnotesize
+%           \item Controls highlight size
+%           \item Range: $[1, \infty)$
+%           \item Higher = smaller, sharper highlights
+%         \end{itemize}
+%       \end{mathbox}
+%     \end{column}
+%     \begin{column}{0.4\textwidth}
+%       % IMAGE: Material parameter demonstrations
+%       % Show sphere with different ka, kd, ks, n values
+%       % \includegraphics[width=\linewidth]{images/material_parameters.jpg}
+%       \vspace{2cm}
+%       \textcolor{gray}{[Material parameter examples]}
+
+%       \vspace{0.5cm}
+%       \begin{raybox}{Typical Values}
+%         \footnotesize
+%         \textbf{Matte plastic:}\\
+%         $k_a=0.2, k_d=0.8, k_s=0.1, n=10$
+
+%         \vspace{0.2cm}
+%         \textbf{Shiny metal:}\\
+%         $k_a=0.1, k_d=0.3, k_s=0.9, n=100$
+
+%         \vspace{0.2cm}
+%         \textbf{Rubber:}\\
+%         $k_a=0.3, k_d=0.9, k_s=0.0, n=1$
+%       \end{raybox}
+%     \end{column}
+%   \end{columns}
+
+%   \vspace{0.3cm}
+%   \pause
+%   \begin{conceptbox}{Energy Conservation}
+%     In physically correct materials: $k_a + k_d + k_s \leq 1$
+
+%     \textbf{Why?} Surface cannot reflect more energy than it receives!
+%   \end{conceptbox}
+% \end{frame}
+
+\input{phong/ambient.tex}
+\input{phong/diffuse.tex}
+\input{phong/specular.tex}
+\input{phong/blinn.tex}

@@ -67,28 +67,25 @@
   \begin{columns}
     \begin{column}{0.6\textwidth}
       \begin{mathbox}{Directional Light Parameters}
-        \textbf{Direction:} $\mathbf{D}_{\text{light}} = (x, y, z)$
+        \textbf{Direction:} $\mathbf{D}_l = (x, y, z)$
 
-        \textbf{Intensity:} $I_{\text{light}}$ (constant)
-
-        \textbf{Color:} $\mathbf{C}_{\text{light}} = (r, g, b)$
-
+        \textbf{Intensity:} $\mathbf{I}_l$ (constant)
         \vspace{0.3cm}
         \only<2->{
           \textbf{Light direction:}
           \begin{align*}
-            \hat{\mathbf{L}} = -\mathbf{D}_{\text{light}}
+            \hat{\mathbf{L}} = -\mathbf{D}_l
           \end{align*}
           \only<2>{
             \footnotesize
-            \textbf{Note:} Assuming $\mathbf{D}_{\text{light}}$ is normalized
+            \textbf{Note:} Assuming $\mathbf{D}_l$ is normalized
           }
         }
 
         \only<3->{
           \textbf{Intensity at any point:}
           \begin{align*}
-            I_{\text{final}} = I_{\text{light}} \quad \text{(no attenuation)}
+            I_{\text{final}} = \mathbf{I}_l \quad \text{(no attenuation)}
           \end{align*}
         }
       \end{mathbox}
@@ -110,8 +107,8 @@
 
         % Direction vector from light
         \draw[->, lightray, very thick] (2,3) -- (2,1);
-        \node[right] at (2.2,2) {\footnotesize  $\hat{\mathbf{L}} = -\mathbf{D}_{\text{light}}$};
-        \node[above] at (2,3.3) {\footnotesize Light direction $\mathbf{D}_{\text{light}}$};
+        \node[right] at (2.2,2) {\footnotesize  $\hat{\mathbf{L}} = -\mathbf{D}_l$};
+        \node[above] at (2,3.3) {\footnotesize Light direction $\mathbf{D}_l$};
 
         % Surface point
         \fill[ObjectColor] (2,1) circle (3pt);

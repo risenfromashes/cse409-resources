@@ -1,0 +1,57 @@
+\section{Normal Vectors}
+
+\begin{frame}{Normal Vectors}
+  \begin{columns}
+    \begin{column}{\textwidth}
+      \begin{mathbox}{Surface Normal Properties}
+        \footnotesize
+        \textbf{Definition:} Vector perpendicular to surface at a point
+
+        \only<2>{
+          \vspace{0.1cm}
+          \textbf{Properties:}
+          \begin{itemize}
+            \item Unit length: $|\mathbf{N}| = 1$
+            \item Points "outward" from surface
+            \item Determines light interaction
+          \end{itemize}
+        }
+
+        \only<3->{
+          \vspace{0.1cm}
+          \textbf{For triangles:} Cross product of sides
+          \begin{align*}
+            \mathbf{N} = \frac{(\mathbf{b} - \mathbf{a}) \times (\mathbf{c} - \mathbf{a})}{|(\mathbf{b} - \mathbf{a}) \times (\mathbf{c} - \mathbf{a})|}
+          \end{align*}
+        }
+
+        \only<4->{
+          % for spheres
+          \vspace{0.1cm}
+          \textbf{For spheres:} Normal at point $\mathbf{P}$ is radial assuming center at origin
+          \begin{align*}
+            \mathbf{N} = \frac{\mathbf{P}}{|\mathbf{P}|}
+          \end{align*}
+        }
+
+        \only<5->{
+          % for planes
+          \vspace{0.1cm}
+          \textbf{For planes:} Normal defined by plane equation $Ax + By + Cz + D = 0$
+          \begin{align*}
+            \mathbf{N} = \frac{(A, B, C)}{\sqrt{A^2 + B^2 + C^2}}
+          \end{align*}
+        }
+
+        \only<6->{
+          % general surfaces
+          \vspace{0.1cm}
+          \textbf{For arbitrary surfaces:} Use gradient of implicit function
+          \begin{align*}
+            \mathbf{N} = \frac{\nabla f(x, y, z)}{|\nabla f(x, y, z)|}
+          \end{align*}
+        }
+      \end{mathbox}
+    \end{column}
+  \end{columns}
+\end{frame}

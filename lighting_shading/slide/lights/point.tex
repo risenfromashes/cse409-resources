@@ -57,24 +57,22 @@
   \begin{columns}
     \begin{column}{0.6\textwidth}
       \begin{mathbox}{Point Light Parameters}
-        \textbf{Position:} $\mathbf{P}_{\text{light}} = (x_l, y_l, z_l)$
+        \textbf{Position:} $\mathbf{P}_l = (x_l, y_l, z_l)$
 
-        \textbf{Intensity:} $I_{\text{light}}$ (brightness)
-
-        \textbf{Color:} $\mathbf{C}_{\text{light}} = (r, g, b)$
+        \textbf{Intensity:} $\mathbf{I}_l$ (brightness; RGB channels)
 
         \vspace{0.3cm}
         \pause
         \textbf{Light direction to surface point:}
         \begin{align*}
-          \mathbf{L} &= \mathbf{P}_{\text{light}} - \mathbf{P}_{\text{surface}} \\
+          \mathbf{L} &= \mathbf{P}_l - \mathbf{P}_{\text{surface}} \\
           \hat{\mathbf{L}} &= \frac{\mathbf{L}}{|\mathbf{L}|} \quad \text{(normalized)}
         \end{align*}
 
         \pause
         \textbf{Distance:}
         \begin{align*}
-          d = |\mathbf{P}_{\text{light}} - \mathbf{P}_{\text{surface}}|
+          d = |\mathbf{P}_l - \mathbf{P}_{\text{surface}}|
         \end{align*}
       \end{mathbox}
     \end{column}
@@ -92,7 +90,7 @@
         \end{scope}
 
         \node[circle, fill=LightColor, minimum size=0.6cm] (light) at (2,2.5) {};
-        \node[above] at (2,3) {\footnotesize $\mathbf{P}_{\text{light}}$};
+        \node[above] at (2,3) {\footnotesize $\mathbf{P}_l$};
 
         \fill[ObjectColor] (1,1) circle (3pt);
         \node[below] at (1,0.7) {\footnotesize $\mathbf{P}_{\text{surface}}$};
@@ -175,7 +173,7 @@
     \begin{mathbox}{Attenuation Formula}
       \vspace*{-0.5cm}
       \begin{align*}
-        I_{\text{received}} = \frac{I_{\text{light}}}{d^2} \quad \text{where } d = \text{distance to light}
+        I_{\text{received}} = \frac{\mathbf{I}_l}{d^2} \quad \text{where } d = \text{distance to light}
       \end{align*}
     \end{mathbox}
   }
@@ -188,9 +186,8 @@
 
       \textbf{Input parameters:}
       \begin{itemize}
-        \item Light position: $\mathbf{P}_{\text{light}}$
-        \item Light intensity: $I_{\text{light}}$
-        \item Light color: $\mathbf{C}_{\text{light}} = (r, g, b)$
+        \item Light position: $\mathbf{P}_l$
+        \item Light intensity: $\mathbf{I}_l$
         \item Surface point: $\mathbf{P}_{\text{surface}}$
       \end{itemize}
     }
@@ -198,10 +195,10 @@
 
       \textbf{Calculation steps:}
       \begin{align*}
-        \mathbf{L} &= \mathbf{P}_{\text{light}} - \mathbf{P}_{\text{surface}} \\
+        \mathbf{L} &= \mathbf{P}_l - \mathbf{P}_{\text{surface}} \\
         d &= |\mathbf{L}| \\
         \hat{\mathbf{L}} &= \mathbf{L} / d \\
-        I_{\text{final}} &= \frac{I_{\text{light}}}{\epsilon + d^2}
+        I_{\text{final}} &= \frac{\mathbf{I}_l}{\epsilon + d^2}
       \end{align*}
     }
   \end{mathbox}
