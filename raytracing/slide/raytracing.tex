@@ -1,0 +1,247 @@
+\section{From Ray Casting to Ray Tracing}
+
+\begin{frame}{Ray Casting vs Ray Tracing}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      % Ray Casting
+      \draw[PrimaryColor, fill=PrimaryColor!20] (0,0) rectangle (6,4);
+      \node[below] at (3, 4) {\textbf{Ray Casting}};
+      \node[eye] (eye1) at (1,1) {\faIcon{eye}};
+      \node[sphere] (obj1) at (4,2) {};
+      \node[sphere, minimum size=0.5cm] (obj2) at (1,3) {};
+      \draw[ray] (eye1) -- (obj1.west);
+      \node[below] at (3,0) {\small Primary rays only};
+
+      \begin{scope}[shift={(0,-5)}]
+        % Ray Casting
+        \draw[PrimaryColor, fill=PrimaryColor!20] (0,0) rectangle (6,4);
+        \node[below] at (3, 4) {\textbf{Ray Tracing}};
+        \node[eye] (eye1) at (1,1) {\faIcon{eye}};
+        \node[sphere] (obj1) at (4,2) {};
+        \node[sphere, minimum size=0.5cm] (obj2) at (1,3) {};
+        \draw[ray] (eye1) -- (obj1.west);
+        \draw[reflectray] (obj1.west) -- (obj2);
+        \node[below] at (3,0) {\small Primary rays + Secondary Rays};
+      \end{scope}
+
+    \end{tikzpicture}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Secondary Rays}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.9]
+          \scriptsize
+          \node[eye] (eye) at (0,0) {\faIcon{eye}};
+          \node[sphere, minimum size=1.2cm] (sphere) at (3,0) {};
+          \node[circle, fill=LightColor, minimum size=0.8cm] (light) at (2,3) {\faIcon{lightbulb}};
+          \node[sphere, minimum size=0.6cm] (mirror) at (5,3) {};
+
+          \begin{scope}[shift={(3,0)}]
+            \coordinate (P) at (135:0.65);
+            \draw<1->[ray, very thick] (eye) -- (P) node[midway, above, yshift=0.1cm] {\raycolor{1. Primary Ray}};
+            \draw<2->[shadowray] (P) -- (light) node[midway, left] {\textcolor{DarkGray}{2. Shadow Ray}};
+            \draw<3->[reflectray] (P) -- (mirror) node[midway, right] {\textcolor{SecondaryColor}{3. Reflection Ray}};
+            \draw<4->[reflectray, AccentColor] (P) -- (-10:1.5) node[midway, right, xshift=0.2cm]
+            {\textcolor{AccentColor}{4. Refraction Ray}};
+          \end{scope}
+
+          \draw[thick, ObjectColor] (-0.5,-1.5) -- (6,-1.5);
+
+          \node[above] at (2,3.5) {\textcolor{LightColor}{Light Source}};
+          \node[below] at (3,-0.8) {\textcolor{ObjectColor}{Main Object}};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Types of Rays}
+        \scriptsize
+        \begin{enumerate}
+          \item<1-> \textbf{Primary Ray: } From camera to object. Determines closest intersection.
+          \item<2-> \textbf{Shadow Ray: } From intersection point to light source. Checks if point is illuminated by light.
+          \item<3-> \textbf{Reflection Ray: } From intersection point reflecting off surfaces. For reflections.
+          \item<4-> \textbf{Refraction Ray: } From intersection point through transparent surfaces. For refractions.
+        \end{enumerate}
+      \end{conceptbox}
+
+    \end{column}
+  \end{columns}
+
+\end{frame}
+
+\begin{frame}{Recursive Ray Tracing}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      % Tree structure showing recursion
+      \node[circle, draw, fill=PrimaryColor!30] (root) at (0,4) {Eye};
+
+      % Level 1
+      \node[circle, draw, fill=RayColor!30] (obj1) at (-2,2) {Obj1};
+      \node[circle, draw, fill=RayColor!30] (obj2) at (2,2) {Obj2};
+
+      % Level 2
+      \node[circle, draw, fill=SecondaryColor!30] (mirror1) at (-3,0) {Mirror};
+      \node[circle, draw, fill=AccentColor!30] (glass1) at (-1,0) {Glass};
+      \node[circle, draw, fill=SecondaryColor!30] (mirror2) at (1,0) {Mirror};
+      \node[circle, draw, fill=AccentColor!30] (glass2) at (3,0) {Glass};
+
+      % Level 3
+      \node[circle, draw, fill=ObjectColor!30] (final1) at (-3.5,-2) {Obj};
+      \node[circle, draw, fill=ObjectColor!30] (final2) at (-2,-2) {Obj};
+      \node[circle, draw, fill=ObjectColor!30] (final3) at (2.5,-2) {Obj};
+
+      % Connections
+      \draw[arrow] (root) -- (obj1);
+      \draw[arrow] (root) -- (obj2);
+      \draw[arrow] (obj1) -- (mirror1);
+      \draw[arrow] (obj1) -- (glass1);
+      \draw[arrow] (obj2) -- (mirror2);
+      \draw[arrow] (obj2) -- (glass2);
+      \draw[arrow] (mirror1) -- (final1);
+      \draw[arrow] (glass1) -- (final2);
+      \draw[arrow] (mirror2) -- (final3);
+
+      % Depth labels
+      \node[right] at (4,4) {\textcolor{PrimaryColor}{Depth 0}};
+      \node[right] at (4,2) {\textcolor{RayColor}{Depth 1}};
+      \node[right] at (4,0) {\textcolor{SecondaryColor}{Depth 2}};
+      \node[right] at (4,-2) {\textcolor{ObjectColor}{Depth 3}};
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{conceptbox}{Recursion Control}
+    \footnotesize
+    \textbf{Termination:} Maximum depth reached OR ray contribution becomes negligible
+  \end{conceptbox}
+\end{frame}
+
+\subsection{Shadow Rays}
+\begin{frame}{Shadows: The Absence of Light}
+  \begin{center}
+    \scriptsize
+    \begin{tikzpicture}[scale=0.8]
+      \begin{scope}[shift={(5,0)}]
+        \coordinate (P) at (135:0.75);
+      \end{scope}
+      \node[circle, fill=LightColor, minimum size=0.8cm] (light) at (0,3) {\faIcon{sun}};
+      \node[eye] (eye) at (6,2) {\faIcon{eye}};
+      \node[above] at (0,3.5) {\textcolor{LightColor}{Light Source}};
+
+      \coordinate (dir) at ($(P)-(2,2)$);
+
+      \node[sphere, minimum size=1.2cm] (target) at (5,0) {};
+      \node[below] at (5,-0.8) {\textcolor{ObjectColor}{Target}};
+
+      \draw[ray] (eye) -- (P) node[midway,below,anchor=west] {\raycolor{Primary}};
+      \draw<2->[shadowray, dashed] (P) -- (light) node[below, shift={(0.3,-0.5)}] {\textcolor{DarkGray}{Shadow Ray}};
+      \fill<4->[pattern=north east lines, pattern color=gray]
+      (2,2) -- ($(P)+0.25*(dir)-0.65*(1,1)$) -- ($(P)+0.25*(dir)+0.4*(1,1)$) -- cycle;
+
+      \node[sphere, minimum size=1cm] (occluder) at (2,2) {};
+      \node[above] at (2,2.6) {\textcolor{ObjectColor}{Occluder}};
+
+      \node<4->[right] at (3.5,1.5) {\textcolor{AccentColor}{BLOCKED!}};
+
+      \node<4->[right] at (2.5,0.2) {\textcolor{DarkGray}{Shadow}};
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{raybox}{Shadow Ray Algorithm}
+    \footnotesize
+    \textbf{For each intersection point:}
+    \begin{enumerate}
+      \item<2-> Cast ray toward each light source
+      \item<3-> Check if ray intersects any object before reaching light
+      \item<4-> If \textbf{blocked} → point is in shadow
+      \item<5-> If clear → point is illuminated
+    \end{enumerate}
+  \end{raybox}
+\end{frame}
+
+\subsection{Reflections}
+\begin{frame}{Reflections}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \begin{mathbox}{Reflection Law}
+        \small
+        Given incident ray $\mathbf{I}$ and surface normal $\mathbf{N}$:
+        \begin{align*}
+          \mathbf{R} & = \mathbf{I} - 2(\mathbf{I} \cdot \mathbf{N})\mathbf{N}
+        \end{align*}
+
+        \only<1>{
+          \textbf{Physical principle:}\\
+          Angle of incidence = Angle of reflection
+        }
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        \draw[thick, ObjectColor] (-0.5,0) -- (3.5,0);
+        \node[below] at (1.5,-0.3) {\objectcolor{Surface}};
+        \draw[->, thick, AccentColor] (1.5,0) -- (1.5,2) node[above] {$\mathbf{N}$};
+        \draw[ray] (0,1.5) -- (1.5,0) node[midway, left] {$\mathbf{I}$};
+
+        \draw[reflectray] (1.5,0) -- (3,1.5) node[midway,right] {$\mathbf{R}$};
+
+        \node[above] at (1.2,0.3) {$\theta$};
+        \node[above] at (1.8,0.3) {$\theta$};
+
+        \fill[AccentColor] (1.5,0) circle (2pt);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+  \only<2->{
+    \begin{conceptbox}{Raytraced Reflection}
+      \begin{enumerate}
+          \small
+        \item From the intersection point, cast a secondary ray in the direction of the reflection vector $\mathbf{R}$.
+        \item Calculate the colour at the intersection point of the secondary ray with the scene $\mathbf{I}_{\text{reflected}}$.
+        \item Combine the local colour $\mathbf{I}_{\text{local}}$ with the reflected colour:
+          \begin{align*}
+            \mathbf{I} &= \mathbf{I}_{\text{local}} + \mathbf{k}_r \odot \mathbf{I}_{\text{reflected}}
+          \end{align*}
+          Where $\mathbf{k}_r$ is the reflection coefficient (material property).
+      \end{enumerate}
+    \end{conceptbox}
+  }
+\end{frame}
+
+\subsection{Implementation Challenges}
+
+\begin{frame}{The Floating Point Precision Problem}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.9]
+      % Surface
+      \draw[thick, ObjectColor] (-1,0) -- (4,0);
+      \node[below] at (2,-0.5) {\objectcolor{Surface}};
+
+      \fill[SecondaryColor] (2,0) circle (3pt);
+
+      \draw[reflectray] (2, 0) -- (1,1) node[above] {\scriptsize \textcolor{SecondaryColor}{True intersection}};
+      \draw[shadowray] (2, 0.1) arc [start angle=180, end angle=-140, radius=0.3] node[midway, right]
+      {\textcolor{DarkGray}{\scriptsize Self-intersection}};
+
+      % Problems
+      \node[right] at (4.5,0.5) {
+        \begin{minipage}{4cm}
+          \scriptsize
+          \textcolor{AccentColor}{\textbf{Problems:}}
+          \begin{itemize}
+            \item Self-intersection
+            \item Incorrect shadows
+            \item Ray escaping
+          \end{itemize}
+        \end{minipage}
+      };
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{conceptbox}{The Evil Epsilon}
+    \textbf{Solution:} Add small offset $\varepsilon$ when starting secondary rays from surfaces or set $t_{\min} = \varepsilon$ \\
+    \textbf{Challenge:} Too small → still problems; Too large → artifacts
+  \end{conceptbox}
+\end{frame}
