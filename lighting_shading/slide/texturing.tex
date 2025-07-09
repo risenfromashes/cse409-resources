@@ -1,0 +1,459 @@
+\section{Texturing}
+
+\begin{frame}{What Are Textures?}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Texture Definition}
+        \footnotesize
+        \textbf{Texture:} A 2D image that defines surface properties as a function of position
+
+        \vspace{0.3cm}
+        \textbf{Key idea:} Map 2D texture coordinates to 3D surface points
+
+        \vspace{0.3cm}
+        \textbf{Types of information:}
+        \begin{itemize}
+          \item \textbf{Color} - Base surface appearance
+          \item \textbf{Material properties} - Shininess, roughness
+          \item \textbf{Surface details} - Bumps, scratches, patterns
+          \item \textbf{Geometry} - Height variations
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.5]
+        % 3D Surface
+        \begin{scope}[plane x={(0.866,0.5,0)}, plane y={(0, 0.5, -0.866)}, canvas is plane]
+          \draw[ObjectColor, fill=ObjectColor!20] (0,0) rectangle (3, 2);
+
+          % UV coordinates
+          \draw[gray, dashed] (0,0) grid (3,2);
+          \node[below left] at (0,0) {\tiny (0,0)};
+          \node[below right] at (3,0) {\tiny (1,0)};
+          \node[above left] at (0,2) {\tiny (0,1)};
+          \node[above right] at (3,2) {\tiny (1,1)};
+        \end{scope}
+
+        \node[below] at (1.5,-0.5) {\scriptsize 3D Surface};
+        % Arrow
+        \draw[->, thick, AccentColor] (4,1) -- (6,1);
+
+        % 2D Texture
+        \draw[black, thick] (7,0) rectangle (9,2);
+        \fill[pattern=north east lines, pattern color=ObjectColor] (7,0) rectangle (9,2);
+        \node[below] at (8,-0.5) {\scriptsize 2D Texture};
+
+        % UV labels
+        \node[below left] at (7,0) {\tiny (0,0)};
+        \node[below right] at (9,0) {\tiny (1,0)};
+        \node[above left] at (7,2) {\tiny (0,1)};
+        \node[above right] at (9,2) {\tiny (1,1)};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Texture Coordinates (UV Mapping)}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \begin{mathbox}{UV Coordinate System}
+        \footnotesize
+        \textbf{Parameterization:} Map 3D surface to 2D texture space
+
+        \vspace{0.2cm}
+        Each vertex has:
+        \begin{itemize}
+          \item 3D position: $(x, y, z)$
+          \item 2D texture coordinates: $(u, v)$
+        \end{itemize}
+
+        \vspace{0.2cm}
+        \textbf{Convention:}
+        \begin{itemize}
+          \item $u, v \in [0, 1]$
+          \item $(0, 0)$ = bottom-left of texture
+          \item $(1, 1)$ = top-right of texture
+        \end{itemize}
+
+        \vspace{0.2cm}
+        \textbf{Interpolation:} Use barycentric coordinates for interior points
+        \begin{align*}
+          (u, v) = \alpha (u_1, v_1) + \beta (u_2, v_2) + \gamma (u_3, v_3)
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \centering
+      \begin{tikzpicture}[scale=0.9]
+        % Triangle in 3D
+        \begin{scope}[yshift=3.5cm]
+          \draw[ObjectColor, thick] (0,0) -- (2,0) -- (1,1.5) -- cycle;
+          \fill[ObjectColor!20] (0,0) -- (2,0) -- (1,1.5) -- cycle;
+          \node[below] at (0,0) {\tiny $v_1$};
+          \node[below] at (2,0) {\tiny $v_2$};
+          \node[above] at (1,1.5) {\tiny $v_3$};
+          \node[below] at (1,-0.3) {\small 3D Triangle};
+        \end{scope}
+
+        % Arrow
+        \draw[->, thick, AccentColor] (1,2.4) -- (1,2);
+
+        % UV Triangle
+        \draw[black, thick] (-0.5,-0.25) rectangle (2.5,1.75);
+        \draw[ObjectColor, thick] (0.2,0.2) -- (1.8,0.3) -- (1,1.2) -- cycle;
+        \fill[ObjectColor!20] (0.2,0.2) -- (1.8,0.3) -- (1,1.2) -- cycle;
+
+        \node[below] at (0.2,0.2) {\tiny $(u_1, v_1)$};
+        \node[below] at (1.8,0.3) {\tiny $(u_2, v_2)$};
+        \node[above] at (1,1.2) {\tiny $(u_3, v_3)$};
+        \node[below] at (1,-0.3) {\small UV Space};
+
+        % UV coordinates
+        \node[below left] at (-0.5,-0.25) {\tiny (0,0)};
+        \node[below right] at (2.5,-0.25) {\tiny (1,0)};
+        \node[above left] at (-0.5,1.75) {\tiny (0,1)};
+        \node[above right] at (2.5,1.75) {\tiny (1,1)};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Common UV Mapping Techniques}
+  \footnotesize
+  \begin{columns}
+    \begin{column}{0.3\textwidth}
+      \begin{conceptbox}{Cube Mapping}
+        \begin{center}
+          \begin{tikzpicture}[scale=0.6]
+            \draw[ObjectColor, thick] (0,0) -- (1,0) -- (1,1) -- (0,1) -- cycle;
+            \draw[ObjectColor, thick] (1,0) -- (1.5,0.5) -- (1.5,1.5) -- (1,1) -- cycle;
+            \draw[ObjectColor, thick] (0,1) -- (0.5,1.5) -- (1.5,1.5) -- (1,1) -- cycle;
+          \end{tikzpicture}
+        \end{center}
+        \footnotesize
+        \textbf{Each face:} $(0,1) \times (0,1)$
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.35\textwidth}
+      \begin{conceptbox}{Spherical Mapping}
+        \begin{center}
+          \begin{tikzpicture}[scale=0.6]
+            \draw[ObjectColor, thick] (0,1) circle (1);
+            \draw[ObjectColor, thick, dashed] (0,1) ellipse (1 and 0.3);
+            \node[below] at (0,-0.3) {\small Sphere};
+          \end{tikzpicture}
+        \end{center}
+        \footnotesize
+        \textbf{Spherical coordinates:}
+        \begin{align*}
+          u &= \frac{\phi}{2\pi} \\
+          v &= \frac{\theta}{\pi}
+        \end{align*}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.35\textwidth}
+      \begin{conceptbox}{Cylindrical Mapping}
+        \begin{center}
+          \begin{tikzpicture}[scale=0.6]
+            \draw[ObjectColor, thick] (-0.5,0) -- (0.5,0) -- (0.5,2) -- (-0.5,2) -- cycle;
+            \draw[ObjectColor, thick] (0,2) ellipse (0.5 and 0.2);
+            \draw[ObjectColor, thick] (0,0) ellipse (0.5 and 0.2);
+          \end{tikzpicture}
+        \end{center}
+        \footnotesize
+        \textbf{Cylindrical coordinates:}
+        \begin{align*}
+          u &= \frac{\phi}{2\pi} \\
+          v &= \frac{z - z_{min}}{z_{max} - z_{min}}
+        \end{align*}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Texture Sampling and Filtering}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{mathbox}{Texture Sampling}
+        \footnotesize
+        \textbf{Problem:} UV coordinates are continuous, texture pixels are discrete
+
+        \vspace{0.2cm}
+        \textbf{Nearest neighbor:}
+        \begin{align*}
+          \text{color} = T[\text{round}(u \cdot w), \text{round}(v \cdot h)]
+        \end{align*}
+
+        \vspace{0.2cm}
+        \textbf{Bilinear interpolation:}
+        \begin{align*}
+          c_{00} &= T[\lfloor u \cdot w \rfloor, \lfloor v \cdot h \rfloor] \\
+          c_{10} &= T[\lfloor u \cdot w \rfloor + 1, \lfloor v \cdot h \rfloor] \\
+          c_{01} &= T[\lfloor u \cdot w \rfloor, \lfloor v \cdot h \rfloor + 1] \\
+          c_{11} &= T[\lfloor u \cdot w \rfloor + 1, \lfloor v \cdot h \rfloor + 1]
+        \end{align*}
+
+        \vspace{0.2cm}
+        \textbf{Final color:}
+        \begin{align*}
+          \text{color} = \text{lerp}(\text{lerp}(c_{00}, c_{10}, f_u), \\
+          \text{lerp}(c_{01}, c_{11}, f_u), f_v)
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          % Texture grid
+          \draw[gray] (0,0) grid (4,4);
+          \foreach \i in {0,1,2,3,4} {
+            \foreach \j in {0,1,2,3,4} {
+              \fill[ObjectColor] (\i,\j) circle (2pt);
+            }
+          }
+
+          % Sample point
+          \fill[red] (1.7,2.3) circle (3pt);
+          \node[right] at (1.7,2.3) {\tiny Sample point};
+
+          % Bilinear neighbors
+          \fill[AccentColor] (1,2) circle (3pt);
+          \fill[AccentColor] (2,2) circle (3pt);
+          \fill[AccentColor] (1,3) circle (3pt);
+          \fill[AccentColor] (2,3) circle (3pt);
+
+          % Labels
+          \node[below left] at (1,2) {\tiny $c_{00}$};
+          \node[below right] at (2,2) {\tiny $c_{10}$};
+          \node[above left] at (1,3) {\tiny $c_{01}$};
+          \node[above right] at (2,3) {\tiny $c_{11}$};
+
+          \node[below] at (2,-0.3) {\small Bilinear Interpolation};
+        \end{tikzpicture}
+      \end{center}
+
+      \begin{raybox}{Addressing Modes}
+        \scriptsize
+        \textbf{Repeat:} $u \bmod 1$
+
+        \textbf{Clamp:} $\max(0, \min(1, u))$
+
+        \textbf{Mirror:} Reflect at boundaries
+      \end{raybox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Types of Textures}
+  \footnotesize
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Diffuse/Albedo Maps}
+        \footnotesize
+        \textbf{Purpose:} Define base surface color
+
+        \textbf{Usage in Phong:}
+        \begin{align*}
+          k_d(u,v) = T_{\text{diffuse}}(u,v)
+        \end{align*}
+
+        \textbf{Effect:} Varies surface color across object
+      \end{conceptbox}
+
+      \vspace{0.3cm}
+      \begin{conceptbox}{Specular Maps}
+        \footnotesize
+        \textbf{Purpose:} Control shininess variation
+
+        \textbf{Usage in Phong:}
+        \begin{align*}
+          k_s(u,v) &= T_{\text{specular}}(u,v) \\
+          n(u,v) &= T_{\text{roughness}}(u,v) \cdot n_{\max}
+        \end{align*}
+
+        \textbf{Effect:} Some areas shinier than others
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Normal Maps}
+        \footnotesize
+        \textbf{Purpose:} Add surface detail without geometry
+
+        \textbf{Storage:} RGB values encode XYZ normal components
+        \begin{align*}
+          \mathbf{N}(u,v) = 2 \cdot T_{\text{normal}}(u,v) - 1
+        \end{align*}
+
+        \textbf{Effect:} Bumps and surface details
+      \end{conceptbox}
+
+      \vspace{0.3cm}
+      \begin{conceptbox}{Height/Displacement Maps}
+        \footnotesize
+        \textbf{Purpose:} Modify actual geometry
+
+        \textbf{Usage:}
+        \begin{align*}
+          \mathbf{P}'(u,v) = \mathbf{P}(u,v) + h(u,v) \cdot \mathbf{N}(u,v)
+        \end{align*}
+
+        \textbf{Effect:} Actual geometric displacement
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5cm}
+  \begin{tikzpicture}[scale=0.6]
+    % Example images placeholders
+    \draw[thick] (0,0) rectangle (2,1.5);
+    \fill[ObjectColor!30] (0,0) rectangle (2,1.5);
+    \node[below] at (1,-0.3) {\small Diffuse};
+
+    \draw[thick] (3,0) rectangle (5,1.5);
+    \fill[gray!50] (3,0) rectangle (5,1.5);
+    \node[below] at (4,-0.3) {\small Specular};
+
+    \draw[thick] (6,0) rectangle (8,1.5);
+    \fill[blue!30] (6,0) rectangle (8,1.5);
+    \node[below] at (7,-0.3) {\small Normal};
+
+    \draw[thick] (9,0) rectangle (11,1.5);
+    \fill[red!30] (9,0) rectangle (11,1.5);
+    \node[below] at (10,-0.3) {\small Height};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Textured Phong Model}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{mathbox}{Enhanced Phong with Textures}
+        \footnotesize
+        \textbf{Original Phong:}
+        \begin{align*}
+          I &= k_a I_a + k_d \mathbf{I}_l (\mathbf{N} \cdot \mathbf{L}) + k_s \mathbf{I}_l (\mathbf{R} \cdot \mathbf{V})^n
+        \end{align*}
+
+        \vspace{0.3cm}
+        \textbf{Textured Phong:}
+        \begin{align*}
+          I &= k_a(u,v) I_a + k_d(u,v) \mathbf{I}_l (\mathbf{N}' \cdot \mathbf{L}) \\
+          &\quad + k_s(u,v) \mathbf{I}_l (\mathbf{R}' \cdot \mathbf{V})^{n(u,v)}
+        \end{align*}
+
+        \vspace{0.3cm}
+        \textbf{Where:}
+        \begin{itemize}
+          \item $k_d(u,v) = T_{\text{diffuse}}(u,v)$
+          \item $k_s(u,v) = T_{\text{specular}}(u,v)$
+          \item $\mathbf{N}' = \text{perturb}(\mathbf{N}, T_{\text{normal}}(u,v))$
+          \item $n(u,v) = T_{\text{roughness}}(u,v) \cdot n_{\max}$
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Surface with texture
+        \begin{scope}[plane x={(0.866,0.5,0)}, plane y={(0, 0.5, -0.866)}, canvas is plane]
+          \draw[ObjectColor, fill=ObjectColor!20] (0,0) rectangle (3, 2);
+
+          % Texture pattern
+          \draw[ObjectColor, thick] (0.5,0.5) circle (0.3);
+          \draw[ObjectColor, thick] (2.5,1.5) circle (0.2);
+          \draw[ObjectColor, thick] (1.5,0.2) rectangle (2,0.8);
+
+          \node[below] at (1.5,-0.3) {\small Textured Surface};
+        \end{scope}
+
+        % Light
+        \node[circle, fill=LightColor, minimum size=0.5cm] (light) at (-1,3) {\tiny \faIcon{lightbulb}};
+
+        % Light rays
+        \draw[lightray] (light) -- (1,1.5);
+        \draw[lightray] (light) -- (1.5,1);
+        \draw[lightray] (light) -- (2,1.5);
+
+        % Varied reflection
+        \draw[reflectray] (1,1.5) -- (0.5,3);
+        \draw[reflectray, thick] (1.5,1) -- (1,2.5);  % Stronger reflection
+        \draw[reflectray] (2,1.5) -- (1.5,3);
+
+        % Eye
+        \node[eye] (eye) at (4,2) {\faIcon{eye}};
+
+        \node[below] at (1.5,-1) {\small Different surface properties};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Normal Mapping}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Normal Map Mathematics}
+        \footnotesize
+        \textbf{Tangent Space:} Local coordinate system per vertex
+
+        \vspace{0.2cm}
+        \textbf{Tangent vectors:}
+        \begin{align*}
+          \mathbf{T} &= \frac{\partial \mathbf{P}}{\partial u} \\
+          \mathbf{B} &= \frac{\partial \mathbf{P}}{\partial v} \\
+          \mathbf{N} &= \mathbf{T} \times \mathbf{B}
+        \end{align*}
+
+        \vspace{0.2cm}
+        \textbf{TBN Matrix:}
+        \begin{align*}
+          \mathbf{M} = [\mathbf{T}, \mathbf{B}, \mathbf{N}]
+        \end{align*}
+
+        \vspace{0.2cm}
+        \textbf{Normal perturbation:}
+        \begin{align*}
+          \mathbf{N}_{\text{map}} &= 2 \cdot T_{\text{normal}}(u,v) - 1 \\
+          \mathbf{N}' &= \mathbf{M} \cdot \mathbf{N}_{\text{map}}
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % Surface
+        \draw[ObjectColor, thick] (0,0) -- (4,0);
+        \fill[ObjectColor] (2,0) circle (2pt);
+
+        % Original normal
+        \draw[->, thick, black] (2,0) -- (2,2);
+        \node[right] at (2,2) {\small $\mathbf{N}$};
+
+        % Tangent vectors
+        \draw[->, thick, red] (2,0) -- (3.5,0);
+        \node[below] at (3.5,0) {\small $\mathbf{T}$};
+
+        \draw[->, thick, blue] (2,0) -- (2.5,0.5);
+        \node[above] at (2.5,0.5) {\small $\mathbf{B}$};
+
+        % Perturbed normal
+        \draw[->, thick, AccentColor] (2,0) -- (2.5,1.8);
+        \node[right] at (2.5,1.8) {\small $\mathbf{N}'$};
+
+        % Surface bumps
+        \draw[gray, dashed] (1,0) sin (1.5,0.2) cos (2,0) sin (2.5,0.1) cos (3,0);
+
+        \node[below] at (2,-0.5) {\small Bumpy surface appearance};
+      \end{tikzpicture}
+
+      \vspace{0.3cm}
+      \begin{raybox}{Normal Map Colors}
+        \footnotesize
+        \textbf{Blue dominant:} Flat surface (pointing up)
+
+        \textbf{Red/Green:} Surface tilted in X/Y directions
+
+        \textbf{RGB → XYZ:}
+
+        $(r,g,b) \rightarrow (2r-1, 2g-1, 2b-1)$
+      \end{raybox}
+    \end{column}
+  \end{columns}
+\end{frame}

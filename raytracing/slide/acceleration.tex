@@ -1,0 +1,267 @@
+
+\section{Acceleration Structures}
+
+\begin{frame}{Performance Considerations}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{raybox}{Computational Complexity}
+        \small
+        \textbf{Basic ray tracing:}
+        \begin{itemize}
+          \item $O(n \times m)$ where:
+          \item $n$ = number of pixels
+          \item $m$ = number of objects
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{With secondary rays:}
+        \begin{itemize}
+          \item Exponential growth with depth
+          \item Multiple rays per intersection
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Performance graph
+        \begin{axis}[
+            width=6cm,
+            height=4cm,
+            xlabel={Scene Complexity},
+            ylabel={Render Time},
+            grid=major,
+            legend pos=north west
+          ]
+          \addplot[thick, PrimaryColor] coordinates {(1,1) (2,2) (3,3) (4,4) (5,5)};
+          \addplot[thick, AccentColor] coordinates {(1,1) (2,4) (3,9) (4,16) (5,25)};
+          \legend{Ray Casting, Ray Tracing}
+        \end{axis}
+      \end{tikzpicture}
+
+      \vspace{0.3cm}
+      \textbf{Optimization strategies:}
+      \begin{itemize}
+        \item Spatial data structures
+        \item Parallel processing
+        \item Early ray termination
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The Naive Approach Problem}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      % Ray
+      \draw[ray, very thick] (0,0) -- (8,2);
+      \node[below] at (0,0) {\raycolor{Ray}};
+
+      % Many objects scattered
+      \foreach \x/\y in {1/0.5, 2/1.8, 3/0.2, 4/1.5, 5/0.8, 6/1.2, 7/0.4} {
+        \node[sphere, scale=0.5] at (\x,\y) {};
+      }
+
+      % Intersection tests
+      \foreach \x/\y in {1/0.5, 2/1.8, 3/0.2, 4/1.5, 5/0.8, 6/1.2, 7/0.4} {
+        \draw[dashed, red, thin] (0,0) -- (\x,\y);
+      }
+
+      \node[below] at (4,-1) {\textcolor{AccentColor}{\textbf{Problem:} Test every object for every ray!}};
+      \node[below] at (4,-1.5) {Scene with 1M objects = 1M tests per ray};
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{conceptbox}{Computational Explosion}
+    \small
+    \textbf{Complexity:} For $N$ objects and $R$ rays → $O(N \times R)$ intersection tests\\
+    \textbf{Real scenes:} Millions of triangles, millions of rays → Billions of tests!
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Bounding Volume Hierarchy (BVH)}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{raybox}{The Big Idea}
+        \small
+        \textbf{Divide and Conquer:}
+        \begin{enumerate}
+          \item Group objects into bounding boxes
+          \item Build hierarchical tree structure
+          \item Test ray against boxes first
+          \item Only test objects in hit boxes
+        \end{enumerate}
+      \end{raybox}
+
+      \vspace{0.3cm}
+      \textbf{Key Benefits:}
+      \begin{itemize}
+        \item $O(\log N)$ instead of $O(N)$
+        \item Massive speedup for complex scenes
+        \item Works with any primitive type
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        \node[rectangle, draw, fill=PrimaryColor!20, minimum width=3cm, minimum height=1cm] (root) at (0,3.5) {Root BBox};
+
+        \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.3cm, minimum height=0.8cm] (left) at (-1.5,1.5) {Left AABB};
+        \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.3cm, minimum height=0.8cm] (right) at (1.5,1.5) {Right AABB};
+
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (ll) at (-2.2,0) {LL};
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (lr) at (-0.8,0) {LR};
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (rl) at (0.8,0) {RL};
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=0.8cm, minimum height=0.6cm] (rr) at (2.2,0) {RR};
+
+        \draw[arrow] (root) -- (left);
+        \draw[arrow] (root) -- (right);
+        \draw[arrow] (left) -- (ll);
+        \draw[arrow] (left) -- (lr);
+        \draw[arrow] (right) -- (rl);
+        \draw[arrow] (right) -- (rr);
+
+        \node[below] at (0,-1) {\small \raycolor{Ray tests hierarchy top-down}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{BVH Construction and Traversal}
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \begin{mathbox}{Construction Algorithm}
+        \small
+        \textbf{Recursive subdivision:}
+        \begin{enumerate}
+          \item Compute bounding box for all objects
+          \item Choose split axis (longest dimension)
+          \item Sort objects by centroid
+          \item Split into two groups
+          \item Recursively build subtrees
+        \end{enumerate}
+
+        \vspace{0.3cm}
+        \textbf{Split strategies:}
+        \begin{itemize}
+          \item \textbf{Surface Area Heuristic (SAH)}
+          \item Median split
+          \item Spatial splits
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Scene with objects and bounding boxes
+        \draw[thick, PrimaryColor] (-0.5,-0.5) rectangle (3.5,2.5);
+        \draw[thick, SecondaryColor] (-0.3,-0.3) rectangle (1.3,1.3);
+        \draw[thick, SecondaryColor] (1.7,0.7) rectangle (3.3,2.3);
+
+        % Objects
+        \node[sphere, scale=0.3] at (0,0) {};
+        \node[sphere, scale=0.3] at (1,1) {};
+        \node[triangle, scale=0.3] at (2,1) {};
+        \node[sphere, scale=0.3] at (3,2) {};
+
+        % Split line
+        \draw[dashed, AccentColor, thick] (1.5,-0.5) -- (1.5,2.5);
+        \node[right] at (1.6,0) {\textcolor{AccentColor}{Split}};
+
+        \node[below] at (1.5,-1) {\small Spatial subdivision};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{Hardware Ray Tracing Revolution}
+
+\begin{frame}{The Hardware Revolution}
+  \begin{center}
+    \scriptsize
+    \begin{tikzpicture}[scale=0.9]
+      % Timeline
+      \draw[thick, PrimaryColor] (0,0) -- (10,0);
+
+      % Milestones
+      \node[above] at (1,0.5) {\textbf{2018}};
+      \node[below] at (1,-0.5) {\textcolor{SecondaryColor}{NVIDIA RTX 20}};
+      \fill[SecondaryColor] (1,0) circle (3pt);
+
+      \node[above] at (3,0.5) {\textbf{2020}};
+      \node[below] at (3,-0.5) {\textcolor{AccentColor}{RTX 30 Series}};
+      \fill[AccentColor] (3,0) circle (3pt);
+
+      \node[above] at (5,0.5) {\textbf{2021}};
+      \node[below] at (5,-0.5) {\textcolor{ObjectColor}{Vulkan RT}};
+      \fill[ObjectColor] (5,0) circle (3pt);
+
+      \node[above] at (7,0.5) {\textbf{2022}};
+      \node[below] at (7,-0.5) {\textcolor{RayColor}{RDNA3, RTX 40}};
+      \fill[RayColor] (7,0) circle (3pt);
+
+      \node[above] at (9,0.5) {\textbf{2025}};
+      \node[below] at (9,-0.5) {\textcolor{red}{RTX 50}};
+      \fill[red] (9,0) circle (3pt);
+
+      \node[below] at (4,-2) {\large \textcolor{PrimaryColor}{\textbf{From Software to Silicon}}};
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{columns}
+    \small
+    \begin{column}{0.5\textwidth}
+      \textbf{Hardware Features:}
+      \begin{itemize}
+        \item Dedicated RT cores
+        \item Hardware BVH traversal
+        \item Triangle intersection units
+        \item Tensor cores for denoising
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Performance Impact:}
+      \begin{itemize}
+        \item 10-100x speedup
+        \item Real-time ray tracing in games
+        \item Interactive path tracing
+        \item AI-accelerated denoising
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{RTX Architecture}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      \draw[thick, PrimaryColor] (0,0) rectangle (8.5,5);
+      \node[above] at (4,5.3) {\textbf{RTX GPU Architecture}};
+
+      \foreach \x in {0.5,2.5,4.5,6.5} {
+        \draw[SecondaryColor, thick] (\x,3.5) rectangle (\x+1.5,4.8);
+        \node at (\x+0.75,4.15) {\textcolor{SecondaryColor}{\textbf{SM}}};
+      }
+
+      \foreach \x in {1,3,5,7} {
+        \draw[AccentColor, thick, fill=AccentColor!20] (\x,2.5) rectangle (\x+0.8,3.2);
+        \node at (\x+0.4,2.85) {\textcolor{AccentColor}{\textbf{RT}}};
+      }
+
+      \foreach \x in {0.5,2.5,4.5,6.5} {
+        \draw[RayColor, thick, fill=RayColor!20] (\x,1.5) rectangle (\x+1.5,2.2);
+        \node at (\x+0.75,1.85) {\textcolor{RayColor}{\textbf{Tensor}}};
+      }
+
+      \draw[ObjectColor, thick] (0.5,0.3) rectangle (8,1.2);
+      \node at (4,0.75) {\textcolor{ObjectColor}{\textbf{GDDR6 Memory}}};
+
+      \node[right] at (8.7,4.15) {\textcolor{SecondaryColor}{Shader Cores}};
+      \node[right] at (8.7,2.85) {\textcolor{AccentColor}{Ray Tracing}};
+      \node[right] at (8.7,1.85) {\textcolor{RayColor}{AI Denoising}};
+      \node[right] at (8.7,0.75) {\textcolor{ObjectColor}{High Bandwidth}};
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{raybox}{RT Core Functions}
+    \small
+    \textbf{Hardware accelerated:} BVH traversal, ray-triangle intersection, ray-box intersection\\
+    \textbf{Result:} Massive parallel ray processing with dedicated silicon
+  \end{raybox}
+\end{frame}
