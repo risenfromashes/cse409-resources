@@ -469,70 +469,343 @@
   \end{columns}
 \end{frame}
 
-\include{qa}
-\include{references}
-\end{document}
-\endinput
-
 \section{More Fractals}
 
-% add section for dragon and hilbert curve and explain that they are space filling curves
+\begin{frame}{The Dragon Curve}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \small
+      \only<1-11>{
+        Let's construct the Dragon Curve:
+        \begin{conceptbox}{Construction Process}
+          \footnotesize
+          \begin{enumerate}
+            \item Start with a line segment
+            \item<2-> Fold the line in half at a 90° angle
+            \item<3-> Repeat the folding process on the entire curve
+            \item<4-> After infinite iterations, we get the Dragon Curve
+          \end{enumerate}
+        \end{conceptbox}
+      }
 
-\begin{frame}{Drawing Fractals: L-Systems}
-  \begin{mathbox}{Lindenmayer Systems (L-Systems)}
-    \textbf{Components:}
-    \begin{itemize}
-      \item \textbf{Axiom}: Starting string
-      \item \textbf{Rules}: String replacement rules
-      \item \textbf{Interpretation}: How to draw the string
-    \end{itemize}
-  \end{mathbox}
+      \only<12-14>{
+        Now let's find the fractal dimension:
+        \begin{mathbox}{Dimension Calculation}
+          \footnotesize
+          The Dragon Curve can be divided into 2 copies of itself, each scaled by $\frac{1}{\sqrt{2}}$.
+          \begin{align*}
+            \only<13->{
+              N &= 2 \\
+              r &= \frac{1}{\sqrt{2}} \\
+            }
+            \only<14->{
+              D &= \frac{\log N}{\log(1/r)} = \frac{\log 2}{\log \sqrt{2}} \\
+              &= \frac{\log 2}{\frac{1}{2}\log 2} = 2
+            }
+          \end{align*}
+        \end{mathbox}
+        \only<14->{
+          \highlight{The Dragon Curve has a fractal dimension of exactly 2.}
+          Check the \href{https://en.wikipedia.org/wiki/Dragon_curve}{animation}.
+        }
+      }
+    \end{column}
+
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{figure}
+          \foreach \t/\i in {1/0,2/1,3/2,4/3,5/4,6/5,7/6,8/7,9/8,10/9,11/10} {
+            \only<\t>{
+              \includegraphics[width=\textwidth]{images/dragon/\i.png}
+              \caption*{Iteration \i}
+            }
+          }
+          \foreach \t/\i in {12/1,13/2,14/10} {
+            \only<\t>{
+              \includegraphics[width=\textwidth]{images/dragon/\i.png}
+              \caption*{Iteration \i}
+            }
+          }
+        \end{figure}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{The Hilbert Curve}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \small
+      \only<1-5>{
+        Let's construct the Hilbert Curve:
+        \begin{conceptbox}{Construction Process}
+          \footnotesize
+          \begin{enumerate}
+            \item Start with a U-shaped curve
+            \item<2-> Replace each \textit{corner} with a smaller copy of the entire curve
+            \item<3-> Connect the curves appropriately
+            \item<4-> After infinite iterations, we get the Hilbert Curve
+          \end{enumerate}
+        \end{conceptbox}
+      }
+
+      \only<6-8>{
+        Now let's find the fractal dimension:
+        \begin{mathbox}{Dimension Calculation}
+          \footnotesize
+          The Hilbert Curve can be divided into 4 copies of itself, each scaled by $\frac{1}{2}$.
+          \begin{align*}
+            \only<7->{
+              N &= 4 \\
+              r &= \frac{1}{2} \\
+            }
+            \only<8->{
+              D &= \frac{\log N}{\log(1/r)} = \frac{\log 4}{\log 2} \\
+              &= \frac{2\log 2}{\log 2} = 2
+            }
+          \end{align*}
+        \end{mathbox}
+        \only<8->{
+          \highlight{The Hilbert Curve has a fractal dimension of exactly 2.}
+        }
+      }
+    \end{column}
+
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{figure}
+          \foreach \t/\i in {1/1,2/2,3/3,4/4,5/5} {
+            \only<\t>{
+              \includegraphics[width=\textwidth]{images/hilbert/\i.png}
+              \caption*{Order \i}
+            }
+          }
+          \foreach \t/\i in {6/1,7/2,8/3} {
+            \only<\t>{
+              \includegraphics[width=\textwidth]{images/hilbert/\i.png}
+              \caption*{Order \i}
+            }
+          }
+        \end{figure}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Space-Filling Curves}
+  \small
+  \begin{conceptbox}{Space-Filling Curves}
+    A \highlight{space-filling curve} is a curve whose range contains the entire 2D area (or higher dimensional analogue).
+  \end{conceptbox}
 
   \vspace{0.3cm}
 
   \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \begin{raybox}{Dragon Curve L-System}
-        \textbf{Axiom}: FX \\
-        \textbf{Rules}:
-        \begin{align}
-          X &\to X+YF+ \\
-          Y &\to -FX-Y
-        \end{align}
-        \textbf{Interpretation}:
-        \begin{itemize}
-          \item F = draw forward
-          \item + = turn right 90°
-          \item - = turn left 90°
-        \end{itemize}
-      \end{raybox}
+    \begin{column}{0.6\textwidth}
+      \textbf{Key Properties:}
+      \begin{itemize}
+        \item They are \highlight{continuous} curves that pass through every point in an area
+        \item They have \highlight{fractal dimension 2} - they completely fill 2D space
+        \item Examples: Hilbert curve, Dragon curve
+        \item They provide a \highlight{mapping} from 1D to 2D space
+      \end{itemize}
     \end{column}
 
-    \begin{column}{0.5\textwidth}
-      \begin{raybox}{Koch Curve L-System}
-        \textbf{Axiom}: F \\
-        \textbf{Rules}:
-        $$F \to F+F--F+F$$
-        \textbf{Interpretation}:
-        \begin{itemize}
-          \item F = draw forward
-          \item + = turn right 60°
-          \item - = turn left 60°
-        \end{itemize}
-      \end{raybox}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{figure}
+          \includegraphics[width=\textwidth]{images/hilbert/6.png}
+          \caption*{Hilbert Curve filling a square}
+        \end{figure}
+      \end{center}
     \end{column}
   \end{columns}
+\end{frame}
+
+\section{L-Systems}
+
+\begin{frame}{Introduction to L-Systems}
+  L-Systems, or \highlight{Lindenmayer Systems} is a way to generate fractals using \highlight{string rewriting}.
+
+  Each character in the generated string represents a \highlight{drawing command}. To generate a higher depth fractal,
+  we apply a set of \highlight{rules} to the string repeatedly.
 
   \vspace{0.3cm}
-
-  \begin{center}
-    \begin{tikzpicture}[scale=0.8]
-      \node[conceptbox, text width=0.8\textwidth] {
-        \centering
-        \textbf{Generations}: F → F+F--F+F → F+F--F+F+F+F--F+F--F+F--F+F--F+F+F+F--F+F → ...
-      };
-    \end{tikzpicture}
-  \end{center}
+  \begin{mathbox}{Lindenmayer Systems (L-Systems)}
+    \textbf{Components:}
+    \begin{itemize}
+      \item \textbf{Axiom}: Starting string (initial state)
+      \item \textbf{Rules}: String replacement rules applied simultaneously
+      \item \textbf{Interpretation}: How to draw/interpret the string
+    \end{itemize}
+  \end{mathbox}
 \end{frame}
+
+\begin{frame}{L-Systems}
+  \begin{columns}
+    \small
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Basic Symbols}
+        \textbf{Movement Commands:}
+        \begin{itemize}
+          \item \textbf{X}: Move forward
+          \item \textbf{+}: Turn right by angle $\delta$
+          \item \textbf{--}: Turn left by angle $\delta$
+        \end{itemize}
+
+        \textbf{State Commands:}
+        \begin{itemize}
+          \item \textbf{[}: Push current state
+          \item \textbf{]}: Pop and restore state
+        \end{itemize}
+      \end{raybox}
+      Try out the \href{https://piratefsh.github.io/p5js-art/public/lsystems/}{\textcolor{AccentColor}{L-System Renderer}} to create your own L-Systems!
+    \end{column}
+
+    \begin{column}{0.5\textwidth}
+      \only<2-4>{
+        \begin{mathbox}{Example 1}
+          \textbf{Axiom}: $F$ \\
+          \textbf{Rule}: $F \rightarrow F + F - - F + F$ \\
+          \textbf{Angle}: $\delta=60^\circ$
+
+          \vspace{0.2cm}
+
+          \textbf{Generations}:
+          \only<2->{
+            \begin{itemize}
+                \only<2>{
+                \item $n=0: F$
+                }
+                \only<3>{
+                \item $n=1: F + F - - F + F$
+                }
+                \only<4->{
+                \item $n=2: F + F - - F + F + F + F - - F + F - - F + F - - F + F + F + F - - F + F$
+                }
+            \end{itemize}
+          }
+          \begin{center}
+            \begin{figure}
+              \foreach \t/\i in {2/0,3/1,4/2} {
+                \only<\t>{
+                  \includegraphics[width=0.8\textwidth]{images/koch/\i.png}
+                }
+              }
+            \end{figure}
+          \end{center}
+          \only<4>{
+            \textit{This produces the Koch curve!}
+          }
+        \end{mathbox}
+      }
+      \only<5-7>{
+        \begin{mathbox}{Example 2}
+          \textbf{Axiom}: $F - G - G$ \\
+          \textbf{Rules}: $F \rightarrow F - G + F + G - F$, $G \rightarrow GG$ \\
+          \textbf{Angle}: $\delta=120^\circ$
+
+          \vspace{0.2cm}
+
+          \textbf{Generations}:
+          \only<5->{
+            \begin{itemize}
+                \only<5>{
+                \item $n=0: F - G - G$
+                }
+                \only<6>{
+                \item $n=1: F - G + F + G - F - GG - GG$
+                }
+                \only<7->{
+                \item $n=2: F - G + F + G - F - GG + F - G + F + G - F + GG - F - G + F + G - F - GGGG - GGGG$
+                }
+            \end{itemize}
+          }
+          \begin{center}
+            \begin{figure}
+              \foreach \t/\i in {5/0,6/1,7/2} {
+                \only<\t>{
+                  \includegraphics[width=0.8\textwidth]{images/sierpinski/\i.png}
+                }
+              }
+            \end{figure}
+          \end{center}
+          \only<7>{
+            \textit{This produces the Sierpinski Triangle!}
+          }
+        \end{mathbox}
+      }
+      \only<8-11>{
+        \begin{mathbox}{Example 3}
+          \textbf{Axiom}: $F$ \\
+          \textbf{Rules}: $F \rightarrow T[-F][+F]$, \\
+          $T \rightarrow TT$ \\
+          \textbf{Angle}: $\delta=30^\circ$
+
+          \vspace{0.2cm}
+
+          \textbf{Generations}:
+          \only<8->{
+            \begin{itemize}
+                \only<8>{
+                \item $n=0: F$
+                }
+                \only<9>{
+                \item $n=1: T[-F][+F]$
+                }
+                \only<10>{
+                  \scriptsize
+                \item $n=2: TT[-T[-F][+F]][+T[-F][+F]]$
+                }
+                \only<11->{
+                  \scriptsize
+                \item $n=3:  TTTT[\hdots]$
+                }
+            \end{itemize}
+          }
+          \begin{center}
+            \begin{figure}
+              \foreach \t/\i in {8/1,9/2,10/3,11/4} {
+                \only<\t>{
+                  \includegraphics[height=2.5cm]{images/tree/\i.png}
+                }
+              }
+            \end{figure}
+          \end{center}
+          \only<11>{
+            \textit{This produces a binary tree!}
+          }
+        \end{mathbox}
+      }
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Fractals in Nature}
+\begin{frame}{Fractals and Nature}
+  Fractals occur naturally in many forms, from the branching of trees to the structure of snowflakes.
+  Therefore, fractals are used to model natural phenomena, like the branching of trees or the formation of clouds.
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{figure}
+          \includegraphics[width=\textwidth]{images/fractals.png}
+          \caption*{Fractals in Nature}
+        \end{figure}
+      \end{center}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{figure}
+          \includegraphics[width=\textwidth]{images/Dragon_trees.jpg}
+          \caption*{Trees generated by L-Systems}
+        \end{figure}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\include{qa}
+\include{references}
 
 \end{document}

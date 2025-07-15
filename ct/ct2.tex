@@ -1,0 +1,285 @@
+\documentclass[11pt,answers]{exam}
+\usepackage[legalpaper,bindingoffset=0in,left=.6in,right=0.8in,top=0.4in,bottom=0.7in,headsep=.5\baselineskip]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usetikzlibrary{shapes.callouts, patterns, positioning, arrows.meta, shapes.geometric, shadows, calc, patterns, 3d, backgrounds, shadings}
+\usepackage{adjustbox}
+\usepackage{ragged2e}
+\usepackage{pgfplots}
+
+%\pagenumbering{gobble}
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}
+\item[]}
+\let\endchangemargin=\endlist
+\usepackage{xcolor}
+\usepackage{listings}
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  aboveskip={1.0\baselineskip},
+  belowskip={1.0\baselineskip},
+  columns=fixed,
+  extendedchars=true,
+  breaklines=true,
+  tabsize=4,
+  prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}},
+  frame=lines,
+  showtabs=false,
+  showspaces=false,
+  showstringspaces=false,
+  keywordstyle=\color[rgb]{0.627,0.126,0.941},
+  commentstyle=\color[rgb]{0.133,0.545,0.133},
+  stringstyle=\color[rgb]{01,0,0},
+  numbers=left,
+  numberstyle=\small,
+  stepnumber=1,
+  numbersep=10pt,
+  captionpos=t,
+escapeinside={\%*}{*)}
+}
+%\renewcommand\thequestion{Q.\arabic{question}}
+%\renewcommand{\questionlabel}{\thequestion)}
+%\renewcommand{\questionshook}{%
+%\setlength{\leftmargin}{0pt}%
+%\setlength{\labelwidth}{-\labelsep}%
+%}
+
+%\pointsinrightmargin
+\pointsdroppedatright
+%\marksnotpoints
+%\marginpointname{ \points}
+%\pointformat{\boldmath\themarginpoints}
+
+\title{
+\begin{changemargin}{0.68cm}{0.68cm}
+  \normalsize Class Test 4\hfill {January 2025}\\
+\end{changemargin}
+\vspace{.4cm}
+\large BANGLADESH UNIVERSITY OF ENGINEERING AND TECHNOLOGY\\
+\vspace{.1cm}
+Department of Computer Science and Engineering\\
+\vspace{.2cm}
+L-4/T-1 \hspace{.1cm} CSE 409: Computer Graphics\\
+\vspace{.2cm}
+\textbf{Time: 25 minutes} \hspace{2.2cm} \textbf{Marks: 20}
+\begin{changemargin}{0.68cm}{0.68cm}
+  \normalsize Student Name: \underline{\hspace{6.5cm}} \hfill Student ID: \underline{\hspace{2.5cm}}\\
+\end{changemargin}
+}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\begin{questions}
+\vspace{-2cm}
+
+\question[1]{
+  What is the formula for the half-way vector in the Blinn-Phong model?
+  \hfill (1)
+
+  \begin{oneparchoices}
+    \choice $\frac{\vec{L} + \vec{V}}{2}$
+    \choice $\frac{\vec{L} + \vec{H}}{\sqrt{2}}$
+    \choice $2(\vec{L}\cdot\vec{N})\vec{N} - \vec{L}$
+    \choice $\frac{\vec{L} + \vec{V}}{|\vec{L} + \vec{V}|}$
+  \end{oneparchoices}
+}
+
+\question[1]{
+  Ambient light is an approximation of | \hfill (1)
+
+  \begin{oneparchoices}
+    \choice Global illumination
+    \choice Path tracing
+    \choice Shadows
+    \choice Reflection
+  \end{oneparchoices}
+}
+
+\question[1]{
+  For the softest edges, we should use spot light falloff exponent $e = ?$
+  \hfill (1)
+
+  \begin{oneparchoices}
+    \choice 0
+    \choice 2
+    \choice 10
+    \choice 20
+  \end{oneparchoices}
+}
+
+\question[1]{
+  Which type of camera preserves distances? \hfill (1)
+
+  \begin{oneparchoices}
+    \choice Pinhole
+    \choice Simple field
+    \choice Fisheye
+    \choice Orthographic
+  \end{oneparchoices}
+}
+
+\question[1]{
+  Which is not a feature of the simplified pinhole camera? \hfill (1)
+
+  \begin{oneparchoices}
+    \choice Non-inverted image
+    \choice Perspective distortion
+    \choice Depth of field effect
+    \choice Unrealizable
+  \end{oneparchoices}
+}
+
+\question[]
+{
+  \begin{multicols}{2}
+    Same triangle again! But now we want to texture it with an image.
+    The $(u, v)$ coordinates of the vertices $A$, $B$ and $C$ are $(0, 0)$, $(1, 0)$ and $(0.5, 1)$ respectively.
+
+    \begin{tikzpicture}
+      \draw[black,fill=gray] (0,0) rectangle (0.5,0.5);
+      \node[right] at (0.75, 0.25) {$(20,20,20)$};
+      \draw[black,fill=white] (0,-1) rectangle ++(0.5,0.5);
+      \node[right] at (0.75, -0.75) {$(200,200,200)$};
+    \end{tikzpicture}
+
+    \vfill
+    \columnbreak
+    \centering
+    \begin{tikzpicture}[scale=0.65]
+      \draw[step=0.5cm, gray, very thin] (0,0) grid (5,4);  \tikzstyle{pixel} = [fill=gray]
+
+      \foreach \x/\y in {
+        0.5/3, 1/3, 1.5/3,
+        2/2.5, 2/2,
+        1/1.5,1.5/1.5,0.5/1,
+        0.5/0.5, 1/0.5, 1.5/0.5, 2/0.5
+      } {
+        \fill[pixel] (\x,\y) rectangle ++(0.5,0.5);
+      }
+
+      \foreach \x/\y in {
+        3/3, 3.5/3, 4/3,
+        3/2.5, 4/2.5,
+        3/2, 4/2,
+        3/1.5, 4/1.5,
+        3/1, 4/1,
+        3/0.5, 3.5/0.5, 4/0.5
+      } {
+        \fill[pixel] (\x,\y) rectangle ++(0.5,0.5);
+      }
+      \draw[<->] (0, -0.5) -- (5, -0.5) node[midway, below] {$W=10$};
+      \draw[<->] (-0.5, 0) -- (-0.5, 4) node[midway, left] {$H=8$};
+
+      \begin{scope}[xshift=6.5cm]
+        \coordinate (A) at (0, 0);
+        \coordinate (B) at (0:5);
+        \coordinate (C) at (75:5);
+        \coordinate (P) at (45:3);
+        \draw (A) node[left] {$A$}  -- node[midway,below] {$5$} (B) node[right] {$B$} -- (C) node[above] {$C$} -- node[midway,left] {$5$} cycle;
+        \draw (A) -- (P) node[midway, above, shift={(0.45,-0.05)}] {$2$};
+        \draw (B) -- (P) node[above right] {$P$};
+        \draw (C) -- (P);
+        \draw (1,0) arc [start angle=0, end angle=45, radius=1cm]
+        node[midway, right] {$45^{\circ}$};
+        \draw (45:1.2) arc [start angle=45, end angle=75, radius=1.2cm]
+        node[midway, above right,xshift=-0.1cm] {$30^{\circ}$};
+      \end{scope}
+    \end{tikzpicture}
+
+  \end{multicols}
+
+a) What is the colour of $P$ using nearest neighbour interpolation?  \hfill (3)
+
+\vspace*{6cm}
+b) What is the colour of $P$ using bilinear interpolation?  \hfill (3)
+
+\vspace*{2cm}
+}
+\newpage
+\question[]
+{
+\begin{multicols}{2}
+
+As a game developer in Iron studio, you are working in a new level of a game.
+There is just a strange ball at $(10,5,0)$ of radius 5 and a point light at $(2,11,0)$.\\
+After much thought, you have decided the following parameters using the Phong model:
+\begin{itemize}
+  \item Point light intensity $\mathbf{I} = (20, 20, 20)$
+  \item Ambient light $\mathbf{I}_a = (0.1, 0.1, 0.1)$
+  \item Ambient Coefficient $\mathbf{k}_a = (0.1, 0.1, 0.1)$
+  \item Diffuse Coefficient $\mathbf{k}_d = (0.4, 0.4, 0.4)$
+  \item Specular Coefficient $\mathbf{k}_s = (0.5, 0.5, 0.5)$
+  \item Shininess $n = 10$
+\end{itemize}
+\vfill
+\columnbreak
+\begin{center}
+  \footnotesize
+  \begin{tikzpicture}
+    \draw[black] (-6,-0.8) -- (1,-0.8);
+    \fill[pattern=north east lines, pattern color=gray] (-6,-0.8) rectangle (1,-1);
+    \draw[black,fill=gray!30] (0,0) circle (0.8cm);
+    \draw[black,fill=black] (0,0) circle (1pt) node[below] {$(10,5,0)$};
+
+    % stick man
+    \draw[black] (-5,0.35) --++(0,-0.75);
+    \draw[black] (-5,0.35) --++(-0.25,-0.5);
+    \draw[black] (-5,0.35) --++(0.25,-0.5);
+    \draw[black] (-5,-0.4) --++(-0.25,-0.5);
+    \draw[black] (-5,-0.4) --++(0.25,-0.5);
+    \draw[black] (-5,0.5) circle (5pt);
+
+    \draw[gray!70,very thin,->] (-4.85,0.5) --++(1,0);
+    \node[above] at (-5,0.7) {$(0,8,0)$};
+
+    \begin{scope}[shift={(-3.5,2)}]
+      \foreach \t in {0, 30, ..., 360} {
+        \draw[very thin] (0,0) -- (\t:0.55);
+      }
+      \draw[black,fill=gray!30] (0,0) circle (10pt);
+      \node[above] at (0,0.5) {$(2,11,0)$};
+    \end{scope}
+
+  \end{tikzpicture}
+
+\end{center}
+\end{multicols}
+
+But your game designer says the
+scene doesn't look right. She says the ball should be bluish gray in shadow [rgb(0,10,20)].
+She also says the material should be less shiny. When the character at $(0,8,0)$ looks straight
+ahead (in the direction of x), he should see a gray colour [rgb(115,125,135)].
+
+(\textbf{Hint:} Normalize RGB colours to $(0, 1)$ range.)
+
+a) As per your game designer's requirement, what should be the value of the ambient coefficient $\mathbf{k}_a$? \hfill (3)
+
+\vspace{8cm}
+
+b) What should be the value of shininess $n$? \hfill (3)
+}
+\vspace{12cm}
+\question[]For your hard work and attending the exam so early in the morning.\hfill (3)
+
+\end{questions}
+\end{document}
