@@ -1,0 +1,52 @@
+% Image Placeholders for Rasterization Slides
+% 
+% This file contains comments listing all the images that would enhance
+% the rasterization slide presentation. These can be created or sourced
+% as needed for the final presentation.
+
+% OVERVIEW SECTION
+% - comparison_raytracing_rasterization.png: Side-by-side comparison showing 
+%   raytraced vs rasterized versions of the same scene
+% - realtime_constraints.png: Graph showing frame time budget breakdown
+% - approximation_examples.png: Visual examples of graphics approximations
+
+% PIPELINE SECTION  
+% - gpu_architecture.png: Modern GPU block diagram with compute units
+% - pipeline_overview.png: High-level 3D-to-pixels transformation diagram
+% - fixed_vs_programmable.png: Diagram showing which stages are programmable
+
+% STAGES SECTION
+% - vertex_processing.png: Visual showing vertex transformation stages
+% - primitive_assembly.png: Diagram of triangle assembly from vertices
+% - rasterization_process.png: Step-by-step triangle rasterization
+% - fragment_operations.png: Per-fragment operations flowchart
+
+% COORDINATES SECTION
+% - coordinate_spaces.png: Visualization of different coordinate spaces
+% - mvp_transformation.png: Model-View-Projection matrix pipeline
+% - ndc_cube.png: Normalized Device Coordinate cube illustration
+% - clipping_guards.png: Guard band clipping visualization
+
+% DEPTH SECTION
+% - zbuffer_algorithm.png: Z-buffer depth testing visualization
+% - early_z_optimization.png: Early-Z rejection diagram
+% - hierarchical_zbuffer.png: HiZ data structure illustration
+% - depth_precision.png: Z-fighting and precision issues
+
+% MODERN SECTION
+% - forward_vs_deferred.png: Comparison of rendering approaches
+% - screen_space_techniques.png: SSAO, SSR examples
+% - tessellation_pipeline.png: Hardware tessellation stages
+% - multipass_rendering.png: Multi-pass rendering strategy
+
+% PERFORMANCE SECTION
+% - gpu_occupancy.png: Warp/wavefront occupancy visualization
+% - memory_hierarchy.png: GPU memory hierarchy with bandwidth numbers
+% - bottleneck_analysis.png: Performance bottleneck identification
+% - optimization_flowchart.png: Optimization decision tree
+
+% These images can be:
+% 1. Created using TikZ (already done for many diagrams in the slides)
+% 2. Screenshots from graphics debugging tools
+% 3. Diagrams from graphics textbooks (with proper attribution)
+% 4. Custom illustrations created for this presentation

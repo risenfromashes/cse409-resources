@@ -1,0 +1,282 @@
+\section{The Modern Graphics Pipeline}
+
+\begin{frame}{The Big Picture: 3D to Pixels}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8, node distance=1.25cm]
+      % Input
+      \node[process, fill=ObjectColor!20] (input) {3D Models};
+
+      % GPU Pipeline stages
+      \node[process, below of=input, fill=PrimaryColor!20] (vertex) {Vertex Processing};
+      \node[process, below of=vertex, fill=SecondaryColor!20] (assembly) {Primitive Assembly};
+      \node[process, below of=assembly, fill=AccentColor!20] (raster) {Rasterization};
+      \node[process, below of=raster, fill=PrimaryColor!20] (fragment) {Fragment Processing};
+      \node[process, below of=fragment, fill=LightGray] (output) {Frame Buffer};
+
+      % Arrows
+      \draw[arrow] (input) -- (vertex);
+      \draw[arrow] (vertex) -- (assembly);
+      \draw[arrow] (assembly) -- (raster);
+      \draw[arrow] (raster) -- (fragment);
+      \draw[arrow] (fragment) -- (output);
+
+      % Side annotations
+      \begin{scope}[shift={(-3,-0.25)}]
+        \node[right, text width=3cm] at (6,0) {
+          \footnotesize \textcolor{ObjectColor}{\textbf{Application}} \\
+          \scriptsize Meshes, textures, shaders
+        };
+        \node[right, text width=3cm] at (6,-1.5) {
+          \footnotesize \textcolor{PrimaryColor}{\textbf{Programmable}} \\
+          \scriptsize Transform vertices
+        };
+        \node[right, text width=3cm] at (6,-3) {
+          \footnotesize \textcolor{SecondaryColor}{\textbf{Fixed Function}} \\
+          \scriptsize Group into triangles
+        };
+        \node[right, text width=3cm] at (6,-4.5) {
+          \footnotesize \textcolor{AccentColor}{\textbf{Fixed Function}} \\
+          \scriptsize Convert to pixels
+        };
+        \node[right, text width=3cm] at (6,-6) {
+          \footnotesize \textcolor{PrimaryColor}{\textbf{Programmable}} \\
+          \scriptsize Compute pixel colors
+        };
+        \node[right, text width=3cm] at (6,-7.5) {
+          \footnotesize \textcolor{DarkGray}{\textbf{Display}} \\
+          \scriptsize Final image
+        };
+      \end{scope}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Modern GPU Pipeline Architecture}
+  \begin{center}
+    \footnotesize
+    \begin{tikzpicture}[scale=0.65]
+      % Input Assembly
+      \node[rectangle, draw, fill=ObjectColor!20, minimum width=2cm, minimum height=1cm] (input) at (0,8) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Input} \\
+          \textbf{Assembly}
+        \end{minipage}
+      };
+
+      % Vertex Shader
+      \node[rectangle, draw, fill=PrimaryColor!30, minimum width=2cm, minimum height=1cm] (vs) at (0,6) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Vertex} \\
+          \textbf{Shader}
+        \end{minipage}
+      };
+
+      % Tessellation (optional)
+      \node[rectangle, draw, fill=SecondaryColor!20, minimum width=2cm, minimum height=1cm] (tess) at (4,6) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Tessellation} \\
+          \scriptsize (Optional)
+        \end{minipage}
+      };
+
+      % Geometry Shader (optional)
+      \node[rectangle, draw, fill=AccentColor!20, minimum width=2cm, minimum height=1cm] (gs) at (8,6) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Geometry} \\
+          \textbf{Shader} \\
+          \scriptsize (Optional)
+        \end{minipage}
+      };
+
+      % Clipping & Culling
+      \node[rectangle, draw, fill=LightGray, minimum width=2cm, minimum height=1cm] (clip) at (4,4) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Clipping \&} \\
+          \textbf{Culling}
+        \end{minipage}
+      };
+
+      % Rasterization
+      \node[rectangle, draw, fill=RayColor!20, minimum width=2cm, minimum height=1cm] (raster) at (4,2) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Rasterization}
+        \end{minipage}
+      };
+
+      % Fragment Shader
+      \node[rectangle, draw, fill=PrimaryColor!30, minimum width=2cm, minimum height=1cm] (fs) at (4,0) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Fragment} \\
+          \textbf{Shader}
+        \end{minipage}
+      };
+
+      % Per-Fragment Ops
+      \node[rectangle, draw, fill=LightGray, minimum width=2cm, minimum height=1cm] (ops) at (8,0) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Per-Fragment} \\
+          \textbf{Operations}
+        \end{minipage}
+      };
+
+      % Frame Buffer
+      \node[rectangle, draw, fill=DarkGray!20, minimum width=2cm, minimum height=1cm] (fb) at (4,-2) {
+        \begin{minipage}{1.8cm}
+          \centering
+          \textbf{Frame Buffer}
+        \end{minipage}
+      };
+
+      % Arrows - main path
+      \draw[->, thick, PrimaryColor] (input) -- (vs);
+      \draw[->, thick] (vs) -- (tess);
+      \draw[->, thick] (tess) -- (gs);
+      \draw[->, thick] (gs) -- (clip);
+      \draw[->, thick] (clip) -- (raster);
+      \draw[->, thick] (raster) -- (fs);
+      \draw[->, thick] (fs) -- (ops);
+      \draw[->, thick] (ops) -- (fb);
+
+      % Optional bypasses
+      \draw[->, dashed, gray] (vs) to[bend left=20] (clip);
+      \draw[->, dashed, gray] (tess) to[bend left=10] (clip);
+
+      % Annotations
+      \node[left, text width=2cm] at (-1,6) {\scriptsize \textcolor{PrimaryColor}{\textbf{Programmable}}};
+      \node[right, text width=2cm] at (9,6) {\scriptsize \textcolor{SecondaryColor}{\textbf{Programmable}}};
+      \node[right, text width=2cm] at (9,4) {\scriptsize \textcolor{DarkGray}{\textbf{Configurable}}};
+      \node[right, text width=2cm] at (6,2) {\scriptsize \textcolor{RayColor}{\textbf{Fixed Function}}};
+      \node[left, text width=2cm] at (3,0) {\scriptsize \textcolor{PrimaryColor}{\textbf{Programmable}}};
+      \node[right, text width=2cm] at (10,0) {\scriptsize \textcolor{DarkGray}{\textbf{Configurable}}};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Programmable vs Fixed Function Stages}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Programmable Stages}
+        \textbf{You write the code:}
+        \begin{itemize}
+          \item \textbf{Vertex Shader:} Transform positions, compute lighting
+          \item \textbf{Tessellation:} Subdivide surfaces adaptively
+          \item \textbf{Geometry Shader:} Generate/modify primitives
+          \item \textbf{Fragment Shader:} Compute final pixel colors
+        \end{itemize}
+
+        \vspace{0.2cm}
+        \textcolor{PrimaryColor}{\textbf{Maximum flexibility}}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Fixed Function Stages}
+        \textbf{Hardware handles it:}
+        \begin{itemize}
+          \item \textbf{Primitive Assembly:} Group vertices into triangles
+          \item \textbf{Clipping:} Remove off-screen geometry
+          \item \textbf{Rasterization:} Convert triangles to pixels
+          \item \textbf{Depth Testing:} Z-buffer comparisons
+        \end{itemize}
+
+        \vspace{0.2cm}
+        \textcolor{SecondaryColor}{\textbf{Maximum performance}}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+
+  \pause
+  \vspace{0.5cm}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.8]
+      \draw[->, very thick, PrimaryColor] (0,0) -- (4,0) node[midway, above] {Data Flow};
+      \node[below] at (0,-0.3) {\scriptsize Vertices};
+      \node[below] at (1,-0.3) {\scriptsize Primitives};
+      \node[below] at (2,-0.3) {\scriptsize Fragments};
+      \node[below] at (3,-0.3) {\scriptsize Pixels};
+      \node[below] at (4,-0.3) {\scriptsize Frame};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Data Flow Through the Pipeline}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.7]
+      % Data representations at each stage
+      \node[above] at (0,3) {\textbf{Input Data}};
+      \node[below] at (0,2.5) {
+        \begin{tikzpicture}[scale=0.3]
+          % 3D vertices
+          \draw[thick, ObjectColor] (0,0,0) -- (2,0,0) -- (1,2,0) -- cycle;
+          \fill[ObjectColor] (0,0,0) circle (0.1);
+          \fill[ObjectColor] (2,0,0) circle (0.1);
+          \fill[ObjectColor] (1,2,0) circle (0.1);
+        \end{tikzpicture}
+      };
+      \node[below] at (0,1.5) {\scriptsize 3D Vertices};
+
+      \draw[->, thick] (1,2.5) -- (2,2.5);
+
+      \node[above] at (3,3) {\textbf{After Vertex}};
+      \node[below] at (3,2.5) {
+        \begin{tikzpicture}[scale=0.3]
+          % Transformed vertices
+          \draw[thick, PrimaryColor] (0,0) -- (2,0) -- (1,1.5) -- cycle;
+          \fill[PrimaryColor] (0,0) circle (0.1);
+          \fill[PrimaryColor] (2,0) circle (0.1);
+          \fill[PrimaryColor] (1,1.5) circle (0.1);
+        \end{tikzpicture}
+      };
+      \node[below] at (3,1.5) {\scriptsize Screen Space};
+
+      \draw[->, thick] (4,2.5) -- (5,2.5);
+
+      \node[above] at (6,3) {\textbf{After Raster}};
+      \node[below] at (6,2.5) {
+        \begin{tikzpicture}[scale=0.3]
+          % Rasterized pixels
+          \foreach \x in {0,0.3,0.6,0.9,1.2} {
+            \foreach \y in {0,0.3,0.6} {
+              \fill[AccentColor] (\x,\y) rectangle ++(0.2,0.2);
+            }
+          }
+        \end{tikzpicture}
+      };
+      \node[below] at (6,1.5) {\scriptsize Fragments};
+
+      \draw[->, thick] (7,2.5) -- (8,2.5);
+
+      \node[above] at (9,3) {\textbf{Final Image}};
+      \node[below] at (9,2.5) {
+        \begin{tikzpicture}[scale=0.3]
+          % Final colored pixels
+          \foreach \x in {0,0.3,0.6,0.9,1.2} {
+            \foreach \y in {0,0.3,0.6} {
+              \pgfmathsetmacro{\shade}{20 + 40*rnd}
+              \fill[PrimaryColor!\shade] (\x,\y) rectangle ++(0.2,0.2);
+            }
+          }
+        \end{tikzpicture}
+      };
+      \node[below] at (9,1.5) {\scriptsize Colored Pixels};
+
+      % Stage labels
+      \node[below] at (1.5,1) {\textcolor{PrimaryColor}{\textbf{Vertex}}};
+      \node[below] at (4.5,1) {\textcolor{SecondaryColor}{\textbf{Clipping}}};
+      \node[below] at (7.5,1) {\textcolor{AccentColor}{\textbf{Rasterization}}};
+      \node[below] at (8.5,0.5) {\textcolor{PrimaryColor}{\textbf{Fragment}}};
+    \end{tikzpicture}
+  \end{center}
+
+  \pause
+  \begin{conceptbox}{Key Insight}
+    Each stage transforms data from one representation to another, optimized for the next stage's processing.
+  \end{conceptbox}
+\end{frame}

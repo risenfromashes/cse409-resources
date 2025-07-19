@@ -1,0 +1,275 @@
+\section{Modern Rendering Techniques}
+
+\begin{frame}{Forward vs Deferred Rendering}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{raybox}{Forward Rendering}
+                \textbf{Traditional approach:}
+                \begin{itemize}
+                    \item Render objects front-to-back
+                    \item Compute lighting per fragment
+                    \item Multiple passes for multiple lights
+                    \item Good for few lights
+                \end{itemize>
+                
+                \vspace{0.3cm}
+                \textbf{Complexity:} $O(\text{fragments} \times \text{lights})$
+            \end{raybox}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{conceptbox}{Deferred Rendering}
+                \textbf{Modern approach:}
+                \begin{itemize}
+                    \item Render geometry to G-buffer
+                    \item Store material properties
+                    \item Lighting pass operates on screen
+                    \item Excellent for many lights
+                \end{itemize>
+                
+                \vspace{0.3cm}
+                \textbf{Complexity:} $O(\text{pixels} \times \text{lights})$
+            \end{conceptbox>
+        \end{column>
+    \end{columns>
+    
+    \pause
+    \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+            % Forward rendering
+            \node[above] at (-3,2) {\textbf{Forward}};
+            \node[process, fill=ObjectColor!20] (geom1) at (-3,1) {Geometry};
+            \node[process, fill=PrimaryColor!20] (light1) at (-3,0) {+ Lighting};
+            \node[process, fill=LightGray] (fb1) at (-3,-1) {Frame Buffer};
+            
+            \draw[arrow] (geom1) -- (light1);
+            \draw[arrow] (light1) -- (fb1);
+            
+            % Multiple light passes
+            \draw[->, dashed] (-1.5,0) -- (-1.5,-0.5) -- (-4.5,-0.5) -- (-4.5,0.5);
+            \node[right] at (-1.3,0) {\scriptsize For each light};
+            
+            % Deferred rendering
+            \node[above] at (3,2) {\textbf{Deferred}};
+            \node[process, fill=ObjectColor!20] (geom2) at (3,1) {Geometry};
+            \node[process, fill=AccentColor!20] (gbuf) at (3,0) {G-Buffer};
+            \node[process, fill=PrimaryColor!20] (light2) at (3,-1) {Lighting Pass};
+            \node[process, fill=LightGray] (fb2) at (3,-2) {Frame Buffer};
+            
+            \draw[arrow] (geom2) -- (gbuf);
+            \draw[arrow] (gbuf) -- (light2);
+            \draw[arrow] (light2) -- (fb2);
+            
+            % G-buffer breakdown
+            \node[right, text width=2cm] at (4.5,0) {
+                \scriptsize Albedo, Normal, Depth, Material params
+            };
+        \end{tikzpicture>
+    \end{center>
+\end{frame>
+
+\begin{frame}>{Screen-Space Techniques}
+    \begin{columns>
+        \begin{column}>{0.6\textwidth>
+            \begin{raybox}>{Screen-Space Philosophy}
+                \textbf{Operate on the final image:}
+                \begin{itemize>
+                    \item Use depth buffer as 3D information
+                    \item Process in screen space (2D)
+                    \item Approximate 3D effects cheaply
+                    \item GPU-friendly parallel processing
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Examples:}
+                \begin{itemize>
+                    \item \textbf{SSAO:} Ambient occlusion
+                    \item \textbf{SSR:} Screen-space reflections
+                    \item \textbf{SSGI:} Global illumination
+                    \item \textbf{Temporal effects:} Motion blur, TAA
+                \end{itemize>
+            \end{raybox>
+        \end{column>
+        \begin{column}>{0.4\textwidth>
+            \begin{tikzpicture}[scale=0.7]
+                % Screen-space processing
+                \node[above] at (0,3) {\textbf{Screen-Space}};
+                
+                % Input buffers
+                \draw[thick, ObjectColor] (-1,2) rectangle (1,2.5);
+                \node[right] at (1.1,2.25) {\scriptsize Color};
+                
+                \draw[thick, PrimaryColor] (-1,1.5) rectangle (1,2);
+                \node[right] at (1.1,1.75) {\scriptsize Depth};
+                
+                \draw[thick, AccentColor] (-1,1) rectangle (1,1.5);
+                \node[right] at (1.1,1.25) {\scriptsize Normals};
+                
+                % Processing
+                \node[process, fill=RayColor!20] (process) at (0,0) {
+                    \begin{minipage}{1.5cm}
+                        \centering
+                        \textbf{Screen} \\
+                        \textbf{Effect}
+                    \end{minipage>
+                };
+                
+                \draw[->, thick] (0,1) -- (process);
+                
+                % Output
+                \draw[thick, LightColor!50] (-1,-1) rectangle (1,-0.5);
+                \node[right] at (1.1,-0.75) {\scriptsize Enhanced};
+                
+                \draw[->, thick] (process) -- (0,-0.5);
+                
+                % SSAO example
+                \begin{scope}[shift={(0,-2.5)}]
+                    \node[above] at (0,0.5) {\textbf{SSAO Example}};
+                    
+                    % Sample points
+                    \foreach \angle in {0,45,90,135,180,225,270,315} {
+                        \draw[->, thin] (0,0) -- (\angle:0.4);
+                    }
+                    \fill[red] (0,0) circle (0.05);
+                    \node[below] at (0,-0.7) {\scriptsize Sample around pixel};
+                \end{scope>
+            \end{tikzpicture>
+        \end{column>
+    \end{columns>
+\end{frame>
+
+\begin{frame}>{Multi-Pass Rendering Strategies}
+    \begin{center>
+        \begin{tikzpicture}[scale=0.7, node distance=1.5cm]
+            % Shadow mapping pass
+            \node[process, fill=DarkGray!20] (shadow) {Shadow Map Pass};
+            \node[below of=shadow, process, fill=ObjectColor!20] (geom) {Geometry Pass};
+            \node[below of=geom, process, fill=PrimaryColor!20] (lighting) {Lighting Pass};
+            \node[below of=lighting, process, fill=AccentColor!20] (post) {Post-Processing};
+            \node[below of=post, process, fill=LightGray] (final) {Final Image};
+            
+            % Arrows
+            \draw[arrow] (shadow) -- (geom);
+            \draw[arrow] (geom) -- (lighting);
+            \draw[arrow] (lighting) -- (post);
+            \draw[arrow] (post) -- (final);
+            
+            % Side information
+            \node[right, text width=3cm] at (3,2) {
+                \scriptsize \textbf{From light's POV} \\
+                Store depth information
+            };
+            
+            \node[right, text width=3cm] at (3,0.5) {
+                \scriptsize \textbf{Render scene} \\
+                Fill G-buffers
+            };
+            
+            \node[right, text width=3cm] at (3,-1) {
+                \scriptsize \textbf{Use shadow maps} \\
+                Compute illumination
+            };
+            
+            \node[right, text width=3cm] at (3,-2.5) {
+                \scriptsize \textbf{Screen effects} \\
+                Bloom, tone mapping
+            };
+            
+            % Render targets
+            \node[left, text width=2.5cm] at (-3,2) {
+                \scriptsize \textcolor{DarkGray}{\textbf{Shadow RT}} \\
+                Depth only
+            };
+            
+            \node[left, text width=2.5cm] at (-3,0.5) {
+                \scriptsize \textcolor{ObjectColor}{\textbf{G-Buffer}} \\
+                Multiple RTs
+            };
+            
+            \node[left, text width=2.5cm] at (-3,-1) {
+                \scriptsize \textcolor{PrimaryColor}{\textbf{HDR Buffer}} \\
+                High dynamic range
+            };
+            
+            \node[left, text width=2.5cm] at (-3,-2.5) {
+                \scriptsize \textcolor{AccentColor}{\textbf{LDR Buffer}} \\
+                Final processing
+            };
+        \end{tikzpicture>
+    \end{center>
+\end{frame>
+
+\begin{frame}>{Tessellation: Modern Geometry Processing}
+    \begin{columns>
+        \begin{column}>{0.5\textwidth>
+            \begin{conceptbox}>{Why Tessellation?}
+                \textbf{Adaptive detail:}
+                \begin{itemize>
+                    \item Generate geometry on GPU
+                    \item Level-of-detail based on distance
+                    \item Displacement mapping
+                    \item Smooth curved surfaces
+                \end{itemize>
+                
+                \vspace{0.3cm>
+                \textbf{Two-stage process:}
+                \begin{itemize>
+                    \item \textbf{Hull Shader:} Control tessellation
+                    \item \textbf{Domain Shader:} Generate vertices
+                \end{itemize>
+            \end{conceptbox>
+        \end{column>
+        \begin{column}>{0.5\textwidth>
+            \begin{tikzpicture}[scale=0.8]
+                % Input patch
+                \node[above] at (0,3) {\textbf{Tessellation Pipeline}};
+                
+                \draw[thick, ObjectColor] (-1,2) -- (1,2) -- (0,2.5) -- cycle;
+                \node[below] at (0,1.8) {\scriptsize Input Patch};
+                
+                \draw[->, thick] (0,1.7) -- (0,1.3);
+                \node[right] at (0.2,1.5) {\scriptsize Hull Shader};
+                
+                % Tessellated result
+                \begin{scope}[shift={(0,-0.5)}]
+                    % Subdivided triangle
+                    \draw[thick, PrimaryColor] (-1,1) -- (1,1) -- (0,1.5) -- cycle;
+                    \draw[thin, PrimaryColor] (-0.5,1) -- (0,1.25);
+                    \draw[thin, PrimaryColor] (0.5,1) -- (0,1.25);
+                    \draw[thin, PrimaryColor] (-0.5,1) -- (0.5,1);
+                    
+                    \node[below] at (0,0.8) {\scriptsize Tessellated};
+                \end{scope>
+                
+                \draw[->, thick] (0,0.7) -- (0,0.3);
+                \node[right] at (0.2,0.5) {\scriptsize Domain Shader};
+                
+                % Final displaced geometry
+                \begin{scope}[shift={(0,-1.5)}]
+                    \draw[thick, AccentColor] (-1,0) .. controls (-0.5,0.3) and (0.5,0.3) .. (1,0) 
+                                             .. controls (0.3,0.8) .. (0,0.7) 
+                                             .. controls (-0.3,0.8) .. cycle;
+                    \node[below] at (0,-0.3) {\scriptsize Displaced Surface};
+                \end{scope>
+                
+                % LOD illustration
+                \begin{scope}[shift={(2.5,0)}]
+                    \node[above] at (0,1.5) {\textbf{Adaptive LOD}};
+                    
+                    % High detail (close)
+                    \foreach \x in {0,0.2,0.4} {
+                        \foreach \y in {0,0.2} {
+                            \draw[AccentColor] (\x,\y) rectangle ++(0.15,0.15);
+                        }
+                    }
+                    \node[below] at (0.3,-0.3) {\scriptsize High (close)};
+                    
+                    % Low detail (far)
+                    \begin{scope}[shift={(0,-1)}]
+                        \draw[AccentColor] (0,0) rectangle ++(0.6,0.4);
+                        \node[below] at (0.3,-0.3) {\scriptsize Low (far)};
+                    \end{scope>
+                \end{scope>
+            \end{tikzpicture>
+        \end{column>
+    \end{columns>
+\end{frame>
