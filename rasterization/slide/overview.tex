@@ -1,18 +1,19 @@
-\section{Philosophy}
+\section{Introduction}
+\subsection{Philosophy}
 
 \begin{frame}{Why Rasterization?}
   \pause
   \begin{minipage}{0.45\textwidth}
     \centering
     \includegraphics[width=\linewidth]{images/valorant_gameplay.png}
-    \captionof*{figure}{Valorant - 120 FPS Gaming}
+    \captionof*{figure}{\textbf{Valorant} - 120 FPS Gaming}
   \end{minipage}%
   \hfill
   \pause
   \begin{minipage}{0.45\textwidth}
     \centering
     \includegraphics[width=\linewidth]{images/pixar_movie.jpg}
-    \captionof*{figure}{Pixar Movie - 30 hours per frame}
+    \captionof*{figure}{\textbf{Up} - 30 hours per frame}
   \end{minipage}
 
   \begin{itemize}
@@ -23,7 +24,7 @@
   \end{itemize}
 \end{frame}
 
-\section{The Speed vs Accuracy Trade-off}
+\subsection{The Speed vs Accuracy Trade-off}
 
 \begin{frame}{Rasterization vs Ray Tracing: The Fundamental Choice}
   \begin{center}
@@ -60,7 +61,7 @@
           \textcolor{AccentColor}{\textbf{Ray Tracing:}}
           \begin{itemize}
               \scriptsize
-            \item 0.1-30 FPS
+            \item $\approx$ 0 FPS
             \item Physical simulation
             \item Computationally heavy
             \item Photorealistic
@@ -71,12 +72,14 @@
   \end{center}
 \end{frame}
 
+\subsection{Realtime Challenge}
 \begin{frame}{The Real-Time Graphics Challenge}
   \begin{columns}
     \begin{column}{0.6\textwidth}
       \begin{conceptbox}{Time Budget at 60 FPS}
+        \small
         \begin{center}
-          \large $\frac{1}{60} = 16.67$ milliseconds per frame
+          \normalsize $\frac{1}{60} = 16.67$ milliseconds per frame
         \end{center}
 
         \vspace{0.3cm}
@@ -129,47 +132,50 @@
       };
 
       % Surrounding strategies
-      \node[rectangle, draw, fill=SecondaryColor!20, text width=2cm, text centered] (parallel) at (3,2) {
+      \node<2->[rectangle, draw, fill=SecondaryColor!20, text width=2cm, text centered] (parallel) at (3,2) {
         Massive \\
         Parallelism
       };
 
-      \node[rectangle, draw, fill=AccentColor!20, text width=2cm, text centered] (hardware) at (3,-2) {
+      \node<3->[rectangle, draw, fill=AccentColor!20, text width=2cm, text centered] (hardware) at (3,-2) {
         Dedicated \\
         Hardware
       };
 
-      \node[rectangle, draw, fill=ObjectColor!20, text width=2cm, text centered] (approx) at (-3,2) {
+      \node<4->[rectangle, draw, fill=ObjectColor!20, text width=2cm, text centered] (approx) at (-3,2) {
         Local \\
         Lighting
       };
 
-      \node[rectangle, draw, fill=LightColor!20, text width=2cm, text centered] (cached) at (-3,-2) {
+      \node<5->[rectangle, draw, fill=LightColor!20, text width=2cm, text centered] (cached) at (-3,-2) {
         Precomputed \\
         Data
       };
 
       % Connections
-      \draw[->, thick] (center) -- (parallel);
-      \draw[->, thick] (center) -- (hardware);
-      \draw[->, thick] (center) -- (approx);
-      \draw[->, thick] (center) -- (cached);
+      \draw<2->[->, thick] (center) -- (parallel);
+      \draw<3->[->, thick] (center) -- (hardware);
+      \draw<4->[->, thick] (center) -- (approx);
+      \draw<5->[->, thick] (center) -- (cached);
 
       % Examples
-      \node[below, text width=2.5cm, text centered] at (parallel.south) {
-        \scriptsize Process thousands of triangles simultaneously
+      \node<2->[below, text width=2.5cm, text centered] at (parallel.south) {
+        \\
+        \scriptsize Process thousands of triangles/fragments simultaneously
       };
 
-      \node[above, text width=2.5cm, text centered] at (hardware.north) {
-        \scriptsize Fixed-function rasterizers, Z-buffers
+      \node<3->[above, text width=2.5cm, text centered] at (hardware.north) {
+        \scriptsize Rasterizers, \\
+        Z-buffers
       };
 
-      \node[below, text width=2.5cm, text centered] at (approx.south) {
-        \scriptsize Ignore global illumination, use simple models
+      \node<4->[below, text width=2.5cm, text centered] at (approx.south) {
+        \scriptsize No global illumination, simple model
       };
 
-      \node[above, text width=2.5cm, text centered] at (cached.north) {
-        \scriptsize Shadow maps, light maps, textures
+      \node<5->[above, text width=2.5cm, text centered] at (cached.north) {
+        \scriptsize Shadow maps,
+        light maps,  textures
       };
     \end{tikzpicture}
   \end{center}

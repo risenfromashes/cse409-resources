@@ -108,6 +108,44 @@
   rounded corners
 }
 
+\newenvironment{timeline}{%
+  \begin{tikzpicture}[scale=0.8]
+    \coordinate (start) at (0,0);
+    \newcounter{timelineitem}
+    \setcounter{timelineitem}{0}
+  }{%
+  \end{tikzpicture}
+}
+
+\newcommand{\timelineitem}[4]{%
+  \stepcounter{timelineitem}%
+  % Name of this item’s node
+  \edef\thisID{time\thetimelineitem}%
+  \ifnum\value{timelineitem}=1
+  % First item: anchor at (start)
+  \node[rectangle, draw, fill=PrimaryColor!20,
+  text width=1.5cm, minimum height=0.8cm, align=center]
+  (\thisID) at (start) {\textbf{#2}};
+  \else
+  % Later items: below=#1 of previous time node
+  \pgfmathtruncatemacro\prev{\value{timelineitem}-1}%
+  \node[rectangle, draw, fill=PrimaryColor!20,
+    text width=1.5cm, minimum height=0.8cm, align=center,
+  below=#1 of time\prev]
+  (\thisID) {\textbf{#2}};
+  \fi
+  % Description always to the right of this time node
+  \node[rectangle, draw, fill=SecondaryColor!10,
+    text width=4cm, minimum height=0.8cm,
+  align=left, right=0.3cm of \thisID]
+  (desc\thetimelineitem) {\textbf{#3}\\#4};
+  % Draw arrow back to previous if not the first
+  \ifnum\value{timelineitem}>1
+  \draw[->, thick, PrimaryColor]
+  (time\prev.south) -- (\thisID.north);
+  \fi
+}
+
 \tikzset{
   camera/.style={fill=PrimaryColor!60, draw=PrimaryColor!80, rectangle, minimum size=8pt},
   image plane/.style={fill=AccentColor!10, draw=AccentColor!50, opacity=0.8},

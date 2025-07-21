@@ -121,3 +121,5 @@ yarn-error.log*
 
 # Log files
 *.log
+
+**/_minted/
