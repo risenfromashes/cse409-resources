@@ -226,7 +226,7 @@
           % draw base grid
           \foreach \x in {0,0.25,...,2.75} {
             \foreach \y in {0,0.25,...,1.75} {
-              \fill[gray!20] (\x,\y) rectangle ++(0.2,0.2);
+              \fill[gray!20] ($(\x,\y)+(0.025, 0.025)$) rectangle ++(0.2,0.2);
             }
           }
           % shade cells inside triangle
@@ -234,13 +234,13 @@
             \clip (-0.5,1) -- (2.2,0.2) -- (1,2.5) -- cycle;
             \foreach \x in {0,0.25,...,2.75} {
               \foreach \y in {0,0.25,...,1.75} {
-                \fill[AccentColor!40] (\x,\y) rectangle ++(0.2,0.2);
+                \fill[AccentColor!40] ($(\x,\y)+(0.025, 0.025)$) rectangle ++(0.2,0.2);
               }
             }
           \end{scope}
         \end{tikzpicture}%
       };
-      \node at (12,0) {\scriptsize In/Out Fragments};
+      \node[align=center] at (12,0) {\scriptsize Inside/Outside\\ Fragments};
 
       \pause
       \draw[->, thick] (13.5,1.5) -- (14.5,1.5);
@@ -254,7 +254,7 @@
           % base grid for outside
           \foreach \x in {0,0.25,...,2.75} {
             \foreach \y in {0,0.25,...,1.75} {
-              \fill[AccentColor!20] (\x,\y) rectangle ++(0.2,0.2);
+              \fill[AccentColor!20] ($(\x,\y)+(0.025, 0.025)$) rectangle ++(0.2,0.2);
             }
           }
           % fill inside triangle fragments
@@ -262,7 +262,7 @@
             \clip (-0.5,1) -- (2.2,0.2) -- (1,2.5) -- cycle;
             \foreach \x in {0,0.25,...,2.75} {
               \foreach \y in {0,0.25,...,1.75} {
-                \fill[PrimaryColor!60] (\x,\y) rectangle ++(0.2,0.2);
+                \fill[PrimaryColor!60] ($(\x,\y)+(0.025, 0.025)$) rectangle ++(0.2,0.2);
               }
             }
           \end{scope}
