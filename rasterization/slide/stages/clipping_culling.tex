@@ -1,0 +1,439 @@
+\section{Clipping \& Culling}
+
+\subsection{Overview}
+\begin{frame}{Clipping \& Culling Stage}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{raybox}{Clipping \& Culling}
+        \textbf{Input:} Assembled primitives in clip space \\
+        \textbf{Output:} Visible primitives ready for rasterization
+        
+        \vspace{0.3cm}
+        \textbf{Purpose:}
+        \begin{itemize}
+          \item Remove geometry outside the view frustum
+          \item Eliminate back-facing triangles
+          \item Reduce work for subsequent stages
+          \item Prevent rendering artifacts
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textcolor{DarkGray}{\textbf{Configurable fixed-function stage}}
+      \end{raybox}
+    \end{column>
+    \begin{column}{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % View frustum
+        \draw[thick, LightGray] (0,0) -- (2,1) -- (2,-1) -- cycle;
+        \draw[thick, LightGray] (0,0) -- (2,1);
+        \draw[thick, LightGray] (0,0) -- (2,-1);
+        \draw[thick, LightGray] (2,1) -- (2,-1);
+        
+        % Triangles - inside, outside, clipped
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (0.8,0.3) -- (1.2,0.5) -- (1,0) -- cycle;
+        \node[below] at (1,-0.2) {\scriptsize Inside};
+        
+        \draw[thick, DarkGray, dashed] (2.5,0.5) -- (3,0.8) -- (2.8,0.2) -- cycle;
+        \node[below] at (2.8,0) {\scriptsize Outside};
+        
+        \draw[thick, AccentColor] (1.5,0.8) -- (2.5,1.2) -- (1.8,0.4) -- cycle;
+        \draw[thick, AccentColor, dashed] (2,1) -- (2.5,1.2) -- (1.8,0.4);
+        \node[below] at (1.8,0.2) {\scriptsize Clipped};
+        
+        \node[below] at (1,-1.3) {\scriptsize View Frustum};
+      \end{tikzpicture}
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{View Frustum Clipping}
+\begin{frame}{View Frustum \& Clipping Planes}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{View Frustum Planes}
+        \textbf{Six clipping planes:}
+        \begin{itemize}
+          \item \textbf{Near plane:} $z = z_{\text{near}}$
+          \item \textbf{Far plane:} $z = z_{\text{far}}$
+          \item \textbf{Left plane:} $-w \leq x$
+          \item \textbf{Right plane:} $x \leq w$
+          \item \textbf{Bottom plane:} $-w \leq y$
+          \item \textbf{Top plane:} $y \leq w$
+        \end{itemize}
+        
+        \vspace{0.2cm}
+        Where $(x, y, z, w)$ are clip space coordinates after projection matrix.
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % 3D frustum representation
+        \coordinate (eye) at (0,0);
+        
+        % Near plane
+        \draw[thick, PrimaryColor] (1,-0.5) -- (1,0.5);
+        \node[below] at (1,-0.7) {\scriptsize Near};
+        
+        % Far plane  
+        \draw[thick, SecondaryColor] (3,-1.5) -- (3,1.5);
+        \node[below] at (3,-1.7) {\scriptsize Far};
+        
+        % Side planes
+        \draw[thick, ObjectColor] (eye) -- (1,0.5) -- (3,1.5);
+        \draw[thick, ObjectColor] (eye) -- (1,-0.5) -- (3,-1.5);
+        
+        % Top/bottom indicators
+        \node[above] at (2,1) {\scriptsize Top};
+        \node[below] at (2,-1) {\scriptsize Bottom};
+        \node[left] at (2,0.7) {\scriptsize Right};
+        \node[left] at (2,-0.7) {\scriptsize Left};
+        
+        % Camera
+        \fill[PrimaryColor] (eye) circle (2pt);
+        \node[left] at (eye) {\scriptsize Camera};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+  
+  \vspace{0.3cm}
+  
+  \begin{mathbox>{Clipping Test}
+    For a vertex in clip space $(x, y, z, w)$, it's inside the frustum if:
+    \begin{align}
+      -w \leq x \leq w \quad \text{and} \quad -w \leq y \leq w \quad \text{and} \quad 0 \leq z \leq w
+    \end{align>
+    
+    \textbf{Note:} Some APIs use $-w \leq z \leq w$ (OpenGL) vs $0 \leq z \leq w$ (DirectX)
+  \end{mathbox>
+\end{frame>
+
+\begin{frame>{Clipping Methods}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Homogeneous Clipping}
+        \textbf{Performed in clip space before perspective divide}
+        
+        \vspace{0.2cm}
+        \textbf{Advantages:}
+        \begin{itemize}
+          \item Linear clipping plane equations
+          \item Handles perspective projection correctly
+          \item Standard hardware implementation
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Process:}
+        \begin{enumerate}
+          \item Test vertices against clip planes
+          \item Classify triangles as inside/outside/intersecting
+          \item Split intersecting triangles
+        \end{enumerate>
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Screen Space Clipping}
+        \textbf{Performed after perspective divide}
+        
+        \vspace{0.2cm}
+        \textbf{Used for:}
+        \begin{itemize}
+          \item Viewport clipping
+          \item Scissor test
+          \item Guard band clipping
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Simpler math:}
+        \begin{itemize}
+          \item 2D clipping algorithms
+          \item Rectangular clip regions
+          \item Post-rasterization culling
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Triangle Clipping}
+\begin{frame>{Triangle Splitting}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{mathbox>{Clipping Cases}
+        \textbf{Three possible outcomes:}
+        
+        \vspace{0.2cm}
+        \textbf{1. Completely inside:} Keep triangle unchanged
+        
+        \textbf{2. Completely outside:} Discard triangle
+        
+        \textbf{3. Intersecting:} Split into smaller triangles
+        
+        \vspace{0.3cm}
+        \textbf{Intersection calculation:}
+        For edge from $\mathbf{P_1}$ to $\mathbf{P_2}$ intersecting plane:
+        \begin{align}
+          t &= \frac{d_1}{d_1 - d_2} \\
+          \mathbf{P_{new}} &= \mathbf{P_1} + t(\mathbf{P_2} - \mathbf{P_1})
+        \end{align>
+        Where $d_1, d_2$ are signed distances to the plane.
+      \end{mathbox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Clipping plane
+        \draw[thick, LightGray] (0,-0.5) -- (3.5,-0.5);
+        \node[below] at (1.75,-0.7) {\scriptsize Clipping Plane};
+        
+        % Original triangle (partially outside)
+        \coordinate (A) at (0.5,1);
+        \coordinate (B) at (2.5,1.5);
+        \coordinate (C) at (1.5,-1.5);
+        
+        \draw[thick, ObjectColor, dashed] (A) -- (B) -- (C) -- cycle;
+        \fill[ObjectColor] (A) circle (2pt);
+        \fill[ObjectColor] (B) circle (2pt);
+        \fill[ObjectColor] (C) circle (2pt);
+        
+        % Intersection points
+        \coordinate (I1) at (1,-0.5);
+        \coordinate (I2) at (2,-0.5);
+        
+        \fill[AccentColor] (I1) circle (2pt);
+        \fill[AccentColor] (I2) circle (2pt);
+        
+        % Clipped triangle (kept part)
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (A) -- (B) -- (I2) -- (I1) -- cycle;
+        
+        \node[left] at (A) {\scriptsize A};
+        \node[right] at (B) {\scriptsize B};
+        \node[below] at (C) {\scriptsize C};
+        \node[below] at (I1) {\scriptsize $I_1$};
+        \node[below] at (I2) {\scriptsize $I_2$};
+        
+        \node[above] at (1.75,0.5) {\scriptsize Kept region};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame}{Sutherland-Hodgman Clipping Algorithm}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{raybox>{Algorithm Overview}
+        \textbf{Clip polygon against each plane sequentially}
+        
+        \vspace{0.2cm}
+        \textbf{For each clipping plane:}
+        \begin{enumerate}
+          \item Process each edge of current polygon
+          \item Classify vertices as inside/outside
+          \item Generate new vertices at intersections
+          \item Build new polygon for next iteration
+        \end{enumerate}
+        
+        \vspace{0.2cm}
+        \textbf{Edge cases:}
+        \begin{itemize}
+          \item Inside → Inside: Keep second vertex
+          \item Inside → Outside: Add intersection point
+          \item Outside → Inside: Add intersection + second vertex
+          \item Outside → Outside: Skip edge
+        \end{itemize}
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Step 1: Original triangle
+        \node at (0,3.5) {\textbf{Step 1: Original}};
+        \draw[thick, ObjectColor] (0,3) -- (1.5,3.2) -- (0.8,2.2) -- cycle;
+        
+        % Step 2: Clip against left plane
+        \node at (0,2.5) {\textbf{Step 2: Left plane}};
+        \draw[thick, LightGray] (0.3,2.8) -- (0.3,1.8);
+        \draw[thick, SecondaryColor] (0.3,2.9) -- (1.5,3.1) -- (0.8,2.1) -- (0.3,2.3) -- cycle;
+        
+        % Step 3: Clip against right plane
+        \node at (0,1.5) {\textbf{Step 3: Right plane}};
+        \draw[thick, LightGray] (1.2,1.8) -- (1.2,0.8);
+        \draw[thick, AccentColor] (0.3,1.6) -- (1.2,1.7) -- (1.2,1.3) -- (0.8,0.8) -- (0.3,1.0) -- cycle;
+        
+        % Step 4: Final result
+        \node at (0,0.5) {\textbf{Step 4: Final}};
+        \draw[thick, PrimaryColor, fill=PrimaryColor!20] (0.3,0.3) -- (1.2,0.4) -- (1.2,0) -- (0.8,-0.5) -- (0.3,-0.3) -- cycle;
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Back-Face Culling}
+\begin{frame}{Back-Face Culling}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox>{Back-Face Culling}
+        \textbf{Input:} Triangles with face orientation \\
+        \textbf{Output:} Only front-facing triangles
+        
+        \vspace{0.3cm}
+        \textbf{Purpose:}
+        \begin{itemize}
+          \item Eliminate triangles facing away from camera
+          \item Reduce overdraw and fragment processing
+          \item Works well for closed meshes
+          \item Significant performance improvement
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Assumption:} Viewer cannot see inside objects
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Camera
+        \node[circle, fill=PrimaryColor!30, minimum size=0.6cm] (cam) at (0,2) {\tiny \faIcon{eye}};
+        
+        % 3D object (cube-like)
+        \coordinate (A) at (2,2.5);
+        \coordinate (B) at (3,2.5);
+        \coordinate (C) at (3.5,1.8);
+        \coordinate (D) at (2.5,1.8);
+        \coordinate (E) at (2.3,1.5);
+        \coordinate (F) at (3.3,1.5);
+        
+        % Front faces (kept)
+        \draw[thick, SecondaryColor, fill=SecondaryColor!30] (A) -- (B) -- (C) -- (D) -- cycle;
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (B) -- (C) -- (F) -- cycle;
+        
+        % Back faces (culled - shown dashed)
+        \draw[thick, DarkGray, dashed] (A) -- (E) -- (F) -- (D) -- cycle;
+        \draw[thick, DarkGray, dashed] (E) -- (F) -- (C);
+        
+        % Labels
+        \node[above] at (2.5,2.7) {\scriptsize Front faces};
+        \node[above] at (2.5,2.4) {\scriptsize (rendered)};
+        
+        \node[below] at (2.5,1.3) {\scriptsize Back faces};
+        \node[below] at (2.5,1.0) {\scriptsize (culled)};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>[fragile]{OpenGL Clipping \& Culling Configuration}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
+// Enable back-face culling
+glEnable(GL_CULL_FACE);
+
+// Configure which faces to cull
+glCullFace(GL_BACK);    // Cull back faces (default)
+glCullFace(GL_FRONT);   // Cull front faces
+glCullFace(GL_FRONT_AND_BACK); // Cull both (nothing rendered)
+
+// Set front face orientation
+glFrontFace(GL_CCW);    // Counter-clockwise (default)
+glFrontFace(GL_CW);     // Clockwise
+
+// Disable culling
+glDisable(GL_CULL_FACE);
+
+// Depth testing (related to visibility)
+glEnable(GL_DEPTH_TEST);
+glDepthFunc(GL_LESS);   // Default depth comparison
+
+// Scissor test (screen-space clipping)
+glEnable(GL_SCISSOR_TEST);
+glScissor(x, y, width, height);
+      \end{minted>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
+// Example: Typical 3D rendering setup
+void setupRenderingState() {
+    // Enable depth testing for 3D
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    
+    // Enable back-face culling
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+    
+    // Clear buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// Example: Rendering transparent objects
+void renderTransparentObjects() {
+    // Disable back-face culling for transparency
+    glDisable(GL_CULL_FACE);
+    
+    // Enable blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // Render back-to-front
+    renderSortedObjects();
+    
+    // Re-enable culling
+    glEnable(GL_CULL_FACE);
+}
+      \end{minted}
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>{Clipping \& Culling Performance}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Performance Benefits}
+        \textbf{Back-face culling:}
+        \begin{itemize}
+          \item Eliminates ~50\% of triangles (closed meshes)
+          \item Reduces rasterization work
+          \item Saves fragment shader invocations
+          \item Nearly free performance gain
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Frustum clipping:}
+        \begin{itemize}
+          \item Prevents off-screen geometry processing
+          \item Reduces rasterization overhead
+          \item Essential for correctness
+          \item Hardware optimized
+        \end{itemize}
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox>{Considerations}
+        \textbf{When to disable culling:}
+        \begin{itemize}
+          \item Transparent objects
+          \item Single-sided geometry viewed from both sides
+          \item Objects with inconsistent winding
+          \item Debugging geometry issues
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Clipping limitations:}
+        \begin{itemize}
+          \item Can generate many small triangles
+          \item May create degenerate cases
+          \item Attribute interpolation complexity
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+  \end{columns>
+  
+  \vspace{0.3cm}
+  
+  \begin{mathbox>{Best Practices}
+    \begin{itemize}
+      \item \textbf{Always enable back-face culling} for opaque 3D objects
+      \item \textbf>Consistent winding order} across all geometry
+      \item \textbf{Use view frustum culling} at object level before rendering
+      \item \textbf{Consider occlusion culling} for complex scenes
+    \end{itemize>
+  \end{mathbox>
+\end{frame>

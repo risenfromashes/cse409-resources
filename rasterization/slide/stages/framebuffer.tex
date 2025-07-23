@@ -1,0 +1,489 @@
+\section{Framebuffer Output}
+
+\subsection{Overview}
+\begin{frame}{Framebuffer Output Stage}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{raybox}{Framebuffer Output}
+        \textbf{Input:} Final fragment colors and depth values \\
+        \textbf{Output:} Pixels written to display or render targets
+        
+        \vspace{0.3cm}
+        \textbf{Purpose:}
+        \begin{itemize}
+          \item Write final pixel data to memory
+          \item Handle multiple render targets
+          \item Manage color format conversions
+          \item Support double buffering for smooth display
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textcolor{DarkGray}{\textbf{Fixed-function stage}}
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Fragment data
+        \node at (0,4) {\textbf{Fragment Data}};
+        \node[rectangle, draw, fill=PrimaryColor!20, minimum width=1.5cm, minimum height=0.4cm] (color) at (0,3.5) {
+          \tiny Color (RGBA)
+        };
+        \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.5cm, minimum height=0.4cm] (depth) at (0,3) {
+          \tiny Depth (Z)
+        };
+        
+        \draw[->, thick] (0,2.7) -- (0,2.3);
+        
+        % Framebuffer
+        \node at (0,2) {\textbf{Framebuffer}};
+        \node[rectangle, draw, fill=LightGray, minimum width=2cm, minimum height=1.2cm] (fb) at (0,1.2) {
+          \begin{minipage>{1.8cm}
+            \centering
+            \tiny
+            Color Buffer \\
+            Depth Buffer \\
+            Stencil Buffer
+          \end{minipage>
+        };
+        
+        \draw[->, thick] (0,0.5) -- (0,0.1);
+        
+        % Display
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=1.5cm, minimum height=0.4cm] (display) at (0,-0.3) {
+          \tiny Display
+        };
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Framebuffer Components}
+\begin{frame}{Framebuffer Structure}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Buffer Types}
+        \textbf{Color Buffer:}
+        \begin{itemize>
+          \item Stores final pixel colors
+          \item Multiple render targets (MRT) support
+          \item Various formats: RGBA8, RGBA16F, etc.
+        \end{itemize>
+        
+        \textbf{Depth Buffer:}
+        \begin{itemize>
+          \item Stores depth values for Z-testing
+          \item Typically 16, 24, or 32-bit precision
+          \item Essential for 3D rendering
+        \end{itemize>
+        
+        \textbf{Stencil Buffer:}
+        \begin{itemize>
+          \item 8-bit per-pixel values
+          \item Often packed with depth (D24S8)
+          \item Used for advanced effects
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Framebuffer visualization
+        \node at (0,3.5) {\textbf{Framebuffer Layout}};
+        
+        % Color buffer
+        \draw[thick, PrimaryColor] (0,2.5) rectangle (2.5,3);
+        \node[left] at (-0.2,2.75) {\scriptsize Color};
+        \foreach \x in {0.1,0.3,...,2.3} {
+          \foreach \y in {2.6,2.8} {
+            \fill[PrimaryColor!60] (\x,\y) rectangle ++(0.15,0.15);
+          }
+        }
+        
+        % Depth buffer
+        \draw[thick, SecondaryColor] (0,1.8) rectangle (2.5,2.3);
+        \node[left] at (-0.2,2.05) {\scriptsize Depth};
+        \foreach \x in {0.1,0.3,...,2.3} {
+          \foreach \y in {1.9,2.1} {
+            \pgfmathparse{rnd}
+            \fill[SecondaryColor!\pgfmathresult*60+20] (\x,\y) rectangle ++(0.15,0.15);
+          }
+        }
+        
+        % Stencil buffer
+        \draw[thick, AccentColor] (0,1.1) rectangle (2.5,1.6);
+        \node[left] at (-0.2,1.35) {\scriptsize Stencil};
+        \foreach \x in {0.1,0.3,...,2.3} {
+          \foreach \y in {1.2,1.4} {
+            \fill[AccentColor!40] (\x,\y) rectangle ++(0.15,0.15);
+          }
+        }
+        
+        % Pixel coordinates
+        \node[below] at (1.25,0.8) {\scriptsize Pixel (x, y)};
+        \draw[dashed] (1.25,1.1) -- (1.25,3);
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Double Buffering}
+\begin{frame}{Double Buffering}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{raybox}{Double Buffering Concept}
+        \textbf{Problem without double buffering:}
+        \begin{itemize>
+          \item Rendering directly to display buffer
+          \item Visible tearing and flickering
+          \item Partial frame updates visible to user
+        \end{itemize>
+        
+        \vspace{0.3cm}
+        \textbf{Double buffering solution:}
+        \begin{enumerate>
+          \item Render to back buffer (off-screen)
+          \item When frame complete, swap buffers
+          \item Front buffer displayed while back buffer rendered
+          \item Atomic swap prevents tearing
+        \end{enumerate>
+        
+        \vspace{0.2cm}
+        \textbf{Result:} Smooth, tear-free animation
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Timeline showing buffer swaps
+        \node at (0,4) {\textbf{Buffer Swapping}};
+        
+        % Frame 1
+        \node at (0,3.2) {\scriptsize Frame 1};
+        \node[rectangle, draw, fill=PrimaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (front1) at (-0.8,2.8) {\tiny Front};
+        \node[rectangle, draw, fill=SecondaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (back1) at (0.8,2.8) {\tiny Back};
+        \node[above] at (-0.8,3.2) {\tiny Display};
+        \node[above] at (0.8,3.2) {\tiny Render};
+        
+        \draw[->, thick] (0,2.5) -- (0,2.1);
+        \node[right] at (0.2,2.3) {\scriptsize Swap};
+        
+        % Frame 2
+        \node at (0,1.7) {\scriptsize Frame 2};
+        \node[rectangle, draw, fill=SecondaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (front2) at (-0.8,1.3) {\tiny Front};
+        \node[rectangle, draw, fill=PrimaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (back2) at (0.8,1.3) {\tiny Back};
+        \node[above] at (-0.8,1.7) {\tiny Display};
+        \node[above] at (0.8,1.7) {\tiny Render};
+        
+        \draw[->, thick] (0,1) -- (0,0.6);
+        \node[right] at (0.2,0.8) {\scriptsize Swap};
+        
+        % Frame 3
+        \node at (0,0.2) {\scriptsize Frame 3};
+        \node[rectangle, draw, fill=PrimaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (front3) at (-0.8,-0.2) {\tiny Front};
+        \node[rectangle, draw, fill=SecondaryColor!30, minimum width=0.8cm, minimum height=0.4cm] (back3) at (0.8,-0.2) {\tiny Back};
+        \node[above] at (-0.8,0.2) {\tiny Display};
+        \node[above] at (0.8,0.2) {\tiny Render};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame}{VSync \& Refresh Rates}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Vertical Synchronization}
+        \textbf{VSync purpose:}
+        \begin{itemize>
+          \item Synchronize buffer swaps with display refresh
+          \item Prevent screen tearing
+          \item Limit frame rate to display refresh rate
+        \end{itemize>
+        
+        \vspace{0.3cm}
+        \textbf{Common refresh rates:}
+        \begin{itemize>
+          \item 60 Hz (16.67 ms per frame)
+          \item 120 Hz (8.33 ms per frame)
+          \item 144 Hz (6.94 ms per frame)
+          \item Variable refresh (G-Sync, FreeSync)
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{mathbox}{VSync Trade-offs}
+        \textbf{With VSync enabled:}
+        \begin{itemize>
+          \item \textcolor{SecondaryColor}{\textbf{Pro:}} No tearing
+          \item \textcolor{SecondaryColor}{\textbf{Pro:}} Consistent frame timing
+          \item \textcolor{AccentColor}{\textbf{Con:}} Input latency increase
+          \item \textcolor{AccentColor}{\textbf{Con:}} Frame rate capped
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Without VSync:}
+        \begin{itemize}
+          \item \textcolor{SecondaryColor}{\textbf{Pro:}} Lower input latency
+          \item \textcolor{SecondaryColor}{\textbf{Pro:}} Uncapped frame rate
+          \item \textcolor{AccentColor}{\textbf{Con:}} Screen tearing
+          \item \textcolor{AccentColor}{\textbf{Con:}} Inconsistent timing
+        \end{itemize>
+      \end{mathbox>
+    \end{column>
+  \end{columns>
+  
+  \vspace{0.3cm}
+  
+  \begin{tikzpicture}
+    % VSync timing diagram
+    \node at (0,0.5) {\textbf{VSync Timing}};
+    
+    % Display refresh
+    \draw[thick, LightGray] (0,0) -- (6,0);
+    \foreach \x in {0,1,2,3,4,5,6} {
+      \draw[thick, LightGray] (\x,-0.1) -- (\x,0.1);
+    }
+    \node[below] at (3,-0.3) {\scriptsize Display Refresh (60 Hz)};
+    
+    % GPU frame completion
+    \draw[thick, PrimaryColor] (0,-0.7) -- (6,-0.7);
+    \fill[PrimaryColor] (0.8,-0.7) circle (2pt);
+    \fill[PrimaryColor] (1.6,-0.7) circle (2pt);
+    \fill[PrimaryColor] (2.9,-0.7) circle (2pt);
+    \fill[PrimaryColor] (4.1,-0.7) circle (2pt);
+    \fill[PrimaryColor] (5.2,-0.7) circle (2pt);
+    \node[below] at (3,-1) {\scriptsize GPU Frame Completion};
+    
+    % Buffer swaps (aligned with refresh)
+    \draw[->, thick, AccentColor] (1,-0.5) -- (1,-0.2);
+    \draw[->, thick, AccentColor] (3,-0.5) -- (3,-0.2);
+    \draw[->, thick, AccentColor] (5,-0.5) -- (5,-0.2);
+    \node[above] at (3,0.3) {\scriptsize Buffer Swaps};
+  \end{tikzpicture>
+\end{frame>
+
+\subsection{Render Targets}
+\begin{frame}{Multiple Render Targets (MRT)}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox}{Multiple Render Targets}
+        \textbf{Render to multiple buffers simultaneously:}
+        \begin{itemize>
+          \item Fragment shader outputs multiple colors
+          \item Each output goes to different render target
+          \item Efficient for deferred rendering
+          \item Single geometry pass, multiple outputs
+        \end{itemize>
+        
+        \vspace{0.3cm}
+        \textbf{Common applications:}
+        \begin{itemize}
+          \item G-buffer for deferred shading
+          \item Motion vectors for effects
+          \item Normal maps for post-processing
+          \item Depth peeling for transparency
+        \end{itemize>
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Fragment shader
+        \node[rectangle, draw, fill=PrimaryColor!30, minimum width=1.5cm, minimum height=0.8cm] (fs) at (0,3) {
+          \begin{minipage>{1.3cm}
+            \centering
+            \textbf{Fragment} \\
+            \textbf{Shader}
+          \end{minipage>
+        };
+        
+        % Multiple outputs
+        \draw[->, thick] (fs) -- (2,3.4);
+        \draw[->, thick] (fs) -- (2,3);
+        \draw[->, thick] (fs) -- (2,2.6);
+        
+        % Render targets
+        \node[rectangle, draw, fill=ObjectColor!20, minimum width=1cm, minimum height=0.5cm] (rt0) at (3,3.4) {\tiny Albedo};
+        \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1cm, minimum height=0.5cm] (rt1) at (3,3) {\tiny Normal};
+        \node[rectangle, draw, fill=AccentColor!20, minimum width=1cm, minimum height=0.5cm] (rt2) at (3,2.6) {\tiny Depth};
+        
+        % Labels
+        \node[left] at (1.8,3.4) {\scriptsize Color0};
+        \node[left] at (1.8,3) {\scriptsize Color1};
+        \node[left] at (1.8,2.6) {\scriptsize Color2};
+        
+        \node[below] at (1.5,2.2) {\scriptsize Deferred Shading G-Buffer};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>[fragile]{OpenGL Framebuffer Operations}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
+// Clear framebuffer
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+// Set clear colors
+glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Black
+glClearDepth(1.0f);                     // Far plane
+glClearStencil(0);                      // Zero
+
+// Control which buffers are written
+glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);  // RGBA
+glDepthMask(GL_TRUE);                             // Depth
+glStencilMask(0xFF);                              // Stencil
+
+// Viewport transformation
+glViewport(0, 0, windowWidth, windowHeight);
+
+// Buffer swapping (using GLFW)
+glfwSwapBuffers(window);
+
+// VSync control
+glfwSwapInterval(1);  // Enable VSync
+glfwSwapInterval(0);  // Disable VSync
+      \end{minted>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
+// Creating custom framebuffer
+unsigned int framebuffer;
+glGenFramebuffers(1, &framebuffer);
+glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+// Color attachment
+unsigned int colorTexture;
+glGenTextures(1, &colorTexture);
+glBindTexture(GL_TEXTURE_2D, colorTexture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, 
+             GL_RGB, GL_UNSIGNED_BYTE, NULL);
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+                       GL_TEXTURE_2D, colorTexture, 0);
+
+// Depth attachment
+unsigned int depthTexture;
+glGenTextures(1, &depthTexture);
+glBindTexture(GL_TEXTURE_2D, depthTexture);
+glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width, height, 0,
+             GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                       GL_TEXTURE_2D, depthTexture, 0);
+
+// Check completeness
+if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    // Handle error
+}
+
+// Render to custom framebuffer
+glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+// ... render scene ...
+glBindFramebuffer(GL_FRAMEBUFFER, 0);  // Back to default
+      \end{minted>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Performance Considerations}
+\begin{frame>{Framebuffer Performance}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Memory Bandwidth}
+        \textbf{Framebuffer operations are bandwidth-intensive:}
+        \begin{itemize>
+          \item High resolution increases bandwidth needs
+          \item Multiple render targets multiply bandwidth
+          \item Color format affects bandwidth (RGBA8 vs RGBA16F)
+          \item Depth/stencil adds additional overhead
+        \end{itemize}
+        
+        \vspace{0.2cm}
+        \textbf{Example (1920×1080):}
+        \begin{itemize}
+          \item RGBA8: 8.3 MB per frame
+          \item RGBA16F: 16.6 MB per frame
+          \item With depth: +2.5 MB (D24S8)
+          \item At 60 FPS: 500-1200 MB/s
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Optimization Strategies}
+        \textbf{Reduce bandwidth:}
+        \begin{itemize}
+          \item Use appropriate color formats
+          \item Minimize MRT count when possible
+          \item Consider lower resolution for effects
+          \item Use texture compression when suitable
+        \end{itemize>
+        
+        \textbf{Tile-based rendering:}
+        \begin{itemize>
+          \item Process small screen tiles
+          \item Keep working set in fast memory
+          \item Reduce external memory bandwidth
+          \item Common on mobile GPUs
+        \end{itemize>
+        
+        \textbf{Early optimizations:}
+        \begin{itemize>
+          \item Early Z to skip fragment processing
+          \item Occlusion culling to skip objects
+          \item LOD to reduce triangle count
+        \end{itemize>
+      \end{raybox>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>{Framebuffer Summary}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{mathbox>{Key Concepts}
+        \textbf{Framebuffer is the final destination:}
+        \begin{itemize>
+          \item Collection of buffers (color, depth, stencil)
+          \item Can render to screen or off-screen targets
+          \item Supports multiple render targets (MRT)
+          \item Managed through graphics API
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Double buffering essential for:}
+        \begin{itemize>
+          \item Smooth animation
+          \item Preventing visual artifacts
+          \item Professional presentation quality
+        \end{itemize>
+      \end{mathbox}
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox>{Modern Applications}
+        \textbf{Advanced rendering techniques:}
+        \begin{itemize>
+          \item Deferred shading with G-buffer
+          \item Post-processing effects
+          \item Shadow mapping
+          \item Screen-space reflections
+          \item Temporal effects (motion blur, TAA)
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf>Mobile considerations:}
+        \begin{itemize>
+          \item Tile-based deferred rendering (TBDR)
+          \item Bandwidth-efficient formats
+          \item Power consumption optimization
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+  \end{columns>
+  
+  \vspace{0.3cm}
+  
+  \begin{raybox>{Pipeline Completion}
+    \textbf{Framebuffer output completes the graphics pipeline:}
+    
+    Input Assembly → Vertex Shader → [Tessellation] → [Geometry] → Primitive Assembly → Clipping & Culling → Rasterization → Fragment Shader → Per-Fragment Ops → \textbf{Framebuffer Output}
+    
+    \vspace{0.2cm}
+    \textbf{From 3D models to pixels on screen - the journey is complete!}
+  \end{raybox>
+\end{frame>

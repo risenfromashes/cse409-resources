@@ -1,0 +1,449 @@
+\section{Rasterization}
+
+\subsection{Overview}
+\begin{frame}{Rasterization Stage}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{raybox}{Rasterization}
+        \textbf{Input:} Clipped triangles in screen space \\
+        \textbf{Output:} Fragments (potential pixels) with interpolated attributes
+        
+        \vspace{0.3cm}
+        \textbf{Purpose:}
+        \begin{itemize}
+          \item Convert vector triangles to discrete fragments
+          \item Determine which pixels are covered
+          \item Interpolate vertex attributes across triangles
+          \item Generate depth values for visibility testing
+        \end{itemize}
+        
+        \vspace{0.2cm}
+        \textcolor{RayColor}{\textbf{Fixed-function stage - hardware optimized}}
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Input triangle
+        \node at (0,3.5) {\textbf{Triangle}};
+        \draw[thick, ObjectColor] (0,3) -- (1.5,3.2) -- (0.8,2.2) -- cycle;
+        \fill[ObjectColor] (0,3) circle (2pt);
+        \fill[ObjectColor] (1.5,3.2) circle (2pt);
+        \fill[ObjectColor] (0.8,2.2) circle (2pt);
+        
+        \draw[->, thick, RayColor] (0.8,1.8) -- (0.8,1.2);
+        \node[right] at (1,1.5) {\scriptsize Rasterization};
+        
+        % Output fragments
+        \node at (0,0.8) {\textbf{Fragments}};
+        \begin{scope}[shift={(0,0)}]
+          % Grid showing fragments
+          \foreach \x in {0,0.2,...,1.4} {
+            \foreach \y in {0,0.2,...,0.8} {
+              \fill[LightGray] (\x,\y) rectangle ++(0.15,0.15);
+            }
+          }
+          % Highlight fragments inside triangle
+          \clip (0,0.6) -- (1.5,0.8) -- (0.8,-0.2) -- cycle;
+          \foreach \x in {0,0.2,...,1.4} {
+            \foreach \y in {0,0.2,...,0.8} {
+              \fill[RayColor!60] (\x,\y) rectangle ++(0.15,0.15);
+            }
+          }
+        \end{scope>
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Triangle Rasterization Process}
+\begin{frame}{Triangle Rasterization Algorithm}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Rasterization Steps}
+        \textbf{1. Bounding Box Calculation}
+        \begin{itemize}
+          \item Find min/max x,y coordinates
+          \item Limit to screen boundaries
+        \end{itemize}
+        
+        \textbf{2. Fragment Generation}
+        \begin{itemize}
+          \item Test each pixel in bounding box
+          \item Determine if pixel center is inside triangle
+        \end{itemize}
+        
+        \textbf{3. Attribute Interpolation}
+        \begin{itemize}
+          \item Calculate barycentric coordinates
+          \item Interpolate vertex attributes
+        \end{itemize>
+        
+        \textbf{4. Depth Calculation}
+        \begin{itemize>
+          \item Interpolate z-values
+          \item Prepare for depth testing
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Triangle with vertices
+        \coordinate (A) at (0.5,3);
+        \coordinate (B) at (3,2.5);
+        \coordinate (C) at (1.5,1);
+        
+        % Bounding box
+        \draw[dashed, LightGray] (0.5,1) rectangle (3,3);
+        \node[below left] at (0.5,1) {\scriptsize Bounding box};
+        
+        % Triangle
+        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
+        \fill[ObjectColor] (A) circle (2pt);
+        \fill[ObjectColor] (B) circle (2pt);
+        \fill[ObjectColor] (C) circle (2pt);
+        
+        % Grid of potential fragments
+        \foreach \x in {0.75,1,...,2.75} {
+          \foreach \y in {1.25,1.5,...,2.75} {
+            \fill[LightGray] (\x,\y) circle (1pt);
+          }
+        }
+        
+        % Highlight inside fragments
+        \foreach \x in {0.75,1,...,2.75} {
+          \foreach \y in {1.25,1.5,...,2.75} {
+            \coordinate (P) at (\x,\y);
+            % Simplified inside test visualization
+            \pgfmathparse{(\x-0.5)*(-0.5) + (\y-3)*(2.5) > 0 ? 1 : 0}
+            \ifnum\pgfmathresult=1
+              \pgfmathparse{(\x-3)*(-1.5) + (\y-2.5)*(1) > 0 ? 1 : 0}
+              \ifnum\pgfmathresult=1
+                \pgfmathparse{(\x-1.5)*(2.5) + (\y-1)*(-1.5) > 0 ? 1 : 0}
+                \ifnum\pgfmathresult=1
+                  \fill[RayColor] (\x,\y) circle (1.5pt);
+                \fi
+              \fi
+            \fi
+          }
+        }
+        
+        % Labels
+        \node[left] at (A) {\scriptsize A};
+        \node[right] at (B) {\scriptsize B};
+        \node[below] at (C) {\scriptsize C};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Inside-Outside Testing}
+\begin{frame}{Edge Functions \& Half-Space Test}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{mathbox}{Edge Function Method}
+        \textbf{For triangle with vertices A, B, C:}
+        
+        Define edge functions:
+        \begin{align}
+          E_{AB}(x,y) &= (B_x - A_x)(y - A_y) - (B_y - A_y)(x - A_x) \\
+          E_{BC}(x,y) &= (C_x - B_x)(y - B_y) - (C_y - B_y)(x - B_x) \\
+          E_{CA}(x,y) &= (A_x - C_x)(y - C_y) - (A_y - C_y)(x - C_x)
+        \end{align}
+        
+        \textbf{Inside test:} Point $(x,y)$ is inside if:
+        \begin{align}
+          E_{AB}(x,y) \geq 0 \text{ and } E_{BC}(x,y) \geq 0 \text{ and } E_{CA}(x,y) \geq 0
+        \end{align}
+        
+        (Assuming counter-clockwise winding)
+      \end{mathbox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Triangle
+        \coordinate (A) at (0,0);
+        \coordinate (B) at (3,0.5);
+        \coordinate (C) at (1.5,2.5);
+        
+        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
+        \fill[ObjectColor] (A) circle (2pt);
+        \fill[ObjectColor] (B) circle (2pt);
+        \fill[ObjectColor] (C) circle (2pt);
+        
+        % Test points
+        \coordinate (P1) at (1.5,1); % Inside
+        \coordinate (P2) at (0.5,2); % Outside
+        
+        \fill[SecondaryColor] (P1) circle (2pt);
+        \fill[AccentColor] (P2) circle (2pt);
+        
+        % Edge normals (pointing inward)
+        \coordinate (N1) at (1.5,-0.25);
+        \coordinate (N2) at (2.8,1.25);
+        \coordinate (N3) at (0.2,1.25);
+        
+        \draw[->, thick, PrimaryColor] (N1) -- ++(0,0.5);
+        \draw[->, thick, PrimaryColor] (N2) -- ++(-0.5,0.3);
+        \draw[->, thick, PrimaryColor] (N3) -- ++(0.5,0.3);
+        
+        % Labels
+        \node[below left] at (A) {\scriptsize A};
+        \node[below right] at (B) {\scriptsize B};
+        \node[above] at (C) {\scriptsize C};
+        \node[right] at (P1) {\scriptsize Inside};
+        \node[left] at (P2) {\scriptsize Outside};
+        
+        \node[below] at (1.5,-0.7) {\scriptsize Edge normals};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Barycentric Coordinates}
+\begin{frame>{Barycentric Coordinates}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Barycentric Interpolation}
+        \textbf{Express any point P inside triangle as:}
+        \begin{align}
+          \mathbf{P} = \alpha \mathbf{A} + \beta \mathbf{B} + \gamma \mathbf{C}
+        \end{align}
+        
+        where $\alpha + \beta + \gamma = 1$ and $\alpha, \beta, \gamma \geq 0$
+        
+        \vspace{0.3cm}
+        \textbf{Calculation:}
+        \begin{align}
+          \alpha &= \frac{E_{BC}(\mathbf{P})}{E_{BC}(\mathbf{A})} \\
+          \beta &= \frac{E_{CA}(\mathbf{P})}{E_{CA}(\mathbf{B})} \\
+          \gamma &= \frac{E_{AB}(\mathbf{P})}{E_{AB}(\mathbf{C})}
+        \end{align>
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Triangle
+        \coordinate (A) at (0,0);
+        \coordinate (B) at (3,0);
+        \coordinate (C) at (1.5,2.5);
+        
+        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
+        \fill[ObjectColor] (A) circle (3pt);
+        \fill[ObjectColor] (B) circle (3pt);
+        \fill[ObjectColor] (C) circle (3pt);
+        
+        % Test point
+        \coordinate (P) at (1.2,0.8);
+        \fill[PrimaryColor] (P) circle (3pt);
+        
+        % Barycentric visualization
+        \draw[dashed, SecondaryColor] (P) -- (A);
+        \draw[dashed, SecondaryColor] (P) -- (B);
+        \draw[dashed, SecondaryColor] (P) -- (C);
+        
+        % Sub-triangles areas
+        \draw[thick, AccentColor!50, fill=AccentColor!10] (P) -- (B) -- (C) -- cycle;
+        \draw[thick, SecondaryColor!50, fill=SecondaryColor!10] (A) -- (P) -- (C) -- cycle;
+        \draw[thick, PrimaryColor!50, fill=PrimaryColor!10] (A) -- (B) -- (P) -- cycle;
+        
+        % Labels
+        \node[below left] at (A) {\scriptsize A};
+        \node[below right] at (B) {\scriptsize B};
+        \node[above] at (C) {\scriptsize C};
+        \node[right] at (P) {\scriptsize P};
+        
+        % Area labels
+        \node at (0.6,1.4) {\scriptsize $\beta$};
+        \node at (2.2,1.4) {\scriptsize $\alpha$};
+        \node at (1.2,0.3) {\scriptsize $\gamma$};
+        
+        \node[below] at (1.5,-0.3) {\scriptsize $\alpha + \beta + \gamma = 1$};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Attribute Interpolation}
+\begin{frame>{Fragment Attribute Interpolation}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Interpolated Attributes}
+        \textbf{Using barycentric coordinates:}
+        
+        For any vertex attribute $\mathbf{attr}$:
+        \begin{align}
+          \mathbf{attr}_P = \alpha \mathbf{attr}_A + \beta \mathbf{attr}_B + \gamma \mathbf{attr}_C
+        \end{align}
+        
+        \vspace{0.2cm}
+        \textbf{Common interpolated attributes:}
+        \begin{itemize>
+          \item Texture coordinates (UV)
+          \item Vertex colors
+          \item Normal vectors
+          \item World positions
+          \item Custom vertex data
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Note:} Hardware performs perspective-correct interpolation
+      \end{conceptbox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Triangle with color gradient
+        \coordinate (A) at (0,0);
+        \coordinate (B) at (3,0);
+        \coordinate (C) at (1.5,2.5);
+        
+        % Color interpolation visualization
+        \shade[left color=red, right color=blue, bottom color=green] (A) -- (B) -- (C) -- cycle;
+        
+        \fill[red] (A) circle (3pt);
+        \fill[blue] (B) circle (3pt);
+        \fill[green] (C) circle (3pt);
+        
+        % Sample points showing interpolation
+        \coordinate (P1) at (0.8,0.3);
+        \coordinate (P2) at (2.2,0.8);
+        \coordinate (P3) at (1.5,1.5);
+        
+        \fill[white] (P1) circle (2pt);
+        \fill[white] (P2) circle (2pt);
+        \fill[white] (P3) circle (2pt);
+        
+        % Labels
+        \node[below left, white] at (A) {\scriptsize Red};
+        \node[below right, white] at (B) {\scriptsize Blue};
+        \node[above, white] at (C) {\scriptsize Green};
+        
+        \node[below] at (1.5,-0.5) {\scriptsize Color interpolation across triangle};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\subsection{Depth Interpolation}
+\begin{frame>{Z-Buffer Value Interpolation}
+  \begin{columns}
+    \begin{column>{0.6\textwidth}
+      \begin{mathbox}{Depth Value Generation}
+        \textbf{Linear interpolation in screen space:}
+        \begin{align}
+          z_P = \alpha z_A + \beta z_B + \gamma z_C
+        \end{align>
+        
+        where $z_A, z_B, z_C$ are the depth values of triangle vertices.
+        
+        \vspace{0.3cm}
+        \textbf{Depth range mapping:}
+        \begin{itemize}
+          \item NDC depth: $[-1, 1]$ (OpenGL) or $[0, 1]$ (DirectX)
+          \item Z-buffer depth: $[0, 1]$ (typically)
+          \item Higher precision near near plane
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Usage:} Depth testing, early Z rejection, depth-based effects
+      \end{mathbox>
+    \end{column>
+    \begin{column>{0.4\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % 3D visualization of depth interpolation
+        \coordinate (A) at (0,0);
+        \coordinate (B) at (3,0);
+        \coordinate (C) at (1.5,2);
+        
+        % Triangle surface
+        \fill[ObjectColor!30] (A) -- (B) -- (C) -- cycle;
+        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
+        
+        % Depth visualization (heights)
+        \coordinate (A3d) at (0,0.5);
+        \coordinate (B3d) at (3,1.2);
+        \coordinate (C3d) at (1.5,2.8);
+        
+        \draw[thick, PrimaryColor] (A) -- (A3d);
+        \draw[thick, PrimaryColor] (B) -- (B3d);
+        \draw[thick, PrimaryColor] (C) -- (C3d);
+        
+        \fill[PrimaryColor] (A3d) circle (2pt);
+        \fill[PrimaryColor] (B3d) circle (2pt);
+        \fill[PrimaryColor] (C3d) circle (2pt);
+        
+        % 3D triangle
+        \fill[ObjectColor!50] (A3d) -- (B3d) -- (C3d) -- cycle;
+        \draw[thick, ObjectColor] (A3d) -- (B3d) -- (C3d) -- cycle;
+        
+        % Sample point
+        \coordinate (P) at (1.2,0.6);
+        \coordinate (P3d) at (1.2,1.4);
+        \draw[thick, SecondaryColor] (P) -- (P3d);
+        \fill[SecondaryColor] (P3d) circle (2pt);
+        
+        % Labels
+        \node[below] at (A) {\scriptsize $z_A$};
+        \node[below] at (B) {\scriptsize $z_B$};
+        \node[left] at (C) {\scriptsize $z_C$};
+        \node[right] at (P3d) {\scriptsize $z_P$};
+        
+        \node[below] at (1.5,-0.5) {\scriptsize Depth interpolation};
+      \end{tikzpicture>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>{Fragment Generation}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Fragment Properties}
+        \textbf{Each generated fragment contains:}
+        \begin{itemize}
+          \item \textbf{Screen coordinates} (x, y)
+          \item \textbf{Depth value} (z)
+          \item \textbf{Interpolated attributes} (colors, UVs, normals, etc.)
+          \item \textbf{Coverage information} (for anti-aliasing)
+        \end{itemize>
+        
+        \vspace{0.3cm}
+        \textbf{Fragment ≠ Pixel:}
+        \begin{itemize}
+          \item Fragments are candidates for pixels
+          \item Multiple fragments may affect one pixel
+          \item Some fragments may be discarded
+        \end{itemize>
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox}{Optimization Techniques}
+        \textbf{Early optimizations:}
+        \begin{itemize}
+          \item \textbf{Hierarchical Z:} Reject blocks of fragments
+          \item \textbf{Tile-based processing:} Process fragments in groups
+          \item \textbf>Quad-based execution:} Process 2×2 fragment groups
+          \item \textbf{Z-culling:} Hardware depth pre-test
+        \end{itemize>
+        
+        \vspace{0.2cm}
+        \textbf{Multi-sampling:}
+        \begin{itemize>
+          \item Multiple samples per pixel
+          \item Anti-aliasing support
+          \item Sub-pixel accuracy
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+  \end{columns>
+  
+  \vspace{0.3cm}
+  
+  \begin{mathbox>{Rasterization Performance}
+    \textbf{Factors affecting performance:}
+    \begin{itemize}
+      \item \textbf{Triangle size:} Tiny triangles are inefficient
+      \item \textbf{Overdraw:} Multiple fragments per pixel
+      \item \textbf{Attribute complexity:} More interpolated data = slower
+      \item \textbf>Fragment shader cost:} Expensive shaders limit throughput
+    \end{itemize>
+  \end{mathbox>
+\end{frame>

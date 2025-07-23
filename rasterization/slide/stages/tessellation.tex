@@ -1,0 +1,314 @@
+\section{Tessellation Shader}
+
+\subsection{Overview}
+\begin{frame}{Tessellation Shader Stage}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{raybox}{Tessellation Shader}
+        \textbf{Input:} Patch primitives (control points) \\
+        \textbf{Output:} Subdivided primitives with more vertices
+
+        \vspace{0.3cm}
+        \textbf{Purpose:}
+        \begin{itemize}
+          \item Subdivide low-poly meshes into high-poly
+          \item Level-of-detail (LOD) based on distance
+          \item Smooth curved surfaces
+          \item Displacement mapping
+          \end{itemize>
+
+            \vspace{0.2cm}
+            \textcolor{SecondaryColor}{\textbf{Optional programmable stage}}
+          \end{raybox}
+        \end{column}
+        \begin{column}{0.4\textwidth}
+          \begin{tikzpicture}[scale=0.7]
+            % Input patch
+            \node at (0,3.5) {\textbf{Input Patch}};
+            \draw[thick, ObjectColor] (0,3) -- (1.5,3) -- (0.75,2.2) -- cycle;
+            \foreach \p in {(0,3),(1.5,3),(0.75,2.2)} {
+              \fill[ObjectColor] \p circle (2pt);
+            }
+
+            \draw[->, thick, PrimaryColor] (0.75,1.8) -- (0.75,1.2);
+            \node[right] at (1,1.5) {\scriptsize Tessellation};
+
+            % Output subdivided
+            \node at (0,0.8) {\textbf{Tessellated}};
+            \begin{scope}[shift={(0,-0.3)}]
+              \draw[thick, SecondaryColor] (0,0.6) -- (0.75,0.6) -- (1.5,0.6) -- (1.125,0) -- (0.75,-0.6) -- (0.375,0) -- cycle;
+              \draw[thick, SecondaryColor] (0.375,0) -- (0.75,0.6);
+              \draw[thick, SecondaryColor] (0.75,0.6) -- (1.125,0);
+              \draw[thick, SecondaryColor] (1.125,0) -- (0.75,-0.6);
+              \draw[thick, SecondaryColor] (0.75,-0.6) -- (0.375,0);
+              \foreach \p in {(0,0.6),(0.75,0.6),(1.5,0.6),(1.125,0),(0.75,-0.6),(0.375,0)} {
+                \fill[SecondaryColor] \p circle (1.5pt);
+              }
+            \end{scope}
+          \end{tikzpicture}
+        \end{column>
+        \end{columns>
+        \end{frame>
+
+          \subsection{Tessellation Pipeline}
+          \begin{frame}{Tessellation Sub-Stages}
+            \begin{center}
+              \begin{tikzpicture}[scale=0.8]
+                % Vertex Shader output
+                \node[rectangle, draw, fill=PrimaryColor!20, minimum width=2cm, minimum height=0.8cm] (vs) at (0,3) {
+                  \begin{minipage}{1.8cm}
+                    \centering
+                    \textbf{Vertex} \\
+                    \textbf{Shader}
+                  \end{minipage>
+                  };
+
+                  % Tessellation Control Shader
+                  \node[rectangle, draw, fill=SecondaryColor!30, minimum width=2cm, minimum height=0.8cm] (tcs) at (3,3) {
+                    \begin{minipage}{1.8cm}
+                      \centering
+                      \textbf{Tessellation} \\
+                      \textbf{Control}
+                    \end{minipage>
+                    };
+
+                    % Tessellator (Fixed Function)
+                    \node[rectangle, draw, fill=LightGray, minimum width=2cm, minimum height=0.8cm] (tess) at (6,3) {
+                      \begin{minipage}{1.8cm}
+                        \centering
+                        \textbf{Tessellator} \\
+                        \scriptsize (Fixed)
+                      \end{minipage>
+                      };
+
+                      % Tessellation Evaluation Shader
+                      \node[rectangle, draw, fill=SecondaryColor!30, minimum width=2cm, minimum height=0.8cm] (tes) at (9,3) {
+                        \begin{minipage}{1.8cm}
+                          \centering
+                          \textbf{Tessellation} \\
+                          \textbf{Evaluation}
+                        \end{minipage>
+                        };
+
+                        % Arrows
+                        \draw[->, thick] (vs) -- (tcs);
+                        \draw[->, thick] (tcs) -- (tess);
+                        \draw[->, thick] (tess) -- (tes);
+
+                        % Labels
+                        \node[below] at (1.5,2.5) {\scriptsize Control Points};
+                        \node[below] at (4.5,2.5) {\scriptsize Tessellation Levels};
+                        \node[below] at (7.5,2.5) {\scriptsize Barycentric Coords};
+
+                        % Descriptions
+                        \node[below, text width=1.8cm, align=center] at (3,1.8) {\scriptsize Determines subdivision levels};
+                        \node[below, text width=1.8cm, align=center] at (6,1.8) {\scriptsize Generates new vertices};
+                        \node[below, text width=1.8cm, align=center] at (9,1.8) {\scriptsize Computes final positions};
+                      \end{tikzpicture>
+                      \end{center>
+                      \end{frame>
+
+                        \subsection{Use Cases}
+                        \begin{frame}{Tessellation Use Cases}
+                          \begin{columns}
+                            \begin{column}{0.5\textwidth}
+                              \begin{conceptbox}{Level of Detail (LOD)}
+                                \textbf{Adaptive subdivision based on:}
+                                \begin{itemize}
+                                  \item Distance from camera
+                                  \item Screen space size
+                                  \item Surface curvature
+                                  \item Performance requirements
+                                  \end{itemize>
+
+                                    \vspace{0.2cm}
+                                    \textbf{Benefits:}
+                                    \begin{itemize}
+                                      \item Optimal vertex count
+                                      \item Smooth transitions
+                                      \item Better performance
+                                      \end{itemize>
+                                      \end{conceptbox>
+                                      \end{column>
+                                        \begin{column>{0.5\textwidth}
+                                            \begin{tikzpicture}[scale=0.6]
+                                              % Camera
+                                              \node[circle, fill=PrimaryColor!30, minimum size=0.6cm] (cam) at (0,2) {\tiny \faIcon{video}};
+
+                                              % Close object (high tessellation)
+                                              \draw[thick, SecondaryColor] (2,3) -- (3,3) -- (2.5,2.2) -- cycle;
+                                              \draw[thick, SecondaryColor] (2.25,2.6) -- (2.75,2.6);
+                                              \draw[thick, SecondaryColor] (2.25,2.6) -- (2.5,3);
+                                              \draw[thick, SecondaryColor] (2.75,2.6) -- (2.5,3);
+                                              \draw[thick, SecondaryColor] (2.25,2.6) -- (2.5,2.2);
+                                              \draw[thick, SecondaryColor] (2.75,2.6) -- (2.5,2.2);
+                                              \node[below] at (2.5,2) {\scriptsize Close: High Detail};
+
+                                              % Far object (low tessellation)
+                                              \draw[thick, ObjectColor] (2,0.5) -- (2.8,0.5) -- (2.4,0) -- cycle;
+                                              \node[below] at (2.4,-0.2) {\scriptsize Far: Low Detail};
+
+                                              % Distance lines
+                                              \draw[dashed, gray] (cam) -- (2.5,2.6);
+                                              \draw[dashed, gray] (cam) -- (2.4,0.25);
+                                            \end{tikzpicture>
+                                            \end{column>
+                                            \end{columns>
+
+                                              \vspace{0.3cm}
+
+                                              \begin{columns}
+                                                \begin{column>{0.5\textwidth}
+                                                    \begin{mathbox>{Displacement Mapping}
+                                                        \textbf{Process:}
+                                                        \begin{enumerate}
+                                                          \item Start with low-poly base mesh
+                                                          \item Tessellate to add vertices
+                                                          \item Displace vertices using height maps
+                                                          \item Create detailed surface geometry
+                                                          \end{enumerate>
+                                                          \end{mathbox>
+                                                          \end{column>
+                                                            \begin{column>{0.5\textwidth}
+                                                                \begin{raybox>{Curved Surfaces}
+                                                                    \textbf{Applications:}
+                                                                    \begin{itemize}
+                                                                      \item Bezier patches
+                                                                      \item NURBS surfaces
+                                                                      \item Subdivision surfaces
+                                                                      \item Smooth character models
+                                                                      \end{itemize>
+                                                                      \end{raybox>
+                                                                      \end{column>
+                                                                      \end{columns>
+                                                                      \end{frame>
+
+                                                                        \begin{frame>[fragile]{Tessellation Control Shader Example}
+                                                                            \begin{columns}
+                                                                              \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
+#version 400 core
+
+// Define patch size (number of control points)
+layout (vertices = 3) out;
+
+// Input from vertex shader
+in vec3 vPosition[];
+in vec3 vNormal[];
+
+// Output to tessellation evaluation
+out vec3 tcPosition[];
+out vec3 tcNormal[];
+
+uniform vec3 uCameraPos;
+uniform float uTessellationFactor;
+
+void main() {
+    // Pass through control point data
+    tcPosition[gl_InvocationID] = vPosition[gl_InvocationID];
+    tcNormal[gl_InvocationID] = vNormal[gl_InvocationID];
+
+    // Only first invocation sets tessellation levels
+    if (gl_InvocationID == 0) {
+        // Calculate distance-based LOD
+        vec3 center = (vPosition[0] + vPosition[1] + vPosition[2]) / 3.0;
+        float distance = length(uCameraPos - center);
+
+        // Compute tessellation level
+        float tessLevel = max(1.0, uTessellationFactor / distance);
+        tessLevel = clamp(tessLevel, 1.0, 64.0);
+      \end{minted>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
+        // Set outer tessellation levels (edges)
+        gl_TessLevelOuter[0] = tessLevel;
+        gl_TessLevelOuter[1] = tessLevel;
+        gl_TessLevelOuter[2] = tessLevel;
+
+        // Set inner tessellation level
+        gl_TessLevelInner[0] = tessLevel;
+    }
+}
+      \end{minted}
+
+      \vspace{0.3cm}
+
+      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
+// Tessellation Evaluation Shader
+#version 400 core
+
+layout (triangles, equal_spacing, ccw) in;
+
+in vec3 tcPosition[];
+in vec3 tcNormal[];
+
+out vec3 tePosition;
+out vec3 teNormal;
+
+uniform mat4 uMVP;
+
+void main() {
+    // Barycentric interpolation
+    vec3 p0 = gl_TessCoord.x * tcPosition[0];
+    vec3 p1 = gl_TessCoord.y * tcPosition[1];
+    vec3 p2 = gl_TessCoord.z * tcPosition[2];
+    tePosition = p0 + p1 + p2;
+
+    vec3 n0 = gl_TessCoord.x * tcNormal[0];
+    vec3 n1 = gl_TessCoord.y * tcNormal[1];
+    vec3 n2 = gl_TessCoord.z * tcNormal[2];
+    teNormal = normalize(n0 + n1 + n2);
+
+    gl_Position = uMVP * vec4(tePosition, 1.0);
+}
+      \end{minted>
+    \end{column>
+  \end{columns>
+\end{frame>
+
+\begin{frame>{Tessellation Benefits \& Considerations}
+  \begin{columns}
+    \begin{column>{0.5\textwidth}
+      \begin{raybox>{Benefits}
+        \begin{itemize}
+          \item \textbf{Memory efficient:} Store low-poly base mesh
+          \item \textbf{Adaptive detail:} LOD based on viewing conditions
+          \item \textbf{Smooth surfaces:} No visible polygon edges
+          \item \textbf{Dynamic geometry:} Real-time subdivision
+          \item \textbf{Displacement:} High-frequency surface details
+        \end{itemize>
+      \end{raybox>
+    \end{column>
+    \begin{column>{0.5\textwidth}
+      \begin{conceptbox>{Considerations}
+        \begin{itemize}
+          \item \textbf{GPU overhead:} Additional processing stages
+          \item \textbf{Driver support:} Not available on all hardware
+          \item \textbf{Complexity:} More difficult to debug
+          \item \textbf{Performance:} Can be expensive for high tessellation
+          \item \textbf{Alternatives:} Pre-tessellated meshes, normal mapping
+        \end{itemize>
+      \end{conceptbox>
+    \end{column>
+  \end{columns>
+
+  \vspace{0.3cm}
+
+  \begin{mathbox>{When to Use Tessellation}
+    \textbf{Good candidates:}
+    \begin{itemize}
+      \item Terrain rendering with height maps
+      \item Character models requiring smooth surfaces
+      \item Displacement mapping for surface details
+      \item Dynamic LOD systems
+    \end{itemize>
+
+    \textbf{Avoid when:}
+    \begin{itemize}
+      \item Target platforms don't support it
+      \item Pre-computed meshes are sufficient
+      \item Performance is critical and tessellation overhead is too high
+    \end{itemize>
+  \end{mathbox>
+\end{frame}
