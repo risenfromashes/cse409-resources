@@ -4,7 +4,8 @@
 \begin{frame}{Vertex Shader Stage}
   \small
   \begin{columns}
-    \begin{column}{0.6\textwidth}
+    \begin{column}{0.7\textwidth}
+      \footnotesize
       \begin{raybox}{Vertex Shader}
         \textbf{Input:} Individual vertices with attributes \\
         \textbf{Output:} Transformed vertices in clip space
@@ -13,29 +14,28 @@
         \textbf{Purpose:}
         \begin{itemize}
           \item Transform vertex positions through coordinate spaces
-          \item Calculate per-vertex lighting (Gouraud shading)
           \item Pass attributes to next stage
-          \item Apply animations and deformations
+          \item Optional - Apply animations and deformations
+          \item Optional - Calculate per-vertex lighting (Gouraud shading)
         \end{itemize}
 
         \vspace{0.2cm}
         \textcolor{PrimaryColor}{\textbf{Programmable stage - you write the code!}}
       \end{raybox}
     \end{column}
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.3\textwidth}
       \begin{tikzpicture}[scale=0.7]
         % Input vertex
-        \node[circle, draw, fill=ObjectColor!20, minimum size=0.8cm] (input) at (0,3) {
-          \tiny
-          \begin{minipage}{0.6cm}
-            \centering
-            Vertex \\
-            (Model)
-          \end{minipage}
+        \node[circle, draw, fill=ObjectColor!20, minimum size=1cm, align=center] (input) at (0,4) {
+          \scriptsize
+          Vertex \\
+          \scriptsize
+          (Model)
         };
 
         % Vertex Shader box
         \node[rectangle, draw, fill=PrimaryColor!30, minimum width=2cm, minimum height=1.2cm] (vs) at (0,1.5) {
+          \footnotesize
           \begin{minipage}{1.8cm}
             \centering
             \textbf{Vertex} \\
@@ -44,21 +44,19 @@
         };
 
         % Output vertex
-        \node[circle, draw, fill=SecondaryColor!20, minimum size=0.8cm] (output) at (0,0) {
-          \tiny
-          \begin{minipage}{0.6cm}
-            \centering
-            Vertex \\
-            (Clip)
-          \end{minipage}
+        \node[circle, draw, fill=SecondaryColor!20, minimum size=1cm, align=center] (output) at (0,-1) {
+          \scriptsize
+          Vertex \\
+          \scriptsize
+          (Clip)
         };
 
         \draw[->, thick] (input) -- (vs);
         \draw[->, thick] (vs) -- (output);
 
         % Side annotations
-        \node[right] at (1,3) {\scriptsize Position, Normal, UV, ...};
-        \node[right] at (1,0) {\scriptsize \texttt{gl\_Position}, attributes};
+        \node[right] at (1,4) {\tiny Position, Normal, UV, ...};
+        \node[right] at (1,-1) {\tiny \texttt{gl\_Position}, attributes};
       \end{tikzpicture}
     \end{column}
   \end{columns}
@@ -67,7 +65,7 @@
 \subsection{Coordinate Space Transformations}
 \begin{frame}{The Transformation Pipeline}
   \begin{center}
-    \begin{tikzpicture}[scale=0.8]
+    \begin{tikzpicture}[scale=0.7]
       % Model Space
       \node[rectangle, draw, fill=ObjectColor!20, minimum width=1.8cm, minimum height=0.8cm] (model) at (0,4) {
         \begin{minipage}{1.6cm}
@@ -78,7 +76,7 @@
       };
 
       % World Space
-      \node[rectangle, draw, fill=PrimaryColor!20, minimum width=1.8cm, minimum height=0.8cm] (world) at (3,4) {
+      \node[rectangle, draw, fill=PrimaryColor!20, minimum width=1.8cm, minimum height=0.8cm] (world) at (4,4) {
         \begin{minipage}{1.6cm}
           \centering
           \textbf{World} \\
@@ -87,7 +85,7 @@
       };
 
       % View Space
-      \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.8cm, minimum height=0.8cm] (view) at (6,4) {
+      \node[rectangle, draw, fill=SecondaryColor!20, minimum width=1.8cm, minimum height=0.8cm] (view) at (8,4) {
         \begin{minipage}{1.6cm}
           \centering
           \textbf{View} \\
@@ -96,7 +94,7 @@
       };
 
       % Clip Space
-      \node[rectangle, draw, fill=AccentColor!20, minimum width=1.8cm, minimum height=0.8cm] (clip) at (9,4) {
+      \node[rectangle, draw, fill=AccentColor!20, minimum width=1.8cm, minimum height=0.8cm] (clip) at (12,4) {
         \begin{minipage}{1.6cm}
           \centering
           \textbf{Clip} \\
@@ -105,7 +103,7 @@
       };
 
       % NDC
-      \node[rectangle, draw, fill=LightGray, minimum width=1.8cm, minimum height=0.8cm] (ndc) at (6,2) {
+      \node[rectangle, draw, fill=LightGray, minimum width=1.8cm, minimum height=0.8cm] (ndc) at (8,1) {
         \begin{minipage}{1.6cm}
           \centering
           \textbf{NDC} \\
@@ -114,7 +112,7 @@
       };
 
       % Screen Space
-      \node[rectangle, draw, fill=RayColor!20, minimum width=1.8cm, minimum height=0.8cm] (screen) at (3,2) {
+      \node[rectangle, draw, fill=RayColor!20, minimum width=1.8cm, minimum height=0.8cm] (screen) at (3,1) {
         \begin{minipage}{1.6cm}
           \centering
           \textbf{Screen} \\
@@ -124,27 +122,27 @@
 
       % Arrows with matrix labels
       \draw[->, thick] (model) -- (world);
-      \node[above] at (1.5,4.2) {\scriptsize Model Matrix};
+      \node[above, align=center] at (2,4.2) {\scriptsize Model\\ \scriptsize Matrix};
 
       \draw[->, thick] (world) -- (view);
-      \node[above] at (4.5,4.2) {\scriptsize View Matrix};
+      \node[above, align=center] at (6,4.2) {\scriptsize View\\ \scriptsize Matrix};
 
       \draw[->, thick] (view) -- (clip);
-      \node[above] at (7.5,4.2) {\scriptsize Projection Matrix};
+      \node[above, align=center] at (10,4.2) {\scriptsize Projection\\ \scriptsize Matrix};
 
       \draw[->, thick] (clip) -- (ndc);
-      \node[right] at (9.2,3) {\scriptsize Perspective Divide};
+      \node[right, align=center] at (10,2) {\scriptsize Perspective\\ \scriptsize Divide};
 
       \draw[->, thick] (ndc) -- (screen);
-      \node[below] at (4.5,1.8) {\scriptsize Viewport Transform};
+      \node[below, align=center] at (5.5,2.3) {\scriptsize Viewport\\ \scriptsize Transform};
 
       % Vertex shader boundary
-      \draw[dashed, PrimaryColor, thick, rounded corners] (-0.5,3.3) rectangle (9.5,4.7);
-      \node[below right] at (-0.5,3.3) {\textcolor{PrimaryColor}{\textbf{Vertex Shader}}};
+      \draw[dashed, PrimaryColor, thick, rounded corners] (-1.5,3.1) rectangle (13.5,5.5);
+      \node[below right] at (4,6.5) {\textcolor{PrimaryColor}{\textbf{Vertex Shader}}};
 
       % Hardware boundary
-      \draw[dashed, DarkGray, thick, rounded corners] (5.5,1.3) rectangle (9.5,2.7);
-      \node[below right] at (5.5,1.3) {\textcolor{DarkGray}{\textbf{Hardware}}};
+      \draw[dashed, AccentColor, thick, rounded corners] (1.5,0) rectangle (9.5,2.5);
+      \node[below right] at (4.5,0) {\textcolor{DarkGray}{\textbf{Hardware}}};
     \end{tikzpicture}
   \end{center}
 \end{frame}
@@ -210,6 +208,104 @@
       \end{align*}
     \end{mathbox}
   }
+\end{frame}
+\begin{frame}{Clipping and Perspective Division}
+  \small
+  \begin{raybox}{Clipping Phase}
+    \textbf{Purpose:} Remove primitives outside the viewing frustum
+
+    \begin{itemize}
+      \item Operates in \textbf{clip space} (homogeneous coordinates)
+      \item Keeps only geometry inside the cube: $-w \leq x, y, z \leq w$
+      \item Output goes through \textbf{perspective division}:
+        \[
+          \text{NDC} = \left( \frac{x}{w}, \frac{y}{w}, \frac{z}{w} \right)
+        \]
+    \end{itemize}
+  \end{raybox}
+
+  \begin{conceptbox}{Normalized Device Coordinates (NDC)}
+    \textbf{Canonical cube} from $(-1, -1, -1)$ to $(1, 1, 1)$
+    \begin{itemize}
+      \item Independent of screen resolution
+      \item Defines final visible region before pixel conversion
+      \item $x$: left/right, $y$: bottom/top, $z$: near/far
+    \end{itemize}
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Viewport Transformation and Screen Space}
+  \small
+  \begin{conceptbox}{Viewport Transformation}
+    Maps NDC coordinates to screen pixels:
+    \[
+      \begin{aligned}
+        \text{screen}_x &= \left( \frac{\text{ndc}_x + 1}{2} \right) \cdot \text{width} + x_{\text{offset}} \\
+        \text{screen}_y &= \left( \frac{\text{ndc}_y + 1}{2} \right) \cdot \text{height} + y_{\text{offset}}
+      \end{aligned}
+    \]
+    \begin{itemize}
+      \item Converts from $[-1,1]$ range to pixel coordinates
+      \item Accounts for viewport size and position
+    \end{itemize}
+  \end{conceptbox}
+
+  \begin{raybox}{Screen Space}
+    \textbf{Final 2D position} used for rasterization
+    \begin{itemize}
+      \item Measured in pixels
+      \item Used by rasterizer to generate fragments
+    \end{itemize}
+  \end{raybox}
+\end{frame}
+
+\begin{frame}{Frustum → NDC → Screen Space}
+  \centering
+  \begin{tikzpicture}[scale=0.6, every node/.style={font=\footnotesize}]
+    % Frustum
+    \begin{scope}[xshift=-5cm]
+      % Draw near and far planes
+      \draw[thick] (-1,-1,0) -- (1,-1,0) -- (1,1,0) -- (-1,1,0) -- cycle;
+      \draw[thick] (-2,-2,4) -- (2,-2,4) -- (2,2,4) -- (-2,2,4) -- cycle;
+      % Connect planes
+      \draw[thick] (-1,-1,0) -- (-2,-2,4);
+      \draw[thick] (1,-1,0)  -- (2,-2,4);
+      \draw[thick] (1,1,0)   -- (2,2,4);
+      \draw[thick] (-1,1,0)  -- (-2,2,4);
+      % Labels
+      \node at (0,-1.5,4)     {near plane};
+      \node at (1.5,3,4)      {far plane};
+      \node at (-1,-3.5,1.5)     {View Frustum};
+    \end{scope}
+
+    % Arrow to NDC
+    \draw[->, thick] (-2.5,-1) -- (-1.5,-1) node[midway,above]{\scriptsize Clip \& Divide};
+
+    % NDC cube
+    \begin{scope}[shift={(0,-2)}]
+      \draw[thick] (0,0) rectangle (2,2);
+      \draw[thick] (0.5,0.5) rectangle (2.5,2.5);
+      \draw[thick] (0,0) -- (0.5,0.5);
+      \draw[thick] (2,0) -- (2.5,0.5);
+      \draw[thick] (0,2) -- (0.5,2.5);
+      \draw[thick] (2,2) -- (2.5,2.5);
+      \node at (1,-2) {NDC Cube};
+      \node at (1,-0.5) {$-1 \le x,y,z \le 1$};
+    \end{scope}
+
+    % Arrow to screen
+    \draw[->, thick] (3.5,-1) -- (4.5,-1) node[midway,above, align=center,yshift=0.05cm]{\scriptsize Viewport\\ \scriptsize Transform};
+
+    % Screen rectangle
+    \begin{scope}[shift={(6,-2)}]
+      \draw[thick] (0,0) rectangle (4,3);
+      % grid to imply pixels
+      \foreach \x in {0.5,1,...,3.5} \draw[gray!30] (\x,0) -- (\x,3);
+      \foreach \y in {0.5,1,...,2.5} \draw[gray!30] (0,\y) -- (4,\y);
+      \node at (2,-2) {Screen Space};
+      \node at (2,-0.3) {Pixels: width $\times$ height};
+    \end{scope}
+  \end{tikzpicture}
 \end{frame}
 
 \begin{frame}[fragile]{Vertex Shader Example}
