@@ -3,9 +3,10 @@
 \subsection{Overview}
 \begin{frame}{Geometry Shader Stage}
   \begin{columns}
-    \begin{column}{0.6\textwidth}
+    \small
+    \begin{column}{0.8\textwidth}
       \begin{raybox}{Geometry Shader}
-        \textbf{Input:} Complete primitives (points, lines, triangles) \\
+        \textbf{Input:} Primitives (points, lines, triangles) \\
         \textbf{Output:} New primitives (can generate or discard)
 
         \vspace{0.3cm}
@@ -15,343 +16,69 @@
           \item Discard primitives based on conditions
           \item Transform primitive types
           \item Add detail or effects
-          \end{itemize>
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.2\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Point particle
+        \fill[ObjectColor] (3,3) circle (2pt);
+        \node[above] at (3,3.2) {\textbf{Input}};
 
-            \vspace{0.2cm}
-            \textcolor{AccentColor}{\textbf{Optional programmable stage}}
-          \end{raybox}
-        \end{column>
-          \begin{column}{0.4\textwidth}
-            \begin{tikzpicture}[scale=0.7]
-              % Input primitive
-              \node at (0,3.5) {\textbf{Input}};
-              \draw[thick, ObjectColor] (0,3) -- (0.8,2.4) -- (0,1.8) -- cycle;
-              \fill[ObjectColor] (0,3) circle (2pt);
-              \fill[ObjectColor] (0.8,2.4) circle (2pt);
-              \fill[ObjectColor] (0,1.8) circle (2pt);
-              \node[below] at (0.4,1.6) {\scriptsize 1 Triangle};
+        \draw[->, thick, AccentColor] (3,2.5) -- (3,0.8);
+        % Generated quad
+        \node[below] at (3,-0.2) {\textbf{Output}};
 
-              \draw[->, thick, PrimaryColor] (0.4,1.4) -- (0.4,0.8);
-              \node[right] at (0.6,1.1) {\scriptsize Geometry Shader};
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (2.5,0.5) rectangle (3.5,0);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
 
-              % Output primitives
-              \node at (0,0.4) {\textbf{Output}};
-              % Multiple triangles
-              \draw[thick, SecondaryColor] (-0.5,-0.2) -- (0,-0.8) -- (-1,-0.8) -- cycle;
-              \draw[thick, SecondaryColor] (0.5,-0.2) -- (1,-0.8) -- (0,-0.8) -- cycle;
-              \draw[thick, SecondaryColor] (0,-0.2) -- (0.5,-0.5) -- (-0.5,-0.5) -- cycle;
-              \node[below] at (0,-1) {\scriptsize 3 Triangles};
-            \end{tikzpicture>
-            \end{column>
-            \end{columns>
-            \end{frame>
-
-              \subsection{Capabilities}
-              \begin{frame}{Geometry Shader Capabilities}
-                \begin{columns}
-                  \begin{column}{0.5\textwidth}
-                    \begin{conceptbox}{Primitive Generation}
-                      \textbf{Can output:}
-                      \begin{itemize>
-                        \item Points
-                        \item Line strips
-                        \item Triangle strips
-                        \end{itemize>
-
-                          \vspace{0.2cm}
-                          \textbf{Generation patterns:}
-                          \begin{itemize}
-                            \item One-to-many (subdivision)
-                            \item One-to-one (pass-through)
-                            \item Many-to-one (primitive merging)
-                            \item Many-to-none (culling)
-                            \end{itemize>
-                            \end{conceptbox>
-                            \end{column>
-                              \begin{column>{0.5\textwidth}
-                                  \begin{mathbox>{Input/Output Declaration}
-                                      \small
-                                      \textbf{Input layout specifiers:}
-                                      \begin{itemize}
-                                        \item \texttt{points} - Point primitives
-                                        \item \texttt{lines} - Line primitives
-                                        \item \texttt{triangles} - Triangle primitives
-                                        \item \texttt{lines\_adjacency} - Lines with adjacency
-                                        \item \texttt{triangles\_adjacency} - Triangles with adjacency
-                                        \end{itemize>
-
-                                          \vspace{0.2cm}
-                                          \textbf{Output layout specifiers:}
-                                          \begin{itemize>
-                                            \item \texttt{points}
-                                            \item \texttt{line\_strip}
-                                            \item \texttt{triangle\_strip}
-                                            \end{itemize>
-                                            \end{mathbox>
-                                            \end{column>
-                                            \end{columns>
-                                            \end{frame>
-
-                                              \subsection{Use Cases}
-                                              \begin{frame}{Common Geometry Shader Use Cases}
-                                                \begin{columns}
-                                                  \begin{column>{0.5\textwidth}
-                                                      \begin{raybox>{Billboarding}
-                                                          \textbf{Convert points to camera-facing quads}
-
-                                                          \vspace{0.2cm}
-                                                          \textbf{Applications:}
-                                                          \begin{itemize}
-                                                            \item Particle systems
-                                                            \item Vegetation (grass, leaves)
-                                                            \item UI elements in 3D space
-                                                            \item Sprites and icons
-                                                            \end{itemize>
-
-                                                              \vspace{0.2cm}
-                                                              \textbf{Process:}
-                                                              \begin{enumerate}
-                                                                \item Input: Single point
-                                                                \item Calculate camera-facing orientation
-                                                                \item Output: 4 vertices forming a quad
-                                                                \end{enumerate>
-                                                                \end{raybox>
-                                                                \end{column>
-                                                                  \begin{column>{0.5\textwidth}
-                                                                      \begin{tikzpicture}[scale=0.6]
-                                                                        % Camera
-                                                                        \node[circle, fill=PrimaryColor!30, minimum size=0.5cm] (cam) at (0,2) {\tiny \faIcon{video}};
-
-                                                                        % Point particle
-                                                                        \fill[ObjectColor] (3,2) circle (2pt);
-                                                                        \node[below] at (3,1.7) {\scriptsize Point};
-
-                                                                        \draw[->, thick, AccentColor] (3,1.5) -- (3,0.8);
-                                                                        \node[right] at (3.2,1.15) {\scriptsize Geometry Shader};
-
-                                                                        % Generated quad
-                                                                        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (2.5,0.5) rectangle (3.5,0);
-                                                                        \node[below] at (3,-0.2) {\scriptsize Camera-facing Quad};
-
-                                                                        % Viewing direction
-                                                                        \draw[dashed, gray] (cam) -- (3,0.25);
-                                                                      \end{tikzpicture>
-                                                                      \end{column>
-                                                                      \end{columns>
-
-                                                                        \vspace{0.3cm}
-
-                                                                        \begin{columns}
-                                                                          \begin{column>{0.5\textwidth}
-                                                                              \begin{mathbox>{Primitive Amplification}
-                                                                                  \textbf{Examples:}
-                                                                                  \begin{itemize}
-                                                                                    \item Fur/hair generation
-                                                                                    \item Procedural geometry
-                                                                                    \item Subdivision surfaces
-                                                                                    \item Extrusion effects
-                                                                                    \end{itemize>
-                                                                                    \end{mathbox>
-                                                                                    \end{column>
-                                                                                      \begin{column>{0.5\textwidth}
-                                                                                          \begin{conceptbox>{Primitive Culling}
-                                                                                              \textbf{Discard primitives based on:}
-                                                                                              \begin{itemize}
-                                                                                                \item Viewing frustum
-                                                                                                \item Back-face orientation
-                                                                                                \item Distance from camera
-                                                                                                \item Custom criteria
-                                                                                                \end{itemize>
-                                                                                                \end{conceptbox>
-                                                                                                \end{column>
-                                                                                                \end{columns>
-                                                                                                \end{frame>
-
-                                                                                                  \begin{frame>[fragile]{Geometry Shader Example: Billboarding}
-                                                                                                      \begin{columns}
-                                                                                                        \begin{column>{0.55\textwidth}
-      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
-#version 330 core
-
-// Input: points, Output: triangle strip (quad)
-layout (points) in;
-layout (triangle_strip, max_vertices = 4) out;
-
-// Input from vertex shader
-in vec3 vPosition[];
-in float vSize[];
-in vec4 vColor[];
-
-// Output to fragment shader
-out vec2 gTexCoord;
-out vec4 gColor;
-
-// Uniforms
-uniform mat4 uView;
-uniform mat4 uProjection;
-
-void main() {
-    vec3 worldPos = vPosition[0];
-    float size = vSize[0];
-    vec4 color = vColor[0];
-
-    // Get camera right and up vectors from view matrix
-    vec3 right = vec3(uView[0][0], uView[1][0], uView[2][0]);
-    vec3 up = vec3(uView[0][1], uView[1][1], uView[2][1]);
-
-    // Scale by particle size
-    right *= size * 0.5;
-    up *= size * 0.5;
-      \end{minted>
-    \end{column>
-    \begin{column>{0.45\textwidth}
-      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
-    // Generate quad vertices
-    vec3 va = worldPos - right - up; // Bottom-left
-    gl_Position = uProjection * uView * vec4(va, 1.0);
-    gTexCoord = vec2(0.0, 0.0);
-    gColor = color;
-    EmitVertex();
-
-    vec3 vb = worldPos + right - up; // Bottom-right
-    gl_Position = uProjection * uView * vec4(vb, 1.0);
-    gTexCoord = vec2(1.0, 0.0);
-    gColor = color;
-    EmitVertex();
-
-    vec3 vc = worldPos - right + up; // Top-left
-    gl_Position = uProjection * uView * vec4(vc, 1.0);
-    gTexCoord = vec2(0.0, 1.0);
-    gColor = color;
-    EmitVertex();
-
-    vec3 vd = worldPos + right + up; // Top-right
-    gl_Position = uProjection * uView * vec4(vd, 1.0);
-    gTexCoord = vec2(1.0, 1.0);
-    gColor = color;
-    EmitVertex();
-
-    EndPrimitive();
-}
-      \end{minted>
-    \end{column>
-  \end{columns>
-\end{frame>
-
-\begin{frame>[fragile]{Geometry Shader Example: Normal Visualization}
+\subsection{Use Cases}
+\begin{frame}{Billboarding: Use Case}
   \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{glsl}
-#version 330 core
-
-// Input: triangles, Output: line strip
-layout (triangles) in;
-layout (line_strip, max_vertices = 6) out;
-
-// Input from vertex shader
-in vec3 vPosition[];
-in vec3 vNormal[];
-
-// Uniforms
-uniform mat4 uMVP;
-uniform float uNormalLength;
-
-void main() {
-    // Generate normal lines for each vertex
-    for (int i = 0; i < 3; i++) {
-        vec3 startPos = vPosition[i];
-        vec3 endPos = startPos + vNormal[i] * uNormalLength;
-
-        // Start point
-        gl_Position = uMVP * vec4(startPos, 1.0);
-        EmitVertex();
-
-        // End point
-        gl_Position = uMVP * vec4(endPos, 1.0);
-        EmitVertex();
-
-        EndPrimitive();
-    }
-}
-      \end{minted>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{tikzpicture}[scale=0.8]
-        % Triangle
-        \coordinate (A) at (0,0);
-        \coordinate (B) at (2.5,0);
-        \coordinate (C) at (1.25,2);
-
-        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
-        \fill[ObjectColor] (A) circle (2pt);
-        \fill[ObjectColor] (B) circle (2pt);
-        \fill[ObjectColor] (C) circle (2pt);
-
-        % Normal vectors
-        \draw[->, thick, PrimaryColor] (A) -- ++(225:1);
-        \draw[->, thick, PrimaryColor] (B) -- ++(315:1);
-        \draw[->, thick, PrimaryColor] (C) -- ++(90:1);
-
-        \node[below left] at (A) {\scriptsize Vertex A};
-        \node[below right] at (B) {\scriptsize Vertex B};
-        \node[above] at (C) {\scriptsize Vertex C};
-
-        \node[below] at (1.25,-0.5) {\scriptsize Normal visualization};
-      \end{tikzpicture>
-    \end{column>
-  \end{columns>
-\end{frame>
-
-\begin{frame>{Geometry Shader Performance Considerations}
-  \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{raybox>{Performance Impact}
-        \textbf{Potential bottlenecks:}
-        \begin{itemize>
-          \item Sequential execution (not parallel)
-          \item Vertex cache invalidation
-          \item Dynamic vertex count
-          \item Memory bandwidth
-        \end{itemize>
+    \begin{column}{0.7\textwidth}
+      \begin{raybox}{Billboarding}
+        \textbf{Convert points to camera-facing quads}
 
         \vspace{0.2cm}
-        \textbf{Modern alternatives:}
+        \textbf{Applications:}
         \begin{itemize}
-          \item Compute shaders
-          \item Mesh shaders (newer GPUs)
-          \item Instanced rendering
-          \item Pre-computed geometry
-        \end{itemize>
-      \end{raybox>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{conceptbox>{Best Practices}
-        \begin{itemize}
-          \item \textbf{Minimize output:} Generate only necessary vertices
-          \item \textbf{Batch operations:} Process multiple primitives efficiently
-          \item \textbf{Avoid complex branching:} Keep shader simple
-          \item \textbf{Consider alternatives:} Use instancing when possible
-          \item \textbf{Profile performance:} Measure actual impact
-        \end{itemize>
-      \end{conceptbox>
-    \end{column>
-  \end{columns>
+          \item Grass, leaves
+          \item Particle systems
+          \item Sprites and icons
+        \end{itemize}
 
-  \vspace{0.3cm}
+        \vspace{0.2cm}
+        \textbf{Process:}
+        \begin{enumerate}
+          \item \textbf{Input}: Single point
+          \item Calculate camera-facing orientation
+          \item \textbf{Output}: 4 vertices forming a quad
+        \end{enumerate}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Camera
+        \node[circle, fill=PrimaryColor!30, minimum size=0.5cm] (cam) at (0,2) {\tiny \faIcon{video}};
 
-  \begin{mathbox>{When to Use Geometry Shaders}
-    \textbf{Good for:}
-    \begin{itemize}
-      \item Small-scale geometry generation (particles, debug lines)
-      \item Primitive-based effects (wireframe overlay, normal visualization)
-      \item Situations where compute shaders aren't available
-    \end{itemize>
+        % Point particle
+        \fill[ObjectColor] (3,3) circle (2pt);
+        \node[above] at (3,3) {\scriptsize Point};
 
-    \textbf{Avoid for:}
-    \begin{itemize}
-      \item Large-scale geometry amplification
-      \item Performance-critical applications
-      \item When modern alternatives (mesh shaders) are available
-    \end{itemize>
-  \end{mathbox>
-\end{frame>
+        \draw[->, thick, AccentColor] (3,2.5) -- (3,0.8);
+        \node[right, align=center] at (3.2,1.7) {\scriptsize Geometry \\ \scriptsize Shader};
+
+        % Generated quad
+        \node[below] at (3,-0.2) {\scriptsize Camera-facing Quad};
+
+        % Viewing direction
+        \draw[dashed, gray] (cam) -- (3,3);
+        \draw[dashed, gray] (cam) -- (3,0.25);
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (2.5,0.5) rectangle (3.5,0);
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
