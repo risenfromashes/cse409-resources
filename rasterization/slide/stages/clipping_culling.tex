@@ -3,11 +3,11 @@
 \subsection{Overview}
 \begin{frame}{Clipping \& Culling Stage}
   \begin{columns}
-    \begin{column}{0.6\textwidth}
+    \begin{column}{0.55\textwidth}
       \begin{raybox}{Clipping \& Culling}
         \textbf{Input:} Assembled primitives in clip space \\
         \textbf{Output:} Visible primitives ready for rasterization
-        
+
         \vspace{0.3cm}
         \textbf{Purpose:}
         \begin{itemize}
@@ -15,425 +15,398 @@
           \item Eliminate back-facing triangles
           \item Reduce work for subsequent stages
           \item Prevent rendering artifacts
-        \end{itemize>
-        
+        \end{itemize}
+
         \vspace{0.2cm}
         \textcolor{DarkGray}{\textbf{Configurable fixed-function stage}}
       \end{raybox}
-    \end{column>
-    \begin{column}{0.4\textwidth}
-      \begin{tikzpicture}[scale=0.7]
-        % View frustum
-        \draw[thick, LightGray] (0,0) -- (2,1) -- (2,-1) -- cycle;
-        \draw[thick, LightGray] (0,0) -- (2,1);
-        \draw[thick, LightGray] (0,0) -- (2,-1);
-        \draw[thick, LightGray] (2,1) -- (2,-1);
-        
-        % Triangles - inside, outside, clipped
-        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (0.8,0.3) -- (1.2,0.5) -- (1,0) -- cycle;
-        \node[below] at (1,-0.2) {\scriptsize Inside};
-        
-        \draw[thick, DarkGray, dashed] (2.5,0.5) -- (3,0.8) -- (2.8,0.2) -- cycle;
-        \node[below] at (2.8,0) {\scriptsize Outside};
-        
-        \draw[thick, AccentColor] (1.5,0.8) -- (2.5,1.2) -- (1.8,0.4) -- cycle;
-        \draw[thick, AccentColor, dashed] (2,1) -- (2.5,1.2) -- (1.8,0.4);
-        \node[below] at (1.8,0.2) {\scriptsize Clipped};
-        
-        \node[below] at (1,-1.3) {\scriptsize View Frustum};
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \begin{tikzpicture}[scale=0.8]
+        % 3D View frustum with proper perspective
+        \coordinate (eye) at (0,0);
+        \coordinate (near1) at (1.2,-0.8);
+        \coordinate (near2) at (1.2,0.8);
+        \coordinate (far1) at (3.5,-2);
+        \coordinate (far2) at (3.5,2);
+
+        % Draw frustum boundaries
+        \draw[thick, LightGray] (eye) -- (near1) -- (far1);
+        \draw[thick, LightGray] (eye) -- (near2) -- (far2);
+        \draw[thick, LightGray] (near1) -- (near2);
+        \draw[thick, LightGray] (far1) -- (far2);
+
+        % Near and far planes
+        \draw[thick, PrimaryColor, line width=2pt] (near1) -- (near2);
+        \draw[thick, AccentColor, line width=2pt] (far1) -- (far2);
+
+        % Triangles with different statuses
+        % Inside triangle
+        \draw[thick, SecondaryColor, fill=SecondaryColor!30]
+        (1.8,0.2) -- (2.2,0.5) -- (2.0,-0.1) -- cycle;
+        \node[below, font=\tiny] at (2.0,-0.3) {\textbf{Inside}};
+
+        % Outside triangle (beyond far plane)
+        \draw[thick, DarkGray, dashed, fill=DarkGray!10]
+        (4.0,1.0) -- (4.5,1.5) -- (4.2,0.5) -- cycle;
+        \node[below, font=\tiny] at (4.2,0.3) {\textbf{Outside}};
+
+        % Clipped triangle (intersecting frustum)
+        \draw[thick, ObjectColor, fill=ObjectColor!20]
+        (2.8,-1.2) -- (3.8,-0.8) -- (3.2,-1.8) -- cycle;
+        % Show clipped portion as dashed
+        \draw[thick, ObjectColor, dashed]
+        (3.5,-1.0) -- (3.8,-0.8) -- (3.5,-1.6) -- cycle;
+        \node[below, font=\tiny] at (3.2,-2.0) {\textbf{Clipped}};
+
+        % Camera/eye
+        \fill[PrimaryColor] (eye) circle (2pt);
+        \node[left, font=\tiny] at (eye) {\textbf{Eye}};
+
+        % Labels
+        \node[above, font=\tiny] at (1.2,0.9) {\textbf{Near}};
+        \node[above, font=\tiny] at (3.5,2.1) {\textbf{Far}};
       \end{tikzpicture}
-    \end{column>
-  \end{columns>
-\end{frame>
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \subsection{View Frustum Clipping}
 \begin{frame}{View Frustum \& Clipping Planes}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.45\textwidth}
       \begin{conceptbox}{View Frustum Planes}
-        \textbf{Six clipping planes:}
+        \textbf{Six clipping planes in clip space:}
         \begin{itemize}
-          \item \textbf{Near plane:} $z = z_{\text{near}}$
-          \item \textbf{Far plane:} $z = z_{\text{far}}$
-          \item \textbf{Left plane:} $-w \leq x$
-          \item \textbf{Right plane:} $x \leq w$
-          \item \textbf{Bottom plane:} $-w \leq y$
-          \item \textbf{Top plane:} $y \leq w$
+          \item \textbf{Near:} $z \geq 0$ (or $z \geq -w$)
+          \item \textbf{Far:} $z \leq w$
+          \item \textbf{Left:} $x \geq -w$
+          \item \textbf{Right:} $x \leq w$
+          \item \textbf{Bottom:} $y \geq -w$
+          \item \textbf{Top:} $y \leq w$
         \end{itemize}
-        
+
         \vspace{0.2cm}
-        Where $(x, y, z, w)$ are clip space coordinates after projection matrix.
-      \end{conceptbox>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{tikzpicture}[scale=0.7]
-        % 3D frustum representation
-        \coordinate (eye) at (0,0);
-        
-        % Near plane
-        \draw[thick, PrimaryColor] (1,-0.5) -- (1,0.5);
-        \node[below] at (1,-0.7) {\scriptsize Near};
-        
-        % Far plane  
-        \draw[thick, SecondaryColor] (3,-1.5) -- (3,1.5);
-        \node[below] at (3,-1.7) {\scriptsize Far};
-        
+        After projection matrix transforms world coordinates to clip space $(x, y, z, w)$.
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+        % 3D coordinate system
+        \coordinate (origin) at (2,1);
+
+        % Draw coordinate axes
+        \draw[->, thick, gray] (origin) -- ++(1.5,0) node[right] {\tiny x};
+        \draw[->, thick, gray] (origin) -- ++(0,1.5) node[above] {\tiny y};
+        \draw[->, thick, gray] (origin) -- ++(-0.7,-0.7) node[below left] {\tiny z};
+
+        % Draw frustum as wireframe cube in perspective
+        \coordinate (n1) at (1,0.5);   % near bottom-left
+        \coordinate (n2) at (3,0.5);   % near bottom-right
+        \coordinate (n3) at (3,1.5);   % near top-right
+        \coordinate (n4) at (1,1.5);   % near top-left
+
+        \coordinate (f1) at (0.5,0);   % far bottom-left
+        \coordinate (f2) at (3.5,0);   % far bottom-right
+        \coordinate (f3) at (3.5,2);   % far top-right
+        \coordinate (f4) at (0.5,2);   % far top-left
+
+        % Near plane (highlighted)
+        \draw[thick, PrimaryColor, fill=PrimaryColor!20, opacity=0.7]
+        (n1) -- (n2) -- (n3) -- (n4) -- cycle;
+        \node[font=\tiny, PrimaryColor] at (2,1) {\textbf{Near}};
+
+        % Far plane
+        \draw[thick, AccentColor, fill=AccentColor!10, opacity=0.5]
+        (f1) -- (f2) -- (f3) -- (f4) -- cycle;
+        \node[font=\tiny, AccentColor] at (2,0.5) {\textbf{Far}};
+
         % Side planes
-        \draw[thick, ObjectColor] (eye) -- (1,0.5) -- (3,1.5);
-        \draw[thick, ObjectColor] (eye) -- (1,-0.5) -- (3,-1.5);
-        
-        % Top/bottom indicators
-        \node[above] at (2,1) {\scriptsize Top};
-        \node[below] at (2,-1) {\scriptsize Bottom};
-        \node[left] at (2,0.7) {\scriptsize Right};
-        \node[left] at (2,-0.7) {\scriptsize Left};
-        
-        % Camera
-        \fill[PrimaryColor] (eye) circle (2pt);
-        \node[left] at (eye) {\scriptsize Camera};
-      \end{tikzpicture>
-    \end{column>
-  \end{columns>
-  
+        \draw[thick, SecondaryColor] (n1) -- (f1) -- (f4) -- (n4) -- cycle;
+        \draw[thick, SecondaryColor] (n2) -- (f2) -- (f3) -- (n3) -- cycle;
+        \draw[thick, SecondaryColor] (n1) -- (f1) -- (f2) -- (n2) -- cycle;
+        \draw[thick, SecondaryColor] (n4) -- (f4) -- (f3) -- (n3) -- cycle;
+
+        % Labels for planes
+        \node[font=\tiny, left] at (0.75,1.75) {\textbf{Left}};
+        \node[font=\tiny, right] at (3.25,1.75) {\textbf{Right}};
+        \node[font=\tiny, below] at (2,0.25) {\textbf{Bottom}};
+        \node[font=\tiny, above] at (2,1.75) {\textbf{Top}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
   \vspace{0.3cm}
-  
-  \begin{mathbox>{Clipping Test}
+
+  \begin{mathbox}{Clipping Test in Homogeneous Coordinates}
     For a vertex in clip space $(x, y, z, w)$, it's inside the frustum if:
     \begin{align}
       -w \leq x \leq w \quad \text{and} \quad -w \leq y \leq w \quad \text{and} \quad 0 \leq z \leq w
-    \end{align>
-    
-    \textbf{Note:} Some APIs use $-w \leq z \leq w$ (OpenGL) vs $0 \leq z \leq w$ (DirectX)
-  \end{mathbox>
-\end{frame>
+    \end{align}
+    \textbf{Note:} DirectX uses $0 \leq z \leq w$, OpenGL uses $-w \leq z \leq w$
+  \end{mathbox}
+\end{frame}
 
-\begin{frame>{Clipping Methods}
+\begin{frame}{Clipping Methods}
   \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{raybox>{Homogeneous Clipping}
-        \textbf{Performed in clip space before perspective divide}
-        
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Homogeneous Clipping}
+        \textbf{Performed in 4D clip space}
+
         \vspace{0.2cm}
         \textbf{Advantages:}
         \begin{itemize}
-          \item Linear clipping plane equations
-          \item Handles perspective projection correctly
-          \item Standard hardware implementation
-        \end{itemize>
-        
+          \item Linear plane equations: $ax + by + cz + dw = 0$
+          \item Handles perspective correctly
+          \item No division by zero issues
+          \item Hardware implementation standard
+        \end{itemize}
+
         \vspace{0.2cm}
         \textbf{Process:}
         \begin{enumerate}
-          \item Test vertices against clip planes
-          \item Classify triangles as inside/outside/intersecting
-          \item Split intersecting triangles
-        \end{enumerate>
-      \end{raybox>
-    \end{column>
-    \begin{column>{0.5\textwidth}
+          \item Test vertices against 6 planes
+          \item Classify primitives by vertex positions
+          \item Generate intersection points
+          \item Create new triangulated polygons
+        \end{enumerate}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
       \begin{conceptbox}{Screen Space Clipping}
-        \textbf{Performed after perspective divide}
-        
+        \textbf{After perspective divide (NDC)}
+
         \vspace{0.2cm}
-        \textbf{Used for:}
+        \textbf{Applications:}
         \begin{itemize}
-          \item Viewport clipping
-          \item Scissor test
-          \item Guard band clipping
-        \end{itemize>
-        
+          \item Viewport rectangle clipping
+          \item Scissor test implementation
+          \item Guard band optimization
+          \item 2D UI element clipping
+        \end{itemize}
+
         \vspace{0.2cm}
-        \textbf{Simpler math:}
+        \textbf{Characteristics:}
         \begin{itemize}
-          \item 2D clipping algorithms
+          \item Simple 2D algorithms (Cohen-Sutherland)
           \item Rectangular clip regions
-          \item Post-rasterization culling
-        \end{itemize>
-      \end{conceptbox>
-    \end{column>
-  \end{columns>
-\end{frame>
+          \item Per-pixel rejection possible
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \subsection{Triangle Clipping}
-\begin{frame>{Triangle Splitting}
+\begin{frame}{Triangle Clipping Cases}
   \begin{columns}
-    \begin{column>{0.6\textwidth}
-      \begin{mathbox>{Clipping Cases}
-        \textbf{Three possible outcomes:}
-        
+    \begin{column}{0.4\textwidth}
+      \begin{mathbox}{Classification \& Splitting}
+        \textbf{Vertex classification:}
+        \begin{itemize}
+          \item \textbf{Inside:} All vertices inside frustum
+          \item \textbf{Outside:} All vertices outside
+          \item \textbf{Intersecting:} Mixed vertices
+        \end{itemize}
+
         \vspace{0.2cm}
-        \textbf{1. Completely inside:} Keep triangle unchanged
-        
-        \textbf{2. Completely outside:} Discard triangle
-        
-        \textbf{3. Intersecting:} Split into smaller triangles
-        
-        \vspace{0.3cm}
-        \textbf{Intersection calculation:}
-        For edge from $\mathbf{P_1}$ to $\mathbf{P_2}$ intersecting plane:
+        \textbf{Edge-plane intersection:}
         \begin{align}
           t &= \frac{d_1}{d_1 - d_2} \\
-          \mathbf{P_{new}} &= \mathbf{P_1} + t(\mathbf{P_2} - \mathbf{P_1})
-        \end{align>
-        Where $d_1, d_2$ are signed distances to the plane.
-      \end{mathbox>
-    \end{column>
-    \begin{column>{0.4\textwidth}
-      \begin{tikzpicture}[scale=0.7]
+          \mathbf{P_{int}} &= \mathbf{P_1} + t(\mathbf{P_2} - \mathbf{P_1})
+        \end{align}
+
+        Where $d_i = ax_i + by_i + cz_i + dw_i$
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.6\textwidth}
+      \begin{tikzpicture}[scale=1.0]
         % Clipping plane
-        \draw[thick, LightGray] (0,-0.5) -- (3.5,-0.5);
-        \node[below] at (1.75,-0.7) {\scriptsize Clipping Plane};
-        
-        % Original triangle (partially outside)
-        \coordinate (A) at (0.5,1);
-        \coordinate (B) at (2.5,1.5);
-        \coordinate (C) at (1.5,-1.5);
-        
+        \draw[thick, LightGray, line width=2pt] (0,1.5) -- (5,1.5);
+        \node[below, font=\small] at (2.5,1.3) {\textbf{Clipping Plane}};
+
+        % Case 1: Completely inside (top)
+        \draw[thick, SecondaryColor, fill=SecondaryColor!30]
+        (0.5,2.5) -- (1.5,3) -- (1,2) -- cycle;
+        \node[above, font=\tiny] at (1,3.2) {\textbf{Case 1: Keep}};
+
+        % Case 2: Completely outside (bottom)
+        \draw[thick, DarkGray, dashed, fill=DarkGray!10]
+        (3.5,0.5) -- (4.5,1) -- (4,0) -- cycle;
+        \node[below, font=\tiny] at (4,-0.2) {\textbf{Case 2: Discard}};
+
+        % Case 3: Intersecting triangle
+        \coordinate (A) at (2,2.5);
+        \coordinate (B) at (3,2.8);
+        \coordinate (C) at (2.5,0.8);
+
+        % Original triangle (dashed)
         \draw[thick, ObjectColor, dashed] (A) -- (B) -- (C) -- cycle;
-        \fill[ObjectColor] (A) circle (2pt);
-        \fill[ObjectColor] (B) circle (2pt);
-        \fill[ObjectColor] (C) circle (2pt);
-        
+
         % Intersection points
-        \coordinate (I1) at (1,-0.5);
-        \coordinate (I2) at (2,-0.5);
-        
-        \fill[AccentColor] (I1) circle (2pt);
-        \fill[AccentColor] (I2) circle (2pt);
-        
-        % Clipped triangle (kept part)
-        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (A) -- (B) -- (I2) -- (I1) -- cycle;
-        
-        \node[left] at (A) {\scriptsize A};
-        \node[right] at (B) {\scriptsize B};
-        \node[below] at (C) {\scriptsize C};
-        \node[below] at (I1) {\scriptsize $I_1$};
-        \node[below] at (I2) {\scriptsize $I_2$};
-        
-        \node[above] at (1.75,0.5) {\scriptsize Kept region};
-      \end{tikzpicture>
-    \end{column>
-  \end{columns>
-\end{frame>
+        \coordinate (I1) at (2.2,1.5);
+        \coordinate (I2) at (2.8,1.5);
+
+        % Clipped result (solid)
+        \draw[thick, AccentColor, fill=AccentColor!20]
+        (A) -- (B) -- (I2) -- (I1) -- cycle;
+
+        % Mark vertices and intersections
+        \fill[ObjectColor] (A) circle (2pt) node[above left, font=\tiny] {A};
+        \fill[ObjectColor] (B) circle (2pt) node[above right, font=\tiny] {B};
+        \fill[ObjectColor] (C) circle (2pt) node[below, font=\tiny] {C};
+        \fill[AccentColor] (I1) circle (2pt) node[below, font=\tiny] {$I_1$};
+        \fill[AccentColor] (I2) circle (2pt) node[below, font=\tiny] {$I_2$};
+
+        \node[above, font=\tiny] at (2.5,2.8) {\textbf{Case 3: Split}};
+
+        % Show the kept region
+        \draw[->, AccentColor, thick] (3.8,2.2) -- (2.8,2.0);
+        \node[right, font=\tiny] at (3.8,2.2) {\textbf{Kept polygon}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \begin{frame}{Sutherland-Hodgman Clipping Algorithm}
   \begin{columns}
-    \begin{column>{0.6\textwidth}
-      \begin{raybox>{Algorithm Overview}
-        \textbf{Clip polygon against each plane sequentially}
-        
+    \begin{column}{0.5\textwidth}
+      \begin{raybox}{Sequential Plane Clipping}
+        \textbf{Process each plane in sequence}
+
         \vspace{0.2cm}
         \textbf{For each clipping plane:}
         \begin{enumerate}
-          \item Process each edge of current polygon
-          \item Classify vertices as inside/outside
-          \item Generate new vertices at intersections
-          \item Build new polygon for next iteration
+          \item Start with current polygon
+          \item Process each edge against plane
+          \item Build output vertex list
+          \item Use output as input for next plane
         \end{enumerate}
-        
+
         \vspace{0.2cm}
-        \textbf{Edge cases:}
+        \textbf{Edge processing rules:}
         \begin{itemize}
-          \item Inside → Inside: Keep second vertex
-          \item Inside → Outside: Add intersection point
-          \item Outside → Inside: Add intersection + second vertex
-          \item Outside → Outside: Skip edge
+          \item \textcolor{SecondaryColor}{Inside → Inside}: Output end vertex
+          \item \textcolor{AccentColor}{Inside → Outside}: Output intersection
+          \item \textcolor{ObjectColor}{Outside → Inside}: Output intersection + end
+          \item \textcolor{DarkGray}{Outside → Outside}: Output nothing
         \end{itemize}
-      \end{raybox>
-    \end{column>
-    \begin{column>{0.4\textwidth}
-      \begin{tikzpicture}[scale=0.6]
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tikzpicture}[scale=0.8]
         % Step 1: Original triangle
-        \node at (0,3.5) {\textbf{Step 1: Original}};
-        \draw[thick, ObjectColor] (0,3) -- (1.5,3.2) -- (0.8,2.2) -- cycle;
-        
+        \node[font=\small, PrimaryColor] at (2.5,4.5) {\textbf{Step 1: Original Triangle}};
+        \draw[thick, ObjectColor, fill=ObjectColor!20]
+        (1,4) -- (4,4.2) -- (2.5,3.2) -- cycle;
+        \node[below, font=\tiny] at (2.5,3) {\textbf{Input: 3 vertices}};
+
         % Step 2: Clip against left plane
-        \node at (0,2.5) {\textbf{Step 2: Left plane}};
-        \draw[thick, LightGray] (0.3,2.8) -- (0.3,1.8);
-        \draw[thick, SecondaryColor] (0.3,2.9) -- (1.5,3.1) -- (0.8,2.1) -- (0.3,2.3) -- cycle;
-        
+        \node[font=\small, PrimaryColor] at (2.5,3.5) {\textbf{Step 2: Left Plane}};
+        \draw[thick, LightGray] (1.5,3.8) -- (1.5,2.8);
+        \draw[thick, SecondaryColor, fill=SecondaryColor!20]
+        (1.5,3.7) -- (4,3.9) -- (2.5,2.9) -- (1.5,3.1) -- cycle;
+        \node[below, font=\tiny] at (2.5,2.7) {\textbf{Output: 4 vertices}};
+
         % Step 3: Clip against right plane
-        \node at (0,1.5) {\textbf{Step 3: Right plane}};
-        \draw[thick, LightGray] (1.2,1.8) -- (1.2,0.8);
-        \draw[thick, AccentColor] (0.3,1.6) -- (1.2,1.7) -- (1.2,1.3) -- (0.8,0.8) -- (0.3,1.0) -- cycle;
-        
-        % Step 4: Final result
-        \node at (0,0.5) {\textbf{Step 4: Final}};
-        \draw[thick, PrimaryColor, fill=PrimaryColor!20] (0.3,0.3) -- (1.2,0.4) -- (1.2,0) -- (0.8,-0.5) -- (0.3,-0.3) -- cycle;
-      \end{tikzpicture>
-    \end{column>
-  \end{columns>
-\end{frame>
+        \node[font=\small, PrimaryColor] at (2.5,2.5) {\textbf{Step 3: Right Plane}};
+        \draw[thick, LightGray] (3.5,2.8) -- (3.5,1.8);
+        \draw[thick, AccentColor, fill=AccentColor!20]
+        (1.5,2.4) -- (3.5,2.6) -- (3.5,2.2) -- (2.5,1.6) -- (1.5,1.8) -- cycle;
+        \node[below, font=\tiny] at (2.5,1.4) {\textbf{Output: 5 vertices}};
+
+        % Step 4: Final result after all planes
+        \node[font=\small, PrimaryColor] at (2.5,1.2) {\textbf{Step 4: All Planes}};
+        \draw[thick, PrimaryColor, fill=PrimaryColor!30, line width=1.5pt]
+        (1.8,0.9) -- (3.2,1) -- (3.2,0.6) -- (2.5,0.2) -- (1.8,0.4) -- cycle;
+        \node[below, font=\tiny] at (2.5,0) {\textbf{Final clipped polygon}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
 
 \subsection{Back-Face Culling}
 \begin{frame}{Back-Face Culling}
   \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{conceptbox>{Back-Face Culling}
-        \textbf{Input:} Triangles with face orientation \\
-        \textbf{Output:} Only front-facing triangles
-        
-        \vspace{0.3cm}
-        \textbf{Purpose:}
-        \begin{itemize}
-          \item Eliminate triangles facing away from camera
-          \item Reduce overdraw and fragment processing
-          \item Works well for closed meshes
-          \item Significant performance improvement
-        \end{itemize>
-        
+    \begin{column}{0.45\textwidth}
+      \begin{conceptbox}{Back-Face Culling}
+        \textbf{Purpose:} Remove triangles facing away from viewer
+
         \vspace{0.2cm}
-        \textbf{Assumption:} Viewer cannot see inside objects
-      \end{conceptbox>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{tikzpicture}[scale=0.7]
-        % Camera
-        \node[circle, fill=PrimaryColor!30, minimum size=0.6cm] (cam) at (0,2) {\tiny \faIcon{eye}};
-        
-        % 3D object (cube-like)
-        \coordinate (A) at (2,2.5);
-        \coordinate (B) at (3,2.5);
-        \coordinate (C) at (3.5,1.8);
-        \coordinate (D) at (2.5,1.8);
-        \coordinate (E) at (2.3,1.5);
-        \coordinate (F) at (3.3,1.5);
-        
-        % Front faces (kept)
-        \draw[thick, SecondaryColor, fill=SecondaryColor!30] (A) -- (B) -- (C) -- (D) -- cycle;
-        \draw[thick, SecondaryColor, fill=SecondaryColor!20] (B) -- (C) -- (F) -- cycle;
-        
-        % Back faces (culled - shown dashed)
-        \draw[thick, DarkGray, dashed] (A) -- (E) -- (F) -- (D) -- cycle;
-        \draw[thick, DarkGray, dashed] (E) -- (F) -- (C);
-        
-        % Labels
-        \node[above] at (2.5,2.7) {\scriptsize Front faces};
-        \node[above] at (2.5,2.4) {\scriptsize (rendered)};
-        
-        \node[below] at (2.5,1.3) {\scriptsize Back faces};
-        \node[below] at (2.5,1.0) {\scriptsize (culled)};
-      \end{tikzpicture>
-    \end{column>
-  \end{columns>
-\end{frame>
+        \textbf{Method:} Test triangle normal against view direction
+        \begin{align}
+          \text{Cull if: } \mathbf{n} \cdot \mathbf{v} < 0
+        \end{align}
 
-\begin{frame>[fragile]{OpenGL Clipping \& Culling Configuration}
-  \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
-// Enable back-face culling
-glEnable(GL_CULL_FACE);
-
-// Configure which faces to cull
-glCullFace(GL_BACK);    // Cull back faces (default)
-glCullFace(GL_FRONT);   // Cull front faces
-glCullFace(GL_FRONT_AND_BACK); // Cull both (nothing rendered)
-
-// Set front face orientation
-glFrontFace(GL_CCW);    // Counter-clockwise (default)
-glFrontFace(GL_CW);     // Clockwise
-
-// Disable culling
-glDisable(GL_CULL_FACE);
-
-// Depth testing (related to visibility)
-glEnable(GL_DEPTH_TEST);
-glDepthFunc(GL_LESS);   // Default depth comparison
-
-// Scissor test (screen-space clipping)
-glEnable(GL_SCISSOR_TEST);
-glScissor(x, y, width, height);
-      \end{minted>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{minted}[fontsize=\tiny, bgcolor=LightGray!20]{c}
-// Example: Typical 3D rendering setup
-void setupRenderingState() {
-    // Enable depth testing for 3D
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    // Enable back-face culling
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CCW);
-    
-    // Clear buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-// Example: Rendering transparent objects
-void renderTransparentObjects() {
-    // Disable back-face culling for transparency
-    glDisable(GL_CULL_FACE);
-    
-    // Enable blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    // Render back-to-front
-    renderSortedObjects();
-    
-    // Re-enable culling
-    glEnable(GL_CULL_FACE);
-}
-      \end{minted}
-    \end{column>
-  \end{columns>
-\end{frame>
-
-\begin{frame>{Clipping \& Culling Performance}
-  \begin{columns}
-    \begin{column>{0.5\textwidth}
-      \begin{raybox>{Performance Benefits}
-        \textbf{Back-face culling:}
-        \begin{itemize}
-          \item Eliminates ~50\% of triangles (closed meshes)
-          \item Reduces rasterization work
-          \item Saves fragment shader invocations
-          \item Nearly free performance gain
-        \end{itemize>
-        
         \vspace{0.2cm}
-        \textbf{Frustum clipping:}
+        \textbf{Benefits:}
         \begin{itemize}
-          \item Prevents off-screen geometry processing
-          \item Reduces rasterization overhead
-          \item Essential for correctness
-          \item Hardware optimized
+          \item 50\% triangle reduction (closed meshes)
+          \item Reduced overdraw
+          \item Less fragment shading
+          \item Prevents z-fighting on coplanar faces
         \end{itemize}
-      \end{raybox>
-    \end{column>
-    \begin{column>{0.5\textwidth}
-      \begin{conceptbox>{Considerations}
-        \textbf{When to disable culling:}
-        \begin{itemize}
-          \item Transparent objects
-          \item Single-sided geometry viewed from both sides
-          \item Objects with inconsistent winding
-          \item Debugging geometry issues
-        \end{itemize>
-        
+
         \vspace{0.2cm}
-        \textbf{Clipping limitations:}
-        \begin{itemize}
-          \item Can generate many small triangles
-          \item May create degenerate cases
-          \item Attribute interpolation complexity
-        \end{itemize>
-      \end{conceptbox>
-    \end{column>
-  \end{columns>
-  
-  \vspace{0.3cm}
-  
-  \begin{mathbox>{Best Practices}
-    \begin{itemize}
-      \item \textbf{Always enable back-face culling} for opaque 3D objects
-      \item \textbf>Consistent winding order} across all geometry
-      \item \textbf{Use view frustum culling} at object level before rendering
-      \item \textbf{Consider occlusion culling} for complex scenes
-    \end{itemize>
-  \end{mathbox>
-\end{frame>
+        \textbf{Winding order:} CCW = front face (OpenGL)
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.55\textwidth}
+      \begin{tikzpicture}[scale=0.9]
+        % Camera/viewer
+        \coordinate (camera) at (0,2);
+        \node[circle, fill=PrimaryColor!50, minimum size=0.8cm] at (camera) {\tiny \faIcon{eye}};
+        \node[above, font=\tiny] at (camera) {\textbf{Viewer}};
+
+        % 3D cube-like object
+        \coordinate (v1) at (3,3);    % front top left
+        \coordinate (v2) at (4.5,3);  % front top right
+        \coordinate (v3) at (4.5,1.5); % front bottom right
+        \coordinate (v4) at (3,1.5);  % front bottom left
+
+        \coordinate (v5) at (3.5,3.5); % back top left
+        \coordinate (v6) at (5,3.5);   % back top right
+        \coordinate (v7) at (5,2);     % back bottom right
+        \coordinate (v8) at (3.5,2);   % back bottom left
+
+        % Front faces (visible, kept)
+        \draw[thick, SecondaryColor, fill=SecondaryColor!40]
+        (v1) -- (v2) -- (v3) -- (v4) -- cycle;
+        \draw[thick, SecondaryColor, fill=SecondaryColor!30]
+        (v2) -- (v6) -- (v7) -- (v3) -- cycle;
+        \draw[thick, SecondaryColor, fill=SecondaryColor!25]
+        (v1) -- (v5) -- (v6) -- (v2) -- cycle;
+
+        % Back faces (culled, shown as dashed)
+        \draw[thick, DarkGray, dashed]
+        (v5) -- (v8) -- (v7) -- (v6) -- cycle;
+        \draw[thick, DarkGray, dashed]
+        (v4) -- (v8) -- (v5) -- (v1);
+        \draw[thick, DarkGray, dashed]
+        (v3) -- (v7) -- (v8) -- (v4);
+
+        % Normal vectors
+        \draw[->, thick, SecondaryColor] (3.75,2.25) -- (2.5,1.75);
+        \node[left, font=\tiny, SecondaryColor] at (2.5,1.75) {\textbf{Front normal}};
+
+        \draw[->, thick, DarkGray, dashed] (4.25,2.75) -- (5.5,3.25);
+        \node[right, font=\tiny, DarkGray] at (5.5,3.25) {\textbf{Back normal}};
+
+        % View rays
+        \draw[->, RayColor] (camera) -- (3.75,2.25);
+        \draw[->, RayColor, dashed] (camera) -- (4.25,2.75);
+
+        % Labels
+        \node[below, font=\small, SecondaryColor] at (3.75,1.2) {\textbf{Front faces (rendered)}};
+        \node[above, font=\small, DarkGray] at (4.25,3.8) {\textbf{Back faces (culled)}};
+
+        % Angle indicators
+        \draw[AccentColor, thick] (1.5,1.8) -- (2.0,1.9);
+        \node[right, font=\tiny, AccentColor] at (2.0,1.9) {$\mathbf{n} \cdot \mathbf{v} > 0$};
+
+        \draw[DarkGray, thick] (1.2,2.2) -- (1.8,2.4);
+        \node[right, font=\tiny, DarkGray] at (1.8,2.4) {$\mathbf{n} \cdot \mathbf{v} < 0$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}

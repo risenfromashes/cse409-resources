@@ -1,0 +1,308 @@
+\section{Fragment Shader}
+
+\subsection{Overview}
+\begin{frame}{Fragment Shader Stage}
+  \begin{columns}
+    \small
+    \begin{column}{0.7\textwidth}
+      \begin{raybox}{Fragment Shader}
+        \textbf{Input:} Fragments with interpolated attributes \\
+        \textbf{Output:} Final fragment colors (and depth)
+
+        \vspace{0.3cm}
+        \textbf{Primary responsibility:}
+        \begin{itemize}
+          \item<1-> Compute final color for each fragment
+          \item<2-> Apply lighting calculations
+          \item<3-> Sample textures
+          \item<4-> Implement material properties
+          \item<5-> Output color and optional data
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{center}
+
+        \begin{tikzpicture}[scale=0.7]
+          % Input fragments
+          \only<1->{
+            \foreach \i in {0,1,2} {
+              \foreach \j in {0,1,2} {
+                \fill[AccentColor!30] (\i*0.4, \j*0.4 + 3) circle (0.1);
+              }
+            }
+            \node[below] at (0.4, 2.5) {\scriptsize Fragments};
+          }
+
+          % Fragment shader box
+          \only<2->{
+            \node[rectangle, draw, fill=PrimaryColor!30, minimum width=1.5cm, minimum height=1cm] (fs) at (0.4,0.5) {
+              \begin{minipage}{1.3cm}
+                \centering
+                \textbf{Fragment} \\
+                \textbf{Shader}
+              \end{minipage}
+            };
+          }
+
+          % Output colored fragments
+          \only<5->{
+
+            \begin{scope}[yshift=-2cm]
+              \foreach \i in {0,1,2} {
+                \foreach \j in {0,1,2} {
+                  \fill[ObjectColor] (\i*0.4, \j*0.4) circle (0.1);
+                }
+              }
+              \node[below] at (0.4, -0.3) {\scriptsize Colored};
+              \node[below] at (0.4, -0.7) {\scriptsize Fragments};
+            \end{scope}
+          }
+
+          % Arrows
+          \only<2->{\draw[->, thick, AccentColor] (0.4,1.8) -- (0.4,1.2);}
+          \only<5->{\draw[->, thick, AccentColor] (0.4,-0.2) -- (0.4,-0.8);}
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{Input Data}
+\begin{frame}{Fragment Shader Inputs}
+  \begin{columns}
+
+    \small
+    \begin{column}{0.7\textwidth}
+      \begin{raybox}{Interpolated Attributes}
+        \textbf{From vertex shader via rasterization:}
+        \begin{itemize}
+          \item \textbf{Position} - World space coordinates
+          \item \textbf{Normal vectors} - For lighting calculations
+          \item \textbf{Texture coordinates} - UV mapping
+          \item \textbf{Color} - Vertex colors
+          \item \textbf{Custom attributes} - Application-specific data
+        \end{itemize}
+      \end{raybox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.7]
+        % Triangle with interpolated values
+        \coordinate (A) at (0,0);
+        \coordinate (B) at (3,0);
+        \coordinate (C) at (1.5,2.5);
+
+        % Triangle
+        \draw[thick, ObjectColor] (A) -- (B) -- (C) -- cycle;
+
+        % Vertex attributes
+        \fill[red] (A) circle (0.1);
+        \fill[green] (B) circle (0.1);
+        \fill[blue] (C) circle (0.1);
+
+        % Sample fragment
+        \fill[purple] (1.2,0.8) circle (0.08);
+        \node[right] at (1.3,0.8) {\tiny Fragment};
+
+        % Interpolation lines
+        \draw[dashed, gray] (A) -- (1.2,0.8);
+        \draw[dashed, gray] (B) -- (1.2,0.8);
+        \draw[dashed, gray] (C) -- (1.2,0.8);
+
+        \node[below] at (A) {\tiny Red};
+        \node[below] at (B) {\tiny Green};
+        \node[above] at (C) {\tiny Blue};
+
+        \node[below] at (1.5,-0.5) {\tiny Barycentric interpolation};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\subsection{Lighting Computation}
+\begin{frame}{Per-Fragment Lighting}
+  \begin{columns}
+    \small
+    \begin{column}{0.7\textwidth}
+      \begin{raybox}{Phong Shading}
+        \textbf{Phong Shading (Per-Fragment):}
+        \begin{itemize}
+          \item Interpolate normals, not colors
+          \item Compute lighting at each fragment
+          \item Higher quality, smooth specular highlights
+          \item More computationally expensive
+        \end{itemize}
+      \end{raybox}
+
+      \footnotesize
+      \begin{mathbox}{Gouraud Shading}
+        \textbf{Gouraud Shading (Per-Vertex):}
+        \begin{itemize}
+          \item Compute lighting at vertices
+          \item Interpolate final colors
+          \item Faster but lower quality
+          \item Poor specular highlights
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.3\textwidth}
+      \begin{tikzpicture}[scale=0.6]
+        % Two sphere comparisons
+        \begin{scope}[yshift=2cm]
+          \node[circle, draw, fill=ObjectColor!30, minimum size=2cm] (sphere1) at (0,0) {};
+          \node[below] at (0,-1.6) {\scriptsize Phong Shading};
+
+          % Highlight
+          \fill[white, opacity=0.8] (-0.3,0.3) ellipse (0.3 and 0.2);
+        \end{scope}
+
+        \begin{scope}[yshift=-4cm]
+          \node[circle, draw, fill=ObjectColor!30, minimum size=2cm] (sphere2) at (0,0) {};
+          \node[below] at (0,-1.6) {\scriptsize Gouraud Shading};
+
+          % Faceted highlight
+          \fill[white, opacity=0.6] (-0.3,0.3) -- (-0.1,0.5) -- (0.1,0.3) -- (-0.1,0.1) -- cycle;
+        \end{scope}
+
+        % Light source
+        \node[circle, fill=LightColor, minimum size=0.3cm] (light) at (-3,0) {\tiny \faIcon{lightbulb}};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Fragment Shader - Lighting Example}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{minted}[fontsize=\scriptsize, bgcolor=LightGray!20]{glsl}
+#version 330 core
+// Fragment shader inputs
+in vec3 FragPos;    // World position
+in vec3 Normal;     // Interpolated normal
+in vec2 TexCoord;   // Texture coordinates
+// Outputs
+out vec4 FragColor;
+// Uniforms (lighting parameters)
+uniform vec3 lightPos;
+uniform vec3 lightColor;
+uniform vec3 viewPos;
+uniform sampler2D diffuseTexture;
+void main() {
+    // Sample texture
+    vec3 albedo = texture(diffuseTexture,
+                         TexCoord).rgb;
+    // Normalize interpolated normal
+    vec3 norm = normalize(Normal);
+    // Light direction
+    vec3 lightDir = normalize(lightPos
+                    - FragPos);
+    // Ambient
+    vec3 ambient = 0.15 * albedo;
+    // Diffuse (Lambert)
+    float diff = max(dot(norm, lightDir),
+                     0.0);
+      \end{minted}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+         \begin{minted}[fontsize=\scriptsize, bgcolor=LightGray!20]{glsl}
+    vec3 diffuse = diff * lightColor
+                        * albedo;
+    // Specular (Blinn-Phong)
+    vec3 viewDir = normalize(viewPos
+                    - FragPos);
+    vec3 halfwayDir = normalize(
+                        lightDir + viewDir);
+    float spec = pow(max(
+                        dot(norm, halfwayDir),
+                        0.0), 64.0);
+    vec3 specular = spec * lightColor;
+    // Combine lighting components
+    vec3 result = ambient + diffuse
+                          + specular;
+    FragColor = vec4(result, 1.0);
+}
+      \end{minted}
+      \vspace{3cm}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Multiple Texture Sampling Example}
+      \begin{minted}[fontsize=\scriptsize, bgcolor=LightGray!20]{glsl}
+// Multiple texture samplers
+uniform sampler2D diffuseMap;
+uniform sampler2D normalMap;
+uniform sampler2D specularMap;
+uniform sampler2D roughnessMap;
+
+void main() {
+    // Sample multiple textures
+    vec3 albedo = texture(diffuseMap,
+                         TexCoord).rgb;
+    vec3 normal = texture(normalMap,
+                         TexCoord).rgb;
+    float specular = texture(specularMap,
+                           TexCoord).r;
+    float roughness = texture(roughnessMap,
+                            TexCoord).r;
+
+    // Convert normal map from [0,1] to [-1,1]
+    normal = normal * 2.0 - 1.0;
+
+    // Transform normal to world space
+    // (requires TBN matrix)
+
+    // Use in lighting calculations...
+}
+      \end{minted}
+
+\end{frame}
+
+\subsection{Output}
+\begin{frame}{Fragment Shader Outputs}
+  \small
+  \begin{raybox}{Standard Outputs}
+    \textbf{Primary output:} RGBA
+
+    \vspace{0.3cm}
+    \textbf{RGBA Color:}
+    \begin{itemize}
+      \item Red, Green, Blue channels (0.0 to 1.0)
+      \item Alpha channel for transparency
+    \end{itemize}
+
+    \vspace{0.3cm}
+    \textbf{Depth modification:}
+    \begin{itemize}
+      \item Can output custom depth values
+      \item Used for special effects
+      \item Can break early depth testing
+    \end{itemize}
+  \end{raybox}
+\end{frame}
+
+\subsection{Programmable Nature}
+\begin{frame}{Fragment Shader - Programmable Stage}
+  \small
+  \begin{conceptbox}{Highly Programmable}
+    \textbf{Most flexible stage} in the graphics pipeline
+
+    \vspace{0.3cm}
+    \textbf{Programmable aspects:}
+    \begin{itemize}
+      \item Custom lighting models (Phong, Blinn-Phong, PBR, etc.)
+      \item Complex material properties and texturing
+      \item Advanced effects (normal mapping, parallax mapping)
+      \item Post-processing effects
+      \item Procedural generation
+    \end{itemize}
+  \end{conceptbox}
+  \pause
+  \begin{mathbox}{Performance Considerations}
+    \textbf{Most computationally expensive stage}
+    \begin{itemize}
+      \item Executes once per visible fragment
+      \item Can be millions of invocations per frame
+    \end{itemize}
+  \end{mathbox}
+\end{frame}
