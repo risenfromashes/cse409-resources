@@ -1,0 +1,229 @@
+\section{Properties \& Limitations}
+
+\begin{frame}{Desirable Properties of Curve Systems}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{What Makes a Good Curve?}
+        \footnotesize
+        \textbf{1. Intuitive Control:}
+        \begin{itemize}
+          \item Control points have geometric meaning
+          \item Predictable curve behavior
+          \item Easy to achieve desired shapes
+        \end{itemize}
+
+        \textbf{2. Local vs Global Control:}
+        \begin{itemize}
+          \item \textcolor{SecondaryColor}{Local}: Changing one control point affects only nearby curve
+          \item \textcolor{AccentColor}{Global}: Changes affect entire curve
+        \end{itemize}
+
+        \textbf{3. Smoothness:}
+        \begin{itemize}
+          \item Continuous derivatives
+          \item No unwanted oscillations
+          \item Visually pleasing
+        \end{itemize}
+
+        \textbf{4. Computational Efficiency:}
+        \begin{itemize}
+          \item Fast evaluation
+          \item Stable algorithms
+          \item Memory efficient
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \textbf{Local vs Global Control}
+
+        \begin{tikzpicture}[scale=0.8]
+          % Global control (Bézier)
+          \begin{scope}[shift={(0,2)}]
+            \coordinate (P0) at (0,0);
+            \coordinate (P1) at (1,1);
+            \coordinate (P2) at (2,0.5);
+            \coordinate (P3) at (3,0);
+
+            \draw[dashed, LightGray] (P0) -- (P1) -- (P2) -- (P3);
+            \draw[thick, AccentColor] (P0) .. controls (P1) and (P2) .. (P3);
+
+            \fill[AccentColor] (P0) circle (2pt);
+            \fill[AccentColor!50] (P1) circle (3pt);
+            \fill[AccentColor] (P2) circle (2pt);
+            \fill[AccentColor] (P3) circle (2pt);
+
+            \node[above] at (1.5,1.5) {\scriptsize \textcolor{AccentColor}{Global Control}};
+            \node[below] at (1.5,-0.5) {\scriptsize Moving $P_1$ affects entire curve};
+          \end{scope}
+
+          % Local control (B-spline concept)
+          \begin{scope}[shift={(0,0)}]
+            \draw[thick, SecondaryColor] (0,0) .. controls (0.5,0.5) .. (1,0.3) .. controls (1.5,0.1) .. (2,0.5) .. controls (2.5,0.8) .. (3,0.5);
+
+            % Show local influence
+            \draw[dashed, SecondaryColor!50] (0.5,0) -- (0.5,1);
+            \draw[dashed, SecondaryColor!50] (2,0) -- (2,1);
+
+            \node[above] at (1.25,0.8) {\scriptsize \textcolor{SecondaryColor}{Local influence}};
+            \node[below] at (1.5,-0.5) {\scriptsize Changes affect only nearby region};
+          \end{scope}
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Bézier Curves: The Global Control Problem}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Bézier Limitations}
+        \footnotesize
+        \textbf{1. Global Influence:}
+        \begin{itemize}
+          \item Every control point affects entire curve
+          \item Cannot make local modifications
+          \item Difficult to edit complex shapes
+        \end{itemize}
+
+        \textbf{2. High Degree Problems:}
+        \begin{itemize}
+          \item More control points = higher degree
+          \item Potential for unwanted oscillations
+          \item Numerical instability
+        \end{itemize}
+
+        \textbf{3. Limited Flexibility:}
+        \begin{itemize}
+          \item Fixed number of control points per segment
+          \item Cannot represent some curves exactly (circles)
+          \item Joining multiple segments requires care
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.9]
+          % High degree Bézier with unwanted oscillation
+          \coordinate (P0) at (0,1);
+          \coordinate (P1) at (0.5,2.5);
+          \coordinate (P2) at (1,0.5);
+          \coordinate (P3) at (1.5,2);
+          \coordinate (P4) at (2,0.8);
+          \coordinate (P5) at (2.5,1.8);
+          \coordinate (P6) at (3,1.2);
+
+          % Control polygon
+          \draw[dashed, LightGray] (P0) -- (P1) -- (P2) -- (P3) -- (P4) -- (P5) -- (P6);
+
+          % High degree curve (simulated)
+          \draw[thick, AccentColor] (P0) .. controls (P1) and (P2) .. (1.2,1.3) .. controls (P3) and (P4) .. (2.2,1.1) .. controls (P5) and (P6) .. (P6);
+
+          % Control points
+          \foreach \p in {P0,P1,P2,P3,P4,P5,P6} {
+            \fill[SecondaryColor] (\p) circle (1.5pt);
+          }
+
+          % Highlight problem area
+          \draw[AccentColor, thick] (1.1,1.2) circle (0.2);
+          \node[right] at (1.4,1.2) {\scriptsize \textcolor{AccentColor}{Unwanted oscillation}};
+
+          \node[below] at (1.5,-0.5) {\scriptsize High degree = problems};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Enter B-Splines: Local Control}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{B-Spline Advantages}
+        \footnotesize
+        \textbf{Local Control:}
+        \begin{itemize}
+          \item Each control point affects only nearby curve segment
+          \item Easy local modifications
+          \item Predictable editing behavior
+        \end{itemize}
+
+        \textbf{Flexible Degree:}
+        \begin{itemize}
+          \item Can have many control points with low degree
+          \item No unwanted oscillations
+          \item Numerically stable
+        \end{itemize}
+
+        \textbf{Continuity Control:}
+        \begin{itemize}
+          \item Automatic smoothness between segments
+          \item Can control continuity level
+          \item Professional modeling standard
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.9]
+          % B-spline with many control points
+          \coordinate (Q0) at (0,1);
+          \coordinate (Q1) at (0.5,2);
+          \coordinate (Q2) at (1,0.5);
+          \coordinate (Q3) at (1.5,1.5);
+          \coordinate (Q4) at (2,1);
+          \coordinate (Q5) at (2.5,2);
+          \coordinate (Q6) at (3,1.2);
+
+          % Control polygon
+          \draw[dashed, LightGray] (Q0) -- (Q1) -- (Q2) -- (Q3) -- (Q4) -- (Q5) -- (Q6);
+
+          % Smooth B-spline curve
+          \draw[thick, SecondaryColor] (Q0) .. controls (Q1) .. (0.75,1.25) .. controls (Q2) .. (1.25,1) .. controls (Q3) .. (1.75,1.25) .. controls (Q4) .. (2.25,1.5) .. controls (Q5) .. (Q6);
+
+          % Control points
+          \foreach \q in {Q0,Q1,Q2,Q3,Q4,Q5,Q6} {
+            \fill[SecondaryColor] (\q) circle (2pt);
+          }
+
+          % Show local influence
+          \fill[SecondaryColor!20] (1.3,0.5) rectangle (1.7,2);
+          \node[above] at (1.5,2.2) {\scriptsize Local influence};
+
+          \node[below] at (1.5,-0.5) {\scriptsize Many points, low degree, smooth};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{When to Use What?}
+  \begin{mathbox}{Curve Selection Guide}
+    \footnotesize
+    \begin{center}
+      \begin{tabular}{|l|p{3cm}|p{3cm}|p{3cm}|}
+        \hline
+        \textbf{Application} & \textbf{Bézier Curves} & \textbf{B-Splines} & \textbf{NURBS} \\
+        \hline
+        \textbf{Simple shapes} & \textcolor{SecondaryColor}{\cmark} Good & \textcolor{LightGray}{-} Overkill & \textcolor{LightGray}{-} Overkill \\
+        \hline
+        \textbf{Typography} & \textcolor{SecondaryColor}{\cmark} Perfect & \textcolor{LightGray}{-} Too complex & \textcolor{LightGray}{-} Too complex \\
+        \hline
+        \textbf{UI Animation} & \textcolor{SecondaryColor}{\cmark} Ideal & \textcolor{LightGray}{-} Unnecessary & \textcolor{LightGray}{-} Unnecessary \\
+        \hline
+        \textbf{Complex curves} & \textcolor{AccentColor}{\xmark} Difficult & \textcolor{SecondaryColor}{\cmark} Excellent & \textcolor{SecondaryColor}{\cmark} Best \\
+        \hline
+        \textbf{CAD/Engineering} & \textcolor{AccentColor}{\xmark} Limited & \textcolor{SecondaryColor}{\cmark} Good & \textcolor{SecondaryColor}{\cmark} Standard \\
+        \hline
+        \textbf{3D Surfaces} & \textcolor{AccentColor}{\xmark} Patches only & \textcolor{SecondaryColor}{\cmark} Good & \textcolor{SecondaryColor}{\cmark} Perfect \\
+        \hline
+      \end{tabular}
+    \end{center}
+  \end{mathbox}
+
+  \begin{conceptbox}{Recommendation}
+    \footnotesize
+    \textbf{Start with Bézier:} Simple, intuitive, widely supported \\
+    \textbf{Move to B-splines:} When you need complex shapes with local control \\
+    \textbf{Use NURBS:} For professional CAD and precise geometric modeling
+  \end{conceptbox}
+\end{frame}

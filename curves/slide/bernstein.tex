@@ -1,0 +1,196 @@
+\section{Bernstein Polynomials}
+
+\begin{frame}{Bernstein Basis Functions}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{mathbox}{Bernstein Polynomials}
+        \small
+        The $i$-th Bernstein polynomial of degree $n$:
+        \begin{align*}
+          B_{i,n}(t) = \binom{n}{i} t^i (1-t)^{n-i}
+        \end{align*}
+
+        \vspace{0.3cm}
+        \textbf{Examples for degree 3:}
+        \begin{align*}
+          B_{0,3}(t) &= (1-t)^3 \\
+          B_{1,3}(t) &= 3t(1-t)^2 \\
+          B_{2,3}(t) &= 3t^2(1-t) \\
+          B_{3,3}(t) &= t^3
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          \draw[->] (-0.2,0) -- (4.2,0) node[right] {$t$};
+          \draw[->] (0,-0.2) -- (0,3) node[above] {$B_{i,3}(t)$};
+
+          % Plot Bernstein polynomials for degree 3
+          \draw[thick, PrimaryColor] plot[domain=0:4, samples=50] (\x, {3*(1-\x/4)^3});
+          \draw[thick, SecondaryColor] plot[domain=0:4, samples=50] (\x, {3*3*(\x/4)*(1-\x/4)^2});
+          \draw[thick, AccentColor] plot[domain=0:4, samples=50] (\x, {3*3*(\x/4)^2*(1-\x/4)});
+          \draw[thick, ObjectColor] plot[domain=0:4, samples=50] (\x, {3*(\x/4)^3});
+
+          % Labels
+          \node[above] at (0.2,2.8) {\scriptsize $B_{0,3}$};
+          \node[above] at (1.3,2.2) {\scriptsize $B_{1,3}$};
+          \node[above] at (2.7,2.2) {\scriptsize $B_{2,3}$};
+          \node[above] at (3.8,2.8) {\scriptsize $B_{3,3}$};
+
+          % Axis labels
+          \node[below] at (0,-0.3) {0};
+          \node[below] at (4,-0.3) {1};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Remarkable Properties}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Key Properties}
+        \footnotesize>
+        \textbf{1. Non-negative:}
+        \begin{align*}
+          B_{i,n}(t) \geq 0 \text{ for } t \in [0,1]
+        \end{align*}
+
+        \textbf{2. Partition of Unity:}
+        \begin{align*}
+          \sum_{i=0}^{n} B_{i,n}(t) = 1
+        \end{align*}
+
+        \textbf{3. Endpoint Values:}
+        \begin{align*}
+          B_{i,n}(0) &=
+          \begin{cases} 1 & \text{if } i=0 \\ 0 & \text{otherwise}
+          \end{cases} \\
+          B_{i,n}(1) &=
+          \begin{cases} 1 & \text{if } i=n \\ 0 & \text{otherwise}
+          \end{cases}
+        \end{align*}
+
+        \textbf{4. Maximum at:}
+        \begin{align*}
+          t = \frac{i}{n}
+        \end{align*}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \textbf{Partition of Unity}
+
+        \begin{tikzpicture}[scale=0.8]
+          \draw[->] (-0.2,0) -- (4.2,0) node[right] {$t$};
+          \draw[->] (0,-0.2) -- (0,2.5) node[above] {};
+
+          % Show sum equals 1
+          \draw[thick, dashed, gray] (0,2) -- (4,2);
+          \node[left] at (0,2) {\scriptsize 1};
+
+          % Stacked Bernstein polynomials
+          \fill[PrimaryColor!30] plot[domain=0:4, samples=50] (\x, {2*(1-\x/4)^3}) -- (4,0) -- (0,0) -- cycle;
+
+          \fill[SecondaryColor!30] plot[domain=0:4, samples=50] (\x, {2*(1-\x/4)^3 + 2*3*(\x/4)*(1-\x/4)^2})
+          -- plot[domain=4:0, samples=50] (\x, {2*(1-\x/4)^3}) -- cycle;
+
+          \fill[AccentColor!30] plot[domain=0:4, samples=50] (\x, {2*(1-\x/4)^3 + 2*3*(\x/4)*(1-\x/4)^2 + 2*3*(\x/4)^2*(1-\x/4)})
+          -- plot[domain=4:0, samples=50] (\x, {2*(1-\x/4)^3 + 2*3*(\x/4)*(1-\x/4)^2}) -- cycle;
+
+          \fill[ObjectColor!30] plot[domain=0:4, samples=50] (\x, {2})
+          -- plot[domain=4:0, samples=50] (\x, {2*(1-\x/4)^3 + 2*3*(\x/4)*(1-\x/4)^2 + 2*3*(\x/4)^2*(1-\x/4)}) -- cycle;
+
+          \node[below] at (2,-0.5) {\scriptsize Sum always equals 1};
+        \end{tikzpicture}
+      \end{center}
+
+      \vspace{0.3cm}
+
+      \begin{tikzpicture}[scale=0.6]
+        % Non-negative illustration
+        \draw[->] (-0.2,0) -- (3.2,0) node[right] {$t$};
+        \draw[->] (0,-0.2) -- (0,2) node[above] {};
+
+        \draw[thick, PrimaryColor] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)});
+
+        \fill[PrimaryColor!20] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)}) -- (3,0) -- (0,0) -- cycle;
+
+        \node[below] at (1.5,-0.5) {\scriptsize Always $\geq 0$};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Why These Properties Matter}
+  \begin{conceptbox}{Geometric Interpretation}
+    \footnotesize>
+    \textbf{Convex Combination:} Since Bernstein polynomials are non-negative and sum to 1, any point on a Bézier curve is a \emph{convex combination} of the control points.
+
+    \begin{align*}
+      \mathbf{B}(t) = \sum_{i=0}^{n} \underbrace{B_{i,n}(t)}_{\text{weights}} \mathbf{P_i}
+    \end{align*}
+
+    This means the curve point is a "weighted average" of control points, where weights are always positive and sum to 1.
+  \end{conceptbox}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Consequences}
+        \scriptsize
+        \textbf{1. Convex Hull Property:}
+        \begin{itemize}
+          \item Curve never "escapes" control polygon
+          \item Provides natural bounds
+        \end{itemize}
+
+        \textbf{2. Stability:}
+        \begin{itemize}
+          \item Small changes in control points → small changes in curve
+          \item Numerically stable algorithms
+        \end{itemize}
+
+        \textbf{3. Intuitive Control:}
+        \begin{itemize}
+          \item Each control point has maximum influence at $t = i/n$
+          \item Smooth, predictable behavior
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          % Weights visualization for specific t
+          \coordinate (P0) at (0.5,0.5);
+          \coordinate (P1) at (1.5,2);
+          \coordinate (P2) at (2.5,1);
+
+          % Control polygon
+          \draw[dashed, LightGray] (P0) -- (P1) -- (P2);
+
+          % Bézier curve
+          \draw[thick, PrimaryColor] (P0) .. controls (P1) .. (P2);
+
+          % Control points with different sizes based on weights
+          \fill[SecondaryColor] (P0) circle (2pt);
+          \fill[SecondaryColor] (P1) circle (4pt);
+          \fill[SecondaryColor] (P2) circle (1pt);
+
+          % Point on curve
+          \coordinate (B) at (1.5,1.4);
+          \fill[ObjectColor] (B) circle (3pt);
+
+          % Weight indicators
+          \node[below] at (P0) {\scriptsize $w_0=0.25$};
+          \node[above] at (P1) {\scriptsize $w_1=0.5$};
+          \node[below] at (P2) {\scriptsize $w_2=0.25$};
+
+          \node[above] at (B) {\scriptsize Weighted average};
+
+          \node[below] at (1.5,-0.5) {\scriptsize Point sizes $\propto$ weights};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}

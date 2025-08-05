@@ -1,0 +1,181 @@
+\section{General Bézier Curves}
+
+\begin{frame}{General Bézier Definition}
+  \begin{mathbox}{General Formula}
+    \small
+    A Bézier curve of degree $n$ with control points $\mathbf{P_0}, \mathbf{P_1}, \ldots, \mathbf{P_n}$:
+
+    \begin{align*}
+      \mathbf{B}(t) = \sum_{i=0}^{n} B_{i,n}(t) \mathbf{P_i}
+    \end{align*}
+
+    Where $B_{i,n}(t)$ are the Bernstein basis polynomials:
+    \begin{align*}
+      B_{i,n}(t) = \binom{n}{i} t^i (1-t)^{n-i}
+    \end{align*}
+
+    And $\binom{n}{i} = \frac{n!}{i!(n-i)!}$ is the binomial coefficient.
+  \end{mathbox}
+
+  \begin{conceptbox}{Degree vs Number of Control Points}
+    \footnotesize
+    \begin{itemize}
+      \item \textbf{Linear:} 2 control points, degree 1
+      \item \textbf{Quadratic:} 3 control points, degree 2
+      \item \textbf{Cubic:} 4 control points, degree 3
+      \item \textbf{General:} $n+1$ control points, degree $n$
+    \end{itemize}
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Fundamental Properties}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Bézier Properties}
+        \scriptsize
+        \textbf{1. Endpoint Interpolation:}
+        \begin{itemize}
+          \item $\mathbf{B}(0) = \mathbf{P_0}$
+          \item $\mathbf{B}(1) = \mathbf{P_n}$
+        \end{itemize}
+
+        \textbf{2. Convex Hull Property:}
+        \begin{itemize}
+          \item Curve lies within convex hull of control points
+          \item Provides predictable bounds
+        \end{itemize}
+
+        \textbf{3. Variation Diminishing:}
+        \begin{itemize}
+          \item Curve doesn't oscillate more than control polygon
+          \item Smooth, well-behaved curves
+        \end{itemize}
+
+        \textbf{4. Affine Invariance:}
+        \begin{itemize}
+          \item Transform control points = transform curve
+          \item Works with any coordinate system
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          % Control points for higher degree curve
+          \coordinate (P0) at (0.5,1);
+          \coordinate (P1) at (1,2.5);
+          \coordinate (P2) at (2,0.5);
+          \coordinate (P3) at (3,2.8);
+          \coordinate (P4) at (3.5,1.5);
+
+          % Control polygon
+          \draw[dashed, LightGray] (P0) -- (P1) -- (P2) -- (P3) -- (P4);
+
+          % Convex hull
+          \draw[dotted, AccentColor, thick] (P0) -- (P2) -- (P3) -- (P1) -- cycle;
+
+          % Bézier curve
+          \draw[thick, PrimaryColor] (P0) .. controls (P1) and (P2) .. (2.5,1.8) .. controls (P3) and (P4) .. (P4);
+
+          % Control points
+          \foreach \p in {P0,P1,P2,P3,P4} {
+            \fill[SecondaryColor] (\p) circle (2pt);
+          }
+
+          \node[below] at (2,-0.5) {\scriptsize Degree 4 Bézier};
+          \node[above] at (2,3.2) {\scriptsize \textcolor{AccentColor}{Convex Hull}};
+        \end{tikzpicture}
+      \end{center}
+
+      \vspace{0.5cm}
+
+      \begin{tikzpicture}[scale=0.7]
+        % Endpoint interpolation illustration
+        \coordinate (start) at (0,0);
+        \coordinate (end) at (3,0);
+
+        \draw[thick, PrimaryColor] (start) .. controls (0.5,1) and (2.5,1) .. (end);
+
+        \fill[ObjectColor] (start) circle (3pt);
+        \fill[ObjectColor] (end) circle (3pt);
+
+        \node[below] at (start) {\scriptsize Always starts here};
+        \node[below] at (end) {\scriptsize Always ends here};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Why Bézier Curves Work So Well}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Intuitive Control}
+        \footnotesize>
+        \textbf{Visual Predictability:}
+        \begin{itemize}
+          \item Control points have geometric meaning
+          \item Pulling a control point "attracts" the curve
+          \item Natural, intuitive manipulation
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Tangent Control:}
+        \begin{itemize}
+          \item First and last segments of control polygon define tangents
+          \item $\mathbf{B}'(0) \propto (\mathbf{P_1} - \mathbf{P_0})$
+          \item $\mathbf{B}'(1) \propto (\mathbf{P_n} - \mathbf{P_{n-1}})$
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Stability:}
+        \begin{itemize}
+          \item Robust to numerical errors
+          \item Well-conditioned algorithms
+          \item Consistent behavior
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.9]
+          % Before: control point position
+          \begin{scope}[shift={(0,2)}]
+            \coordinate (P0) at (0,0);
+            \coordinate (P1) at (1,1);
+            \coordinate (P2) at (2,0);
+
+            \draw[dashed, LightGray] (P0) -- (P1) -- (P2);
+            \draw[thick, PrimaryColor] (P0) .. controls (P1) .. (P2);
+
+            \fill[SecondaryColor] (P0) circle (2pt);
+            \fill[AccentColor] (P1) circle (2pt);
+            \fill[SecondaryColor] (P2) circle (2pt);
+
+            \node[above] at (1,1.3) {\scriptsize Before};
+          \end{scope}
+
+          % After: moved control point
+          \begin{scope}[shift={(0,0)}]
+            \coordinate (P0) at (0,0);
+            \coordinate (P1) at (1,1.5);
+            \coordinate (P2) at (2,0);
+
+            \draw[dashed, LightGray] (P0) -- (P1) -- (P2);
+            \draw[thick, ObjectColor] (P0) .. controls (P1) .. (P2);
+
+            \fill[SecondaryColor] (P0) circle (2pt);
+            \fill[AccentColor] (P1) circle (2pt);
+            \fill[SecondaryColor] (P2) circle (2pt);
+
+            \node[above] at (1,1.8) {\scriptsize After};
+
+            % Arrow showing movement
+            \draw[->, AccentColor, thick] (1,1.3) -- (1,1.5);
+          \end{scope}
+
+          \node[below] at (1,-0.5) {\scriptsize Predictable Control};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}

@@ -1,0 +1,115 @@
+\section{Matrix Representation}
+
+\begin{frame}{Matrix Form for Efficiency}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{mathbox}{Cubic Bézier Matrix Form}
+        \small
+        For a cubic Bézier curve:
+        \begin{align*}
+          \mathbf{B}(t) =
+          \begin{bmatrix} 1 & t & t^2 & t^3
+          \end{bmatrix}
+          \begin{bmatrix}
+            1 & 0 & 0 & 0 \\
+            -3 & 3 & 0 & 0 \\
+            3 & -6 & 3 & 0 \\
+            -1 & 3 & -3 & 1
+          \end{bmatrix}
+          \begin{bmatrix}
+            \mathbf{P_0} \\
+            \mathbf{P_1} \\
+            \mathbf{P_2} \\
+            \mathbf{P_3}
+          \end{bmatrix}
+        \end{align*}
+
+        \vspace{0.3cm}
+        Or more compactly:
+        \begin{align*}
+          \mathbf{B}(t) = \mathbf{T}(t) \cdot \mathbf{M_B} \cdot \mathbf{P}
+        \end{align*}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{conceptbox}{Matrix Components}
+        \scriptsize
+        \textbf{$\mathbf{T}(t)$:} Parameter vector
+        \begin{align*}
+          \mathbf{T}(t) =
+          \begin{bmatrix} 1 & t & t^2 & t^3
+          \end{bmatrix}
+        \end{align*}
+
+        \textbf{$\mathbf{M_B}$:} Bézier basis matrix
+
+        \textbf{$\mathbf{P}$:} Control point vector
+        \begin{align*}
+          \mathbf{P} =
+          \begin{bmatrix} \mathbf{P_0} \\ \mathbf{P_1} \\ \mathbf{P_2} \\ \mathbf{P_3}
+          \end{bmatrix}
+        \end{align*}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Why Use Matrix Form?}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Computational Advantages}
+        \footnotesize>
+        \textbf{1. Efficiency:}
+        \begin{itemize}
+          \item Single matrix multiplication
+          \item Vectorized operations
+          \item GPU-friendly
+        \end{itemize}
+
+        \textbf{2. Derivatives:}
+        \begin{itemize}
+          \item Easy to compute tangents
+          \item First derivative: $\mathbf{B}'(t) = \mathbf{T}'(t) \cdot \mathbf{M_B} \cdot \mathbf{P}$
+          \item Where $\mathbf{T}'(t) =
+            \begin{bmatrix} 0 & 1 & 2t & 3t^2
+            \end{bmatrix}$
+        \end{itemize}
+
+        \textbf{3. Transformations:}
+        \begin{itemize}
+          \item Apply transforms to control points
+          \item Curve transforms automatically
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{Implementation Example}
+        \scriptsize
+        \begin{minted}{python}
+import numpy as np
+
+def bezier_cubic(t, control_points):
+    # Parameter vector
+    T = np.array([1, t, t**2, t**3])
+
+    # Bézier basis matrix
+    M = np.array([
+        [ 1,  0,  0,  0],
+        [-3,  3,  0,  0],
+        [ 3, -6,  3,  0],
+        [-1,  3, -3,  1]
+    ])
+
+    # Control points (4x2 for 2D)
+    P = np.array(control_points)
+
+    return T @ M @ P
+
+# Usage
+points = [[0,0], [1,2], [3,1], [4,0]]
+curve_point = bezier_cubic(0.5, points)
+        \end{minted}
+      \end{conceptbox}
+    \end{column}
+  \end{columns}
+\end{frame}

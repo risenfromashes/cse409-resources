@@ -1,0 +1,151 @@
+\section{Introduction}
+
+\begin{frame}{Why Parametric Curves?}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Problems with Traditional Representations}
+        \scriptsize
+        \textbf{Explicit form:} $y = f(x)$
+        \begin{itemize}
+          \item Single-valued functions only
+          \item Cannot represent vertical lines
+          \item Limited to function graphs
+          \item No natural parameterization
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Implicit form:} $F(x,y) = 0$
+        \begin{itemize}
+          \item Difficult to sample points
+          \item Hard to control shape
+          \item No direction information
+          \item Complex for animations
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          % Explicit function limitation
+          \draw[->] (-0.5,0) -- (3,0) node[right] {$x$};
+          \draw[->] (0,-0.5) -- (0,2.5) node[above] {$y$};
+
+          \draw[thick, PrimaryColor] (0.2,0.3) .. controls (1,2) and (2,1) .. (2.8,2.2);
+          \node[right] at (3,1.5) {\scriptsize $y = f(x)$};
+
+          % Show vertical line problem
+          \draw[thick, AccentColor, dashed] (1.5,0) -- (1.5,2.5);
+          \node[above] at (1.5,2.7) {\scriptsize \textcolor{AccentColor}{Problem!}};
+
+          \node[below] at (1.5,-0.8) {\scriptsize Cannot represent vertical lines};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Parametric Representation: The Solution}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.9]
+      % Parametric curve example
+      \draw[->] (-0.5,0) -- (4,0) node[right] {$x$};
+      \draw[->] (0,-0.5) -- (0,3) node[above] {$y$};
+
+      % Draw a parametric curve (circle)
+      \draw[thick, PrimaryColor, ->] (2,1.5) circle (1);
+
+      % Mark parameter positions
+      \foreach \t/\pos in {0/{(3,1.5)}, 0.25/{(2,2.5)}, 0.5/{(1,1.5)}, 0.75/{(2,0.5)}} {
+        \fill[SecondaryColor] \pos circle (2pt);
+      }
+
+      % Parameter labels
+      \node[right] at (3.2,1.5) {\scriptsize $t=0$};
+      \node[above] at (2,2.7) {\scriptsize $t=0.25$};
+      \node[left] at (0.8,1.5) {\scriptsize $t=0.5$};
+      \node[below] at (2,0.3) {\scriptsize $t=0.75$};
+
+      \node[below] at (2,-1) {
+        \begin{minipage}{6cm}
+          \centering
+          \begin{mathbox}{Parametric Form}
+            \scriptsize
+            $\mathbf{P}(t) =
+            \begin{pmatrix} x(t) \\ y(t)
+            \end{pmatrix}$
+            Where $t \in [0,1]$ is the parameter
+          \end{mathbox}
+        \end{minipage}
+      };
+    \end{tikzpicture}
+  \end{center}
+
+  \begin{conceptbox}{Advantages of Parametric Curves}
+    \footnotesize
+    \begin{itemize}
+      \item Can represent any curve shape (circles, loops, vertical lines)
+      \item Natural parameterization for animations
+      \item Easy to sample points uniformly
+      \item Provides direction and velocity information
+      \item Intuitive control through control points
+    \end{itemize}
+  \end{conceptbox}
+\end{frame}
+
+\begin{frame}{Applications in Computer Graphics}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{2D Graphics}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{Font Rendering:} TrueType, OpenType fonts
+          \item \textbf{Vector Graphics:} SVG, Adobe Illustrator
+          \item \textbf{UI Design:} Smooth transitions, icons
+          \item \textbf{Logo Design:} Scalable curves
+        \end{itemize}
+      \end{conceptbox}
+
+      \vspace{0.3cm}
+
+      \begin{conceptbox}{Animation \& Motion}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{Motion Paths:} Object trajectories
+          \item \textbf{Camera Movement:} Smooth camera paths
+          \item \textbf{Interpolation:} Between keyframes
+          \item \textbf{Easing Functions:} CSS animations
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{conceptbox}{3D Modeling}
+        \scriptsize
+        \begin{itemize}
+          \item \textbf{Surface Generation:} NURBS surfaces
+          \item \textbf{CAD Systems:} Engineering design
+          \item \textbf{Game Development:} Character modeling
+          \item \textbf{Architecture:} Curved structures
+        \end{itemize}
+      \end{conceptbox}
+
+      \vspace{0.3cm}
+
+      \begin{tikzpicture}[scale=0.7]
+        % Simple illustration of curve applications
+        \node[rectangle, draw=PrimaryColor, fill=PrimaryColor!20, minimum width=2cm, minimum height=0.8cm]
+        at (0,2) {\scriptsize Font 'S'};
+
+        \draw[thick, SecondaryColor, ->] (0.5,1.5) .. controls (1,0.5) and (2,0.5) .. (2.5,1);
+        \node[right] at (2.5,1) {\scriptsize Motion Path};
+
+        \draw[thick, AccentColor] (-0.5,0) .. controls (0,0.5) and (1,0.5) .. (1.5,0);
+        \node[below] at (0.5,-0.3) {\scriptsize UI Element};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+
+  \begin{center}
+    \footnotesize
+    \textbf{Key Insight:} Parametric curves provide the foundation for modern computer graphics
+  \end{center}
+\end{frame}

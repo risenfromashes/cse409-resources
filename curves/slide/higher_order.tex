@@ -1,0 +1,123 @@
+\section{Higher Order Polynomials}
+
+\begin{frame}{From Linear to Polynomial}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{mathbox}{Polynomial Curves}
+        \small
+        \textbf{Linear:} $\mathbf{P}(t) = \mathbf{a_0} + \mathbf{a_1}t$
+
+        \textbf{Quadratic:} $\mathbf{P}(t) = \mathbf{a_0} + \mathbf{a_1}t + \mathbf{a_2}t^2$
+
+        \textbf{Cubic:} $\mathbf{P}(t) = \mathbf{a_0} + \mathbf{a_1}t + \mathbf{a_2}t^2 + \mathbf{a_3}t^3$
+
+        \vspace{0.3cm}
+        \textbf{Benefits:}
+        \begin{itemize}
+            \scriptsize
+          \item More control over shape
+          \item Smoother curves
+          \item Higher flexibility
+        \end{itemize}
+      \end{mathbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.8]
+          \draw[->] (-0.5,0) -- (4,0) node[right] {$x$};
+          \draw[->] (0,-0.5) -- (0,3) node[above] {$y$};
+
+          % Linear
+          \draw[thick, PrimaryColor] (0.5,0.5) -- (3.5,2);
+          \node[right] at (3.7,2) {\scriptsize Linear};
+
+          % Quadratic
+          \draw[thick, SecondaryColor] (0.5,2.5) .. controls (2,0.5) .. (3.5,1.5);
+          \node[right] at (3.7,1.5) {\scriptsize Quadratic};
+
+          % Cubic
+          \draw[thick, AccentColor] (0.5,1) .. controls (1,2.5) and (2.5,0.5) .. (3.5,2.5);
+          \node[right] at (3.7,2.5) {\scriptsize Cubic};
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+    \textcolor{AccentColor}{[Desmos Demo: Piecewise Polynomials]}
+
+    \footnotesize
+    \textit{Demonstrate how polynomial pieces can create complex shapes}
+  \end{center}
+\end{frame}
+
+\begin{frame}{The Control Problem}
+  \begin{columns}
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Challenges with Polynomial Coefficients}
+        \scriptsize
+        \textbf{Unintuitive Control:}
+        \begin{itemize}
+          \item Coefficients $\mathbf{a_0}, \mathbf{a_1}, \mathbf{a_2}, \mathbf{a_3}$ don't correspond to visual features
+          \item Hard to predict curve shape from coefficients
+          \item Difficult to achieve desired curves
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Global Effects:}
+        \begin{itemize}
+          \item Changing one coefficient affects entire curve
+          \item No local control
+          \item Unpredictable modifications
+        \end{itemize}
+
+        \vspace{0.3cm}
+        \textbf{Piecewise Issues:}
+        \begin{itemize}
+          \item Discontinuities at joints
+          \item Visible "kinks" or jumps
+          \item Not visually pleasing
+        \end{itemize}
+      \end{conceptbox}
+    \end{column}
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \begin{tikzpicture}[scale=0.9]
+          % Show discontinuous piecewise polynomial
+          \draw[->] (-0.5,0) -- (3.5,0) node[right] {$x$};
+          \draw[->] (0,-0.5) -- (0,3) node[above] {$y$};
+
+          % First piece
+          \draw[thick, PrimaryColor] (0.2,0.5) .. controls (0.8,2.5) .. (1.5,1.5);
+
+          % Second piece (discontinuous)
+          \draw[thick, SecondaryColor] (1.5,2) .. controls (2.2,0.8) .. (3.2,2.2);
+
+          % Highlight discontinuity
+          \fill[AccentColor] (1.5,1.5) circle (3pt);
+          \fill[AccentColor] (1.5,2) circle (3pt);
+          \draw[AccentColor, thick, <->] (1.5,1.5) -- (1.5,2);
+
+          \node[right] at (1.7,1.75) {\scriptsize \textcolor{AccentColor}{Jump!}};
+
+          \node[below] at (1.75,-0.7) {\scriptsize Discontinuous Connection};
+        \end{tikzpicture}
+      \end{center}
+
+      \vspace{0.5cm}
+
+      \begin{tikzpicture}[scale=0.7]
+        % Show coefficient effect visualization
+        \node[rectangle, draw=PrimaryColor, fill=PrimaryColor!20, text width=2.5cm, align=center]
+        at (0,0) {\scriptsize Change $a_2$};
+
+        \draw[->, thick, AccentColor] (0,-0.5) -- (0,-1.5);
+
+        \node[rectangle, draw=AccentColor, fill=AccentColor!20, text width=2.5cm, align=center]
+        at (0,-2) {\scriptsize Entire curve\\changes};
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
