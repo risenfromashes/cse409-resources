@@ -46,17 +46,14 @@
   \vspace{0.5cm}
 
   \begin{center}
-    \textcolor{AccentColor}{[Desmos Demo: Piecewise Polynomials]}
-
-    \footnotesize
-    \textit{Demonstrate how polynomial pieces can create complex shapes}
+    \textcolor{AccentColor}{\href{https://www.desmos.com/calculator/bibrrrs4lv}{[Desmos Demo: Piecewise Polynomials]}}
   \end{center}
 \end{frame}
 
 \begin{frame}{The Control Problem}
   \begin{columns}
     \begin{column}{0.6\textwidth}
-      \begin{conceptbox}{Challenges with Polynomial Coefficients}
+      \begin{conceptbox}{Challenges with Polynomials}
         \scriptsize
         \textbf{Unintuitive Control:}
         \begin{itemize}
@@ -105,19 +102,6 @@
           \node[below] at (1.75,-0.7) {\scriptsize Discontinuous Connection};
         \end{tikzpicture}
       \end{center}
-
-      \vspace{0.5cm}
-
-      \begin{tikzpicture}[scale=0.7]
-        % Show coefficient effect visualization
-        \node[rectangle, draw=PrimaryColor, fill=PrimaryColor!20, text width=2.5cm, align=center]
-        at (0,0) {\scriptsize Change $a_2$};
-
-        \draw[->, thick, AccentColor] (0,-0.5) -- (0,-1.5);
-
-        \node[rectangle, draw=AccentColor, fill=AccentColor!20, text width=2.5cm, align=center]
-        at (0,-2) {\scriptsize Entire curve\\changes};
-      \end{tikzpicture}
     \end{column}
   \end{columns}
 \end{frame}

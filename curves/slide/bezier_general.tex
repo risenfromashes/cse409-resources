@@ -4,7 +4,6 @@
   \begin{mathbox}{General Formula}
     \small
     A Bézier curve of degree $n$ with control points $\mathbf{P_0}, \mathbf{P_1}, \ldots, \mathbf{P_n}$:
-
     \begin{align*}
       \mathbf{B}(t) = \sum_{i=0}^{n} B_{i,n}(t) \mathbf{P_i}
     \end{align*}
@@ -13,8 +12,6 @@
     \begin{align*}
       B_{i,n}(t) = \binom{n}{i} t^i (1-t)^{n-i}
     \end{align*}
-
-    And $\binom{n}{i} = \frac{n!}{i!(n-i)!}$ is the binomial coefficient.
   \end{mathbox}
 
   \begin{conceptbox}{Degree vs Number of Control Points}
@@ -32,7 +29,7 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{conceptbox}{Bézier Properties}
-        \scriptsize
+        \footnotesize
         \textbf{1. Endpoint Interpolation:}
         \begin{itemize}
           \item $\mathbf{B}(0) = \mathbf{P_0}$
@@ -45,13 +42,7 @@
           \item Provides predictable bounds
         \end{itemize}
 
-        \textbf{3. Variation Diminishing:}
-        \begin{itemize}
-          \item Curve doesn't oscillate more than control polygon
-          \item Smooth, well-behaved curves
-        \end{itemize}
-
-        \textbf{4. Affine Invariance:}
+        \textbf{3. Transformation Invariance:}
         \begin{itemize}
           \item Transform control points = transform curve
           \item Works with any coordinate system
@@ -82,7 +73,7 @@
             \fill[SecondaryColor] (\p) circle (2pt);
           }
 
-          \node[below] at (2,-0.5) {\scriptsize Degree 4 Bézier};
+          \node[below] at (2,0.5) {\scriptsize Degree 4 Bézier};
           \node[above] at (2,3.2) {\scriptsize \textcolor{AccentColor}{Convex Hull}};
         \end{tikzpicture}
       \end{center}
@@ -108,9 +99,9 @@
 
 \begin{frame}{Why Bézier Curves Work So Well}
   \begin{columns}
-    \begin{column}{0.6\textwidth}
+    \begin{column}{0.7\textwidth}
       \begin{conceptbox}{Intuitive Control}
-        \footnotesize>
+        \footnotesize
         \textbf{Visual Predictability:}
         \begin{itemize}
           \item Control points have geometric meaning
@@ -130,12 +121,11 @@
         \textbf{Stability:}
         \begin{itemize}
           \item Robust to numerical errors
-          \item Well-conditioned algorithms
           \item Consistent behavior
         \end{itemize}
       \end{conceptbox}
     \end{column}
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.3\textwidth}
       \begin{center}
         \begin{tikzpicture}[scale=0.9]
           % Before: control point position

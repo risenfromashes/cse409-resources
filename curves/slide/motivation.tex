@@ -1,25 +1,45 @@
 \section{Introduction}
 
+\begin{frame}{Raster vs Vector}
+  By now you know that images are composed of pixels.
+  That is why if you zoom in on an image, it will look pixelated. This is because the image is made of pixels, and when you zoom in, you are just enlarging the pixels.
+
+  But some stuff like fonts and logos are not made of pixels, but rather of curves. They can be zoomed in infinitely without losing quality.
+  \only<2->{
+    \begin{figure}[h]
+      \centering
+      \begin{subfigure}{0.45\textwidth}
+        \centering
+        \includegraphics[width=0.6\linewidth]{images/a.jpg}
+        \caption{Representation of a Font}
+      \end{subfigure}
+      \hfill
+      \only<3->{
+        \begin{subfigure}{0.45\textwidth}
+          \includegraphics[width=\linewidth]{images/Bitmap_VS_SVG.svg.png}
+          \caption{A bitmap logo vs an SVG logo}
+        \end{subfigure}
+      }
+    \end{figure}
+  }
+\end{frame}
 \begin{frame}{Why Parametric Curves?}
   \begin{columns}
     \begin{column}{0.6\textwidth}
-      \begin{conceptbox}{Problems with Traditional Representations}
+      \begin{conceptbox}{Hard to Draw}
         \scriptsize
         \textbf{Explicit form:} $y = f(x)$
         \begin{itemize}
           \item Single-valued functions only
           \item Cannot represent vertical lines
           \item Limited to function graphs
-          \item No natural parameterization
         \end{itemize}
 
         \vspace{0.3cm}
         \textbf{Implicit form:} $F(x,y) = 0$
         \begin{itemize}
           \item Difficult to sample points
-          \item Hard to control shape
           \item No direction information
-          \item Complex for animations
         \end{itemize}
       \end{conceptbox}
     \end{column}
@@ -65,14 +85,14 @@
       \node[left] at (0.8,1.5) {\scriptsize $t=0.5$};
       \node[below] at (2,0.3) {\scriptsize $t=0.75$};
 
-      \node[below] at (2,-1) {
-        \begin{minipage}{6cm}
+      \node[below] at (-4,3) {
+        \begin{minipage}{5cm}
           \centering
           \begin{mathbox}{Parametric Form}
             \scriptsize
             $\mathbf{P}(t) =
             \begin{pmatrix} x(t) \\ y(t)
-            \end{pmatrix}$
+            \end{pmatrix}$ \\
             Where $t \in [0,1]$ is the parameter
           \end{mathbox}
         \end{minipage}
@@ -84,15 +104,16 @@
     \footnotesize
     \begin{itemize}
       \item Can represent any curve shape (circles, loops, vertical lines)
-      \item Natural parameterization for animations
+      \item Natural parameterization for animations, \href{https://www.desmos.com/calculator/nw3uail9yh}{\textcolor{AccentColor}{desmos demo}}.
       \item Easy to sample points uniformly
       \item Provides direction and velocity information
-      \item Intuitive control through control points
+      \item Intuitive control through control points (will see later)
     \end{itemize}
   \end{conceptbox}
 \end{frame}
 
 \begin{frame}{Applications in Computer Graphics}
+  \small
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{conceptbox}{2D Graphics}
@@ -104,8 +125,6 @@
           \item \textbf{Logo Design:} Scalable curves
         \end{itemize}
       \end{conceptbox}
-
-      \vspace{0.3cm}
 
       \begin{conceptbox}{Animation \& Motion}
         \scriptsize
@@ -129,18 +148,6 @@
       \end{conceptbox}
 
       \vspace{0.3cm}
-
-      \begin{tikzpicture}[scale=0.7]
-        % Simple illustration of curve applications
-        \node[rectangle, draw=PrimaryColor, fill=PrimaryColor!20, minimum width=2cm, minimum height=0.8cm]
-        at (0,2) {\scriptsize Font 'S'};
-
-        \draw[thick, SecondaryColor, ->] (0.5,1.5) .. controls (1,0.5) and (2,0.5) .. (2.5,1);
-        \node[right] at (2.5,1) {\scriptsize Motion Path};
-
-        \draw[thick, AccentColor] (-0.5,0) .. controls (0,0.5) and (1,0.5) .. (1.5,0);
-        \node[below] at (0.5,-0.3) {\scriptsize UI Element};
-      \end{tikzpicture}
     \end{column}
   \end{columns}
 

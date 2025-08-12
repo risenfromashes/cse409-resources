@@ -47,44 +47,59 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{Remarkable Properties}
+\begin{frame}{Properties}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.6\textwidth}
       \begin{conceptbox}{Key Properties}
-        \footnotesize>
+        \footnotesize
         \textbf{1. Non-negative:}
         \begin{align*}
-          B_{i,n}(t) \geq 0 \text{ for } t \in [0,1]
+          B_{i,n}(t)  \geq 0 \text{ for } t\in[0,1]
         \end{align*}
+        {
+          \scriptsize
+          \emph{Justification:} For \(t\in[0,1]\) both \(t^i\) and \((1-t)^{n-i}\) are non‑negative. The binomial coefficient \(\binom{n}{i}\) is also non‑negative.
+        }
 
-        \textbf{2. Partition of Unity:}
+        \vspace{0.6em}
+        \textbf{2. Partition of unity:}
         \begin{align*}
-          \sum_{i=0}^{n} B_{i,n}(t) = 1
+          \sum_{i=0}^n B_{i,n}(t) = 1
         \end{align*}
-
-        \textbf{3. Endpoint Values:}
-        \begin{align*}
-          B_{i,n}(0) &=
-          \begin{cases} 1 & \text{if } i=0 \\ 0 & \text{otherwise}
-          \end{cases} \\
-          B_{i,n}(1) &=
-          \begin{cases} 1 & \text{if } i=n \\ 0 & \text{otherwise}
-          \end{cases}
-        \end{align*}
-
-        \textbf{4. Maximum at:}
-        \begin{align*}
-          t = \frac{i}{n}
-        \end{align*}
+        {
+          \scriptsize
+          \emph{Justification:}
+          \begin{align*}
+            \sum_{i=0}^n B_{i,n}(t) &=  \sum_{i=0}^n \binom{n}{i} t^i (1-t)^{n-i} \\
+            &= (t + (1-t))^n = 1^n = 1
+          \end{align*}
+          The equality follows directly from the binomial theorem applied with \(x=t\) and \(y=1-t\).
+        }
       \end{conceptbox}
     \end{column}
-    \begin{column}{0.5\textwidth}
+
+    \begin{column}{0.4\textwidth}
+      \begin{center}
+        \textbf{Non-negative}
+
+        \begin{tikzpicture}[scale=0.6]
+          % Non-negative illustration
+          \draw[->] (-0.2,0) -- (3.2,0) node[right] {$t$};
+          \draw[->] (0,-0.2) -- (0,2) node[above] {};
+
+          \draw[thick, PrimaryColor] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)});
+
+          \fill[PrimaryColor!20] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)}) -- (3,0) -- (0,0) -- cycle;
+
+          \node[below] at (1.5,-0.5) {\scriptsize Always $\geq 0$};
+        \end{tikzpicture}
+      \end{center}
+
+      \vspace{0.3cm}
       \begin{center}
         \textbf{Partition of Unity}
 
         \begin{tikzpicture}[scale=0.8]
-          \draw[->] (-0.2,0) -- (4.2,0) node[right] {$t$};
-          \draw[->] (0,-0.2) -- (0,2.5) node[above] {};
 
           % Show sum equals 1
           \draw[thick, dashed, gray] (0,2) -- (4,2);
@@ -103,92 +118,175 @@
           -- plot[domain=4:0, samples=50] (\x, {2*(1-\x/4)^3 + 2*3*(\x/4)*(1-\x/4)^2 + 2*3*(\x/4)^2*(1-\x/4)}) -- cycle;
 
           \node[below] at (2,-0.5) {\scriptsize Sum always equals 1};
+
+          \draw[->] (-0.2,0) -- (4.2,0) node[right] {$t$};
+          \draw[->] (0,-0.2) -- (0,2.5) node[above] {};
         \end{tikzpicture}
       \end{center}
 
-      \vspace{0.3cm}
-
-      \begin{tikzpicture}[scale=0.6]
-        % Non-negative illustration
-        \draw[->] (-0.2,0) -- (3.2,0) node[right] {$t$};
-        \draw[->] (0,-0.2) -- (0,2) node[above] {};
-
-        \draw[thick, PrimaryColor] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)});
-
-        \fill[PrimaryColor!20] plot[domain=0:3, samples=30] (\x, {1.5*(\x/3)^2*(1-\x/3)}) -- (3,0) -- (0,0) -- cycle;
-
-        \node[below] at (1.5,-0.5) {\scriptsize Always $\geq 0$};
-      \end{tikzpicture}
     \end{column}
   \end{columns}
 \end{frame}
-
-\begin{frame}{Why These Properties Matter}
+% --- Slide 1: Convex Combination Basics ---
+\begin{frame}{Bézier Curves as Convex Combinations}
   \begin{conceptbox}{Geometric Interpretation}
-    \footnotesize>
-    \textbf{Convex Combination:} Since Bernstein polynomials are non-negative and sum to 1, any point on a Bézier curve is a \emph{convex combination} of the control points.
-
-    \begin{align*}
-      \mathbf{B}(t) = \sum_{i=0}^{n} \underbrace{B_{i,n}(t)}_{\text{weights}} \mathbf{P_i}
-    \end{align*}
-
-    This means the curve point is a "weighted average" of control points, where weights are always positive and sum to 1.
+    \footnotesize
+    \textbf{Convex Combination:} Since Bernstein polynomials are non-negative and sum to 1:
+    \[
+      \mathbf{B}(t) = \sum_{i=0}^{n} \underbrace{B_{i,n}(t)}_{\text{weights}} \mathbf{P}_i,
+      \quad B_{i,n}(t) \ge 0,\quad \sum_{i=0}^n B_{i,n}(t) = 1
+    \]
+    Any point on the curve is a \emph{weighted average} of the control points.
   \end{conceptbox}
 
+  \vspace{0.3cm}
+  \begin{center}
+    \begin{tikzpicture}[scale=0.9]
+      % Control points
+      \coordinate (P0) at (0.5,0.5);
+      \coordinate (P1) at (1.5,3);
+      \coordinate (P2) at (2.5,1);
+
+      % Control polygon
+      \draw[dashed, gray!50] (P0) -- (P1) -- (P2);
+
+      % Bézier curve
+      \draw[thick, PrimaryColor] (P0) .. controls (P1) .. (P2);
+
+      % Control points with sizes according to weights
+      \fill[SecondaryColor] (P0) circle (2pt);
+      \fill[SecondaryColor] (P1) circle (4pt);
+      \fill[SecondaryColor] (P2) circle (2pt);
+
+      % Point on curve
+      \coordinate (B) at (1.5,2.425);
+      \fill[ObjectColor] (B) circle (2.5pt);
+
+      % Labels
+      \node[below] at (P0) {\scriptsize $w_0=0.25$};
+      \node[above] at (P1) {\scriptsize $w_1=0.5$};
+      \node[below] at (P2) {\scriptsize $w_2=0.25$};
+      \node[right,ObjectColor,xshift=0.25cm] at (B) {\scriptsize Weighted avg.};
+    \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2cm}
+  \scriptsize
+  The weights change smoothly with $t$, shifting the influence between control points.
+\end{frame}
+
+% --- Slide 2: Convex Hull Property ---
+\begin{frame}{Convex Hull Property}
+  \begin{conceptbox}{What is the Convex Hull?}
+    \footnotesize
+    The \textbf{convex hull} of a set of points is the smallest convex polygon containing them —
+    imagine wrapping a rubber band around the points; the shape it makes is the convex hull.
+  \end{conceptbox}
+  \only<1>{
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.4\textwidth]{images/ConvexHull.svg.png}
+      \caption{\textcolor{blue}{Convex hull} of a set of points}
+    \end{figure}
+  }
+  \only<2>{
+
+    \vspace{0.3cm}
+    {
+      \footnotesize
+      \textbf{Why it applies here:}
+      Bézier curve points are convex combinations of control points,
+      \textbf{so they must lie inside the convex hull of the control polygon}.
+    }
+    \begin{center}
+      \begin{tikzpicture}[scale=0.9]
+        % Control points
+        \coordinate (P0) at (0.5,0.5);
+        \coordinate (P1) at (1.5,3);
+        \coordinate (P2) at (2.5,1);
+        \fill[fill=yellow!20, draw=none] (P0) -- (P1) -- (P2) -- cycle;
+
+        % Control polygon
+        \draw[dashed, gray!50] (P0) -- (P1) -- (P2);
+
+        % Bézier curve
+        \draw[thick, PrimaryColor] (P0) .. controls (P1) .. (P2);
+
+        % Control points with sizes according to weights
+        \fill[SecondaryColor] (P0) circle (2pt);
+        \fill[SecondaryColor] (P1) circle (4pt);
+        \fill[SecondaryColor] (P2) circle (2pt);
+
+        % Point on curve
+        \coordinate (B) at (1.5,2.425);
+        \fill[ObjectColor] (B) circle (2.5pt);
+
+        % Labels
+        \node[below] at (P0) {\scriptsize $w_0=0.25$};
+        \node[above] at (P1) {\scriptsize $w_1=0.5$};
+        \node[below] at (P2) {\scriptsize $w_2=0.25$};
+      \end{tikzpicture}
+    \end{center}
+    \scriptsize
+    This is exactly the same idea as \textbf{barycentric coordinates} in a triangle:
+    any point with non-negative barycentric coordinates lies inside the triangle.
+  }
+\end{frame}
+
+% --- Slide 3: Consequences of Convex Hull Property ---
+\begin{frame}{Why the Convex Hull Property Matters}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \begin{conceptbox}{Consequences}
-        \scriptsize
-        \textbf{1. Convex Hull Property:}
+    \begin{column}{0.6\textwidth}
+      \begin{conceptbox}{Practical Consequences}
+        \footnotesize
+        \textbf{1. Natural Bounds:}
         \begin{itemize}
-          \item Curve never "escapes" control polygon
-          \item Provides natural bounds
+          \item Curve never leaves the convex hull
         \end{itemize}
 
         \textbf{2. Stability:}
         \begin{itemize}
-          \item Small changes in control points → small changes in curve
-          \item Numerically stable algorithms
+          \item Small changes in control points $\rightarrow$
+
+            small changes in curve
         \end{itemize}
 
         \textbf{3. Intuitive Control:}
         \begin{itemize}
-          \item Each control point has maximum influence at $t = i/n$
-          \item Smooth, predictable behavior
+          \item Smooth, predictable shaping
         \end{itemize}
       \end{conceptbox}
     \end{column}
-    \begin{column}{0.5\textwidth}
+
+    \begin{column}{0.4\textwidth}
       \begin{center}
         \begin{tikzpicture}[scale=0.8]
-          % Weights visualization for specific t
-          \coordinate (P0) at (0.5,0.5);
-          \coordinate (P1) at (1.5,2);
-          \coordinate (P2) at (2.5,1);
+          % Control points
+          \coordinate (P0) at (0.5,1);
+          \coordinate (P1) at (1,2.5);
+          \coordinate (P2) at (3,0.5);
+          \coordinate (P3) at (3.5,2);
 
           % Control polygon
-          \draw[dashed, LightGray] (P0) -- (P1) -- (P2);
+          \draw[dashed, LightGray] (P0) -- (P1) -- (P2) -- (P3) -- cycle;
+          \draw[dashed, LightGray] (P0) -- (P2) -- (P1) -- (P3) -- cycle;
+          \draw[gray!70] (P0) -- (P1);
+          \draw[gray!70] (P2) -- (P3);
 
-          % Bézier curve
-          \draw[thick, PrimaryColor] (P0) .. controls (P1) .. (P2);
+          % Cubic Bézier curve
+          \draw[thick, PrimaryColor] (P0) .. controls (P1) and (P2) .. (P3);
 
-          % Control points with different sizes based on weights
-          \fill[SecondaryColor] (P0) circle (2pt);
-          \fill[SecondaryColor] (P1) circle (4pt);
-          \fill[SecondaryColor] (P2) circle (1pt);
+          % Control points
+          \fill[SecondaryColor] (P0) circle (3pt);
+          \fill[AccentColor] (P1) circle (3pt);
+          \fill[AccentColor] (P2) circle (3pt);
+          \fill[SecondaryColor] (P3) circle (3pt);
 
-          % Point on curve
-          \coordinate (B) at (1.5,1.4);
-          \fill[ObjectColor] (B) circle (3pt);
+          % Example t
+          \coordinate (Q0) at (1.25,1.75); % point on first quadratic
+          \coordinate (Q1) at (2.75,1.25); % point on second quadratic
+          \coordinate (B) at (2,1.5);      % point on cubic
 
-          % Weight indicators
-          \node[below] at (P0) {\scriptsize $w_0=0.25$};
-          \node[above] at (P1) {\scriptsize $w_1=0.5$};
-          \node[below] at (P2) {\scriptsize $w_2=0.25$};
-
-          \node[above] at (B) {\scriptsize Weighted average};
-
-          \node[below] at (1.5,-0.5) {\scriptsize Point sizes $\propto$ weights};
         \end{tikzpicture}
       \end{center}
     \end{column}

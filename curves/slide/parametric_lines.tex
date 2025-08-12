@@ -38,7 +38,7 @@
           \fill[SecondaryColor] (P1) circle (3pt);
 
           % Labels
-          \node[below left] at (P0) {$\mathbf{P_0}$};
+          \node[below right] at (P0) {$\mathbf{P_0}$};
           \node[above right] at (P1) {$\mathbf{P_1}$};
 
           % Parameter positions
@@ -47,12 +47,12 @@
           }
 
           % Parameter labels
-          \node[below] at (1.125,0.8) {\scriptsize $t=0.25$};
-          \node[below] at (1.75,1.3) {\scriptsize $t=0.5$};
-          \node[below] at (2.375,1.8) {\scriptsize $t=0.75$};
+          \node[right] at (1.125,0.8) {\scriptsize $t=0.25$};
+          \node[right] at (1.75,1.3) {\scriptsize $t=0.5$};
+          \node[right] at (2.375,1.8) {\scriptsize $t=0.75$};
 
           % Direction vector
-          \draw[->, thick, ObjectColor] (P0) -- ++(0.8,0.64) node[midway, above left] {\scriptsize $\mathbf{P_1} - \mathbf{P_0}$};
+          \draw[->, thick, ObjectColor] (P0) -- ++(0.4,0.32);
         \end{tikzpicture}
       \end{center}
     \end{column}
@@ -69,31 +69,20 @@
           \text{lerp}(A, B, t) &= (1-t)A + tB
         \end{align*}
 
-        \vspace{0.3cm}
         \textbf{Properties:}
         \begin{itemize}
             \scriptsize
           \item $\text{lerp}(A, B, 0) = A$
           \item $\text{lerp}(A, B, 1) = B$
           \item Linear relationship
-          \item Convex combination
         \end{itemize}
       \end{mathbox}
-
-      \vspace{0.3cm}
 
       \begin{conceptbox}{Code Example}
         \scriptsize
         \begin{minted}{python}
 def lerp(A, B, t):
     return (1 - t) * A + t * B
-
-# Example usage
-P0 = [1, 2]
-P1 = [4, 6]
-t = 0.3
-result = lerp(P0, P1, t)
-# result = [1.9, 3.2]
         \end{minted}
       \end{conceptbox}
     \end{column}
@@ -101,9 +90,7 @@ result = lerp(P0, P1, t)
       \begin{center}
         \textbf{Interactive Demo}
 
-        \vspace{0.5cm}
-
-        \textcolor{AccentColor}{[Desmos Demo: Piecewise Lines]}
+        \textcolor{AccentColor}{\href{https://www.desmos.com/calculator/nq6achjftb}{[Desmos Demo: Piecewise Lines]}}
 
         \vspace{0.5cm}
 

@@ -2,7 +2,7 @@
 
 \begin{frame}{Quadratic Bézier: LERP of LERPs}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
+    \begin{column}{0.8\textwidth}
       \begin{mathbox}{Construction Method}
         \small
         Given three control points $\mathbf{P_0}$, $\mathbf{P_1}$, $\mathbf{P_2}$:
@@ -16,13 +16,21 @@
 
         \textbf{Step 2:} Another linear interpolation
         \begin{align*}
-          \mathbf{B}(t) &= \text{lerp}(\mathbf{Q_0}, \mathbf{Q_1}, t)
+          \mathbf{B}(t) &= \text{lerp}(\mathbf{Q_0}(t), \mathbf{Q_1}(t), t) \\
+          &= (1-t)^2\mathbf{P_0} + 2t(1-t)\mathbf{P_1} + t^2\mathbf{P_2}
         \end{align*}
+
+        \textbf{Definition:}
+        \[
+          \text{quadBezier}(\mathbf{A},\mathbf{B},\mathbf{C},t)
+          = (1-t)^2\mathbf{A} + 2t(1-t)\mathbf{B} + t^2\mathbf{C}
+        \]
       \end{mathbox}
     \end{column}
-    \begin{column}{0.5\textwidth}
+
+    \begin{column}{0.3\textwidth}
       \begin{center}
-        \begin{tikzpicture}[scale=0.9]
+        \begin{tikzpicture}[scale=0.8]
           % Control points
           \coordinate (P0) at (0.5,0.5);
           \coordinate (P1) at (2,2.5);
@@ -43,7 +51,7 @@
           \node[above] at (P1) {\scriptsize $\mathbf{P_1}$};
           \node[below right] at (P2) {\scriptsize $\mathbf{P_2}$};
 
-          % Show interpolation for specific t
+          % Example t interpolation
           \coordinate (Q0) at (1.25,1.5);
           \coordinate (Q1) at (2.75,1.75);
           \coordinate (B) at (2,1.625);
@@ -58,16 +66,15 @@
 
           \node[left] at (Q0) {\scriptsize $\mathbf{Q_0}$};
           \node[right] at (Q1) {\scriptsize $\mathbf{Q_1}$};
-          \node[above] at (B) {\scriptsize $\mathbf{B}(t)$};
+          \node[below] at (B) {\scriptsize $\mathbf{B}(t)$};
         \end{tikzpicture}
       \end{center}
     \end{column}
   \end{columns}
 
-  \vspace{0.5cm}
-
+  \vspace{0.1cm}
   \begin{center}
-    \textcolor{AccentColor}{[Desmos Demo: Quadratic Bézier Construction]}
+    \textcolor{AccentColor}{\href{https://www.desmos.com/calculator/j0cmdymljy}{[Desmos Demo: Quadratic Bézier Construction]}}
   \end{center}
 \end{frame}
 
@@ -80,7 +87,6 @@
       &= (1-t)^2\mathbf{P_0} + 2t(1-t)\mathbf{P_1} + t^2\mathbf{P_2}
     \end{align*}
 
-    \vspace{0.3cm}
     \textbf{Bernstein Form:}
     \begin{align*}
       \mathbf{B}(t) &= B_{0,2}(t)\mathbf{P_0} + B_{1,2}(t)\mathbf{P_1} + B_{2,2}(t)\mathbf{P_2}
@@ -93,41 +99,39 @@
   \end{mathbox}
 
   \begin{conceptbox}{Key Properties}
-    \footnotesize>
+    \footnotesize
     \begin{itemize}
       \item \textbf{Endpoint Interpolation:} $\mathbf{B}(0) = \mathbf{P_0}$, $\mathbf{B}(1) = \mathbf{P_2}$
       \item \textbf{Tangent Control:} $\mathbf{P_1}$ controls the tangent direction
-      \item \textbf{Convex Hull:} Curve lies within triangle formed by control points
+        % \item \textbf{Convex Hull:} Curve lies within triangle formed by control points
     \end{itemize}
   \end{conceptbox}
 \end{frame}
 
-\begin{frame}{Cubic Bézier Curves}
+\begin{frame}{Cubic Bézier: LERP of Quadratics}
   \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \begin{mathbox}{Cubic Bézier Formula}
+    \begin{column}{0.65\textwidth}
+      \begin{mathbox}{Construction Method}
         \small
-        Four control points $\mathbf{P_0}, \mathbf{P_1}, \mathbf{P_2}, \mathbf{P_3}$:
-
-        \begin{align*}
-          \mathbf{B}(t) = &(1-t)^3\mathbf{P_0} \\
-          &+ 3t(1-t)^2\mathbf{P_1} \\
-          &+ 3t^2(1-t)\mathbf{P_2} \\
-          &+ t^3\mathbf{P_3}
-        \end{align*}
+        Four control points $\mathbf{P_0}$, $\mathbf{P_1}$, $\mathbf{P_2}$, $\mathbf{P_3}$:
 
         \vspace{0.3cm}
-        \textbf{Control Point Roles:}
-        \begin{itemize}
-            \scriptsize
-          \item $\mathbf{P_0}$: Start point
-          \item $\mathbf{P_1}$: Start tangent control
-          \item $\mathbf{P_2}$: End tangent control
-          \item $\mathbf{P_3}$: End point
-        \end{itemize}
+        \textbf{Step 1:} Build two quadratic Béziers
+        \begin{align*}
+          \mathbf{Q_0}(t) &= \text{quadBezier}(\mathbf{P_0}, \mathbf{P_1}, \mathbf{P_2}, t) \\
+          \mathbf{Q_1}(t) &= \text{quadBezier}(\mathbf{P_1}, \mathbf{P_2}, \mathbf{P_3}, t)
+        \end{align*}
+
+        \textbf{Step 2:} Interpolate between them
+        \begin{align*}
+          \mathbf{B}(t) &= \text{lerp}(\mathbf{Q_0}(t), \mathbf{Q_1}(t), t) \\
+          &= (1-t)^3\mathbf{P_0} + 3t(1-t)^2\mathbf{P_1} \\
+          &\quad+ 3t^2(1-t)\mathbf{P_2} + t^3\mathbf{P_3}
+        \end{align*}
       \end{mathbox}
     \end{column}
-    \begin{column}{0.5\textwidth}
+
+    \begin{column}{0.35\textwidth}
       \begin{center}
         \begin{tikzpicture}[scale=0.8]
           % Control points
@@ -139,7 +143,7 @@
           % Control polygon
           \draw[dashed, LightGray] (P0) -- (P1) -- (P2) -- (P3);
 
-          % Bézier curve
+          % Cubic Bézier curve
           \draw[thick, PrimaryColor] (P0) .. controls (P1) and (P2) .. (P3);
 
           % Control points
@@ -153,19 +157,28 @@
           \node[below] at (P2) {\scriptsize $\mathbf{P_2}$};
           \node[above] at (P3) {\scriptsize $\mathbf{P_3}$};
 
-          % Tangent vectors
-          \draw[->, ObjectColor, thick] (P0) -- ($(P0)!0.4!(P1)$);
-          \draw[->, ObjectColor, thick] (P3) -- ($(P3)!0.4!(P2)$);
+          % Example t
+          \coordinate (Q0) at (1.25,1.75); % point on first quadratic
+          \coordinate (Q1) at (2.75,1.25); % point on second quadratic
+          \coordinate (B) at (2,1.5);      % point on cubic
 
-          \node[below] at (2,-0.5) {\scriptsize Most common in graphics};
+          % Quadratic points
+          \fill[AccentColor] (Q0) circle (2pt);
+          \fill[AccentColor] (Q1) circle (2pt);
+          \fill[ObjectColor] (B) circle (3pt);
+
+          \draw[AccentColor] (Q0) -- (Q1);
+
+          \node[left] at (Q0) {\scriptsize $\mathbf{Q_0}$};
+          \node[right] at (Q1) {\scriptsize $\mathbf{Q_1}$};
+          \node[above] at (B) {\scriptsize $\mathbf{B}(t)$};
         \end{tikzpicture}
       \end{center}
     \end{column}
   \end{columns}
 
   \vspace{0.5cm}
-
   \begin{center}
-    \textcolor{AccentColor}{[Desmos Demo: Cubic Bézier Construction]}
+    \textcolor{AccentColor}{\href{https://www.desmos.com/calculator/hlsbm9h3bo}{[Desmos Demo: Cubic Bézier as LERP of Quadratics]}}
   \end{center}
 \end{frame}

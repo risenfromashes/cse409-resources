@@ -2,28 +2,30 @@
 
 \begin{frame}{Matrix Form for Efficiency}
   \begin{columns}
-    \begin{column}{0.6\textwidth}
+    \begin{column}{0.65\textwidth}
       \begin{mathbox}{Cubic Bézier Matrix Form}
-        \small
-        For a cubic Bézier curve:
-        \begin{align*}
-          \mathbf{B}(t) =
-          \begin{bmatrix} 1 & t & t^2 & t^3
-          \end{bmatrix}
-          \begin{bmatrix}
-            1 & 0 & 0 & 0 \\
-            -3 & 3 & 0 & 0 \\
-            3 & -6 & 3 & 0 \\
-            -1 & 3 & -3 & 1
-          \end{bmatrix}
-          \begin{bmatrix}
-            \mathbf{P_0} \\
-            \mathbf{P_1} \\
-            \mathbf{P_2} \\
-            \mathbf{P_3}
-          \end{bmatrix}
-        \end{align*}
 
+        For a cubic Bézier curve:{
+          \scriptsize
+          \begin{align*}
+            \mathbf{B}(t) =
+            \begin{bmatrix} 1 & t & t^2 & t^3
+            \end{bmatrix}
+            \begin{bmatrix}
+              1 & 0 & 0 & 0 \\
+              -3 & 3 & 0 & 0 \\
+              3 & -6 & 3 & 0 \\
+              -1 & 3 & -3 & 1
+            \end{bmatrix}
+            \begin{bmatrix}
+              \mathbf{P_0} \\
+              \mathbf{P_1} \\
+              \mathbf{P_2} \\
+              \mathbf{P_3}
+            \end{bmatrix}
+          \end{align*}
+
+        }
         \vspace{0.3cm}
         Or more compactly:
         \begin{align*}
@@ -31,7 +33,7 @@
         \end{align*}
       \end{mathbox}
     \end{column}
-    \begin{column}{0.4\textwidth}
+    \begin{column}{0.35\textwidth}
       \begin{conceptbox}{Matrix Components}
         \scriptsize
         \textbf{$\mathbf{T}(t)$:} Parameter vector
@@ -58,11 +60,10 @@
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{conceptbox}{Computational Advantages}
-        \footnotesize>
+        \footnotesize
         \textbf{1. Efficiency:}
         \begin{itemize}
           \item Single matrix multiplication
-          \item Vectorized operations
           \item GPU-friendly
         \end{itemize}
 
@@ -104,10 +105,6 @@ def bezier_cubic(t, control_points):
     P = np.array(control_points)
 
     return T @ M @ P
-
-# Usage
-points = [[0,0], [1,2], [3,1], [4,0]]
-curve_point = bezier_cubic(0.5, points)
         \end{minted}
       \end{conceptbox}
     \end{column}
