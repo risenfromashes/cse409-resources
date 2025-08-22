@@ -79,7 +79,7 @@ L-4/T-1 \hspace{.1cm} CSE 409: Computer Graphics\\
 \vspace{.2cm}
 \textbf{Time: 25 minutes} \hspace{2.2cm} \textbf{Marks: 20}
 \begin{changemargin}{0.68cm}{0.68cm}
-  \normalsize Student Name: \underline{\hspace{6.5cm}} \hfill Student ID: \underline{\hspace{2.5cm}}\\
+  \normalsize Student Name: \underline{Md. Ashrafur Rahman Khan} \hfill Student ID: \underline{1905005}\\
 \end{changemargin}
 }
 \author{}
@@ -96,17 +96,21 @@ L-4/T-1 \hspace{.1cm} CSE 409: Computer Graphics\\
 a) What happens if we shoot rays from light sources instead of the eye?
 \hfill (2) \\
 
-\vspace*{3cm}
+\textbf{Answer:} It is very inefficient since most of the rays will not reach the eye (camera) and hence will not contribute to the final image.
+\vspace*{2cm}
 
 b) For a 3840$\times$2160 resolution image, how many rays should be cast (at least) for a ray-traced image?
 \hfill (2) \\
 
-\vspace*{3cm}
+\textbf{Answer:} At least one ray per pixel, so 3840 $\times$ 2160 = 8,294,400 rays.
+\vspace*{2cm}
 
 c) During calculations, how do we ensure that we take the closest intersection?
-\hfill (2)
+\hfill (2) \\
 
-\vspace*{3cm}
+\textbf{Answer:} We keep track of the minimum positive distance (t value) from the ray origin to the intersection points and update it whenever we find a closer intersection.
+
+\vspace*{2cm}
 }
 \question[]
 {
@@ -135,10 +139,22 @@ node[midway, above right,xshift=-0.1cm] {$30^{\circ}$};
 \hfill (4)
 \end{multicols}
 
-\vspace*{5cm}
-b) If the vertices $A$, $B$ and $C$ are to be coloured red (255, 0, 0), green (0, 255, 0) and blue (0, 0, 255) respectively, what would be the interpolated colour of $P$ in RGB? \hfill (2)
+\textbf{Answer:}
 
-\vspace*{2cm}
+\begin{align*}
+\beta &= \frac{\text{area}(PCA)}{\text{area}(ABC)} = \frac{\frac{1}{2} \cdot 5 \cdot 2 \cdot \sin 30^\circ}{\frac{1}{2} \cdot 5 \cdot 5 \cdot \sin 75^\circ}  = \frac{\sqrt{6} - \sqrt{2}}{5} \approx 0.207 \\
+\gamma &= \frac{\text{area}(PAB)}{\text{area}(ABC)} = \frac{\frac{1}{2} \cdot 5 \cdot 2 \cdot \sin 45^\circ}{\frac{1}{2} \cdot  5 \cdot 5 \cdot \sin 75^\circ} = \frac{2\sqrt{3} - 2}{5} \approx 0.293 \\
+\alpha &= 1 - \beta - \gamma \approx 0.500
+\end{align*}
+
+b) If the vertices $A$, $B$ and $C$ are to be coloured red (255, 0, 0), green (0, 255, 0) and blue (0, 0, 255) respectively, what would be the interpolated colour of $P$ in RGB? \hfill (2) \\
+
+\begin{align*}
+\text{Colour}(P) &= \alpha \cdot \text{Colour}(A) + \beta \cdot \text{Colour}(B) + \gamma \cdot \text{Colour}(C) \\
+&= 0.500 \cdot (255, 0, 0) + 0.207 \cdot (0, 255, 0) + 0.293 \cdot (0, 0, 255) \\
+&= (127.5, 52.785, 74.715) \\
+&= \text{rgb}(128, 53, 75)
+\end{align*}
 }
 \newpage
 \question[]
@@ -174,13 +190,54 @@ Radius of earth is 6400 KM. All units in $10^6$ meters.
 \end{multicols}
 \hfill (4)
 
-\vspace{16cm}
+\textbf{Answer:}
+The ray origin is the alien warship's position $\mathbf{R}_o = (-100, 200, -100)$ and the ray direction is towards the aesteroid $(-10, 2, 6)$. We can find the direction vector $\mathbf{R}_d$ by subtracting the origin from the aesteroid's position and normalizing it.
+
+\begin{align*}
+\mathbf{R}_o &= (-100, 200, -100) \\
+\mathbf{R}_d &= \frac{(-10, 2, 6) - (-100, 200, -100)}{|(-10, 2, 6) - (-100, 200, -100)| }= \frac{(90, -198, 106)}{\sqrt{58540}}
+\end{align*}
+
+We normalize the direction vector to use the vector approach.
+
+\textbf{Step 1:} Check if origin $\mathbf{R}_o$ is inside earth.
+\begin{align*}
+|\mathbf{R}_o| = \sqrt{(-100)^2 + 200^2 + (-100)^2} &= \sqrt{60000} \approx 244.95 > 6.4 \\
+\end{align*}
+
+\textbf{Step 2:} Find the distance to the closest point on the ray to the origin of earth.
+\begin{align*}
+t_p = - \mathbf{R}_o \cdot \mathbf{R}_d = - \left((-100, 200, -100) \cdot \frac{(90, -198, 106)}{\sqrt{58540}}\right) \approx 244.6782
+\end{align*}
+
+\textbf{Step 3:} Check that $t_p$ is positive.
+
+\textbf{Step 4:} Find the distance of the closest point on the ray to the origin of earth.
+\begin{align*}
+d = \sqrt{|\mathbf{R}_o|^2 - t_p^2} \approx \sqrt{60000 - 244.6782^2} \approx 11.5
+\end{align*}
+
+\textbf{Step 5:} Check if $d < 6.4$. Since $11.5 > 6.4$, the ray does not intersect earth.
+
+Therefore, earth survives.
+
+\vspace{4cm}
 
 b) If earth survives, by how far did the laser miss? If not, at what distance from the Alien Warship did the laser hit earth?
-\hfill (2)
-}
-\vspace{8cm}
-\question[]For your hard work and attending the exam so early in the morning.\hfill (2)
+\hfill (2) \\
 
+\textbf{Answer:}
+The distance missed the surface of earth by,
+\begin{align*}
+d - 6.4 \approx 11.5 - 6.4 = 5.1 \text{ (in $10^6$ meters) } = 5100 \text{ KM}
+\end{align*}
+}
+
+Which is still a close call! Maybe we should retaliate...
+
+\vspace{4cm}
+
+\question[]For your hard work and attending the exam so early in the morning.\hfill (2) \\
+\textbf{Answer:} Thanks, I suppose.
 \end{questions}
 \end{document}
